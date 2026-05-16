@@ -1,0 +1,1877 @@
+/* Products page CSS (isolated copy of theme-design) */
+@import url("./products.theme-design.css?v=products-69");
+
+/* Apple iOS-style activity indicator: 12 thin bars rotating, each one tail-fading.
+   Drop one inside any positioning context — it sizes itself with `em` so changing the
+   wrapper's `font-size` scales it cleanly. */
+.bb-products-ios-spinner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1em;
+  height: 1em;
+  font-size: 28px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 2;
+  display: block;
+}
+.bb-products-ios-spinner > i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.08em;
+  height: 0.28em;
+  margin-left: -0.04em;
+  margin-top: -0.14em;
+  border-radius: 0.04em;
+  background: currentColor;
+  color: rgba(0, 0, 0, 0.55);
+  animation: bb-products-ios-spinner-fade 1s linear infinite;
+  display: block;
+}
+@keyframes bb-products-ios-spinner-fade {
+  0%   { opacity: 1; }
+  100% { opacity: 0.18; }
+}
+@media (prefers-color-scheme: dark) {
+  .bb-products-ios-spinner > i {
+    color: rgba(255, 255, 255, 0.65);
+  }
+}
+/* Soft scrim on the slide while loading so the spinner reads on any background. */
+.swiper-thumb .swiper-slide:has(.bb-products-ios-spinner),
+.slider-close-up-swiper .swiper-slide:has(.bb-products-ios-spinner) {
+  background: rgba(0, 0, 0, 0.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-products-ios-spinner > i {
+    animation-duration: 1.6s;
+  }
+}
+
+/* Product form (Products page only) */
+.bb-products-setup-card {
+  position: relative;
+}
+.bb-products-setup-card > h2 {
+  padding-right: clamp(96px, 26vw, 132px);
+  margin-bottom: 8px;
+}
+/* Top-right of setup card — matches preview pill / dot borders */
+.bb-products-slot-pill {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  margin-top: -15px;
+  margin-right: -13px;
+  margin-bottom: 0;
+  margin-left: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 3px solid #0b0b10;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  font: 800 12px/1.2 Roboto, system-ui, sans-serif;
+  color: #0b0b10;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-slot-pill {
+  border-color: #ffffff;
+  border-width: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-slot-pill {
+    border-color: #ffffff;
+    border-width: 3px;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+}
+.bb-products-setup-card .bb-products-panel {
+  margin-top: 10px;
+}
+.bb-products-input,
+.bb-products-select,
+.bb-products-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px 12px;
+  font: 600 13px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.92);
+}
+.bb-products-textarea {
+  resize: vertical;
+  min-height: 92px;
+  font-weight: 600;
+}
+.bb-products-subhead {
+  padding-top: 10px;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.bb-products-panel > h3 {
+  margin: 0 0 6px 0;
+}
+.bb-products-label {
+  font: 800 11px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.7);
+}
+.bb-products-fields {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+.bb-products-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.bb-products-money-input {
+  position: relative;
+  width: 100%;
+}
+.bb-products-money-input__prefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font: 800 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.62);
+  pointer-events: none;
+}
+.bb-products-money-input__field {
+  /* ~3px extra past US$ so placeholder/value aren’t tight on the prefix */
+  padding-left: 39px;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-money-input__prefix {
+  color: rgba(255, 255, 255, 0.74);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-money-input__prefix {
+    color: rgba(255, 255, 255, 0.74);
+  }
+}
+.bb-products-field--wide {
+  grid-column: 1 / -1;
+}
+.bb-products-ship-fields {
+  display: contents;
+}
+.bb-products-ship-fields[hidden] {
+  display: none !important;
+}
+.bb-products-ship-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 10px;
+}
+.bb-products-ship-mode {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1 1 calc(50% - 10px);
+  min-width: min(100%, 240px);
+  cursor: pointer;
+  user-select: none;
+  font: 700 11px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.78);
+}
+.bb-products-ship-mode span {
+  flex: 1;
+  min-width: 0;
+}
+.bb-products-ship-mode input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  flex-shrink: 0;
+  margin: 0;
+  margin-top: 1px;
+  border-radius: 999px;
+  border: 2px solid #b4b6be;
+  background: #d8d9df;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+}
+.bb-products-ship-mode input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #0f0f12;
+  transform: translate(-50%, -50%);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-ship-mode {
+  color: rgba(255, 255, 255, 0.82);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-ship-mode input[type="radio"] {
+  border-color: #6d6f7a;
+  background: #8b8d97;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-ship-mode input[type="radio"]:checked::after {
+  background: #fafafc;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-ship-mode {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  body.bb-brand-theme-settings .bb-products-ship-mode input[type="radio"] {
+    border-color: #6d6f7a;
+    background: #8b8d97;
+  }
+  body.bb-brand-theme-settings .bb-products-ship-mode input[type="radio"]:checked::after {
+    background: #fafafc;
+  }
+}
+
+.bb-products-excl-btn {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px 12px;
+  font: 650 13px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.88);
+  text-align: left;
+  cursor: pointer;
+}
+.bb-products-excl-btn::after {
+  content: "▾";
+  float: right;
+  opacity: 0.7;
+}
+.bb-products-excl-menu {
+  margin-top: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12);
+  padding: 8px;
+  max-height: min(360px, 52vh);
+  overflow: auto;
+}
+.bb-products-excl-details {
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(15, 15, 18, 0.04);
+  padding: 6px 8px 10px;
+  margin-bottom: 10px;
+}
+.bb-products-excl-summary {
+  font: 750 11px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(15, 15, 18, 0.55);
+  cursor: pointer;
+  user-select: none;
+}
+.bb-products-excl-details[open] .bb-products-excl-summary {
+  margin-bottom: 4px;
+}
+.bb-products-excl-help {
+  font: 500 11px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.6);
+  margin: 0 0 8px;
+  padding: 0 2px;
+}
+.bb-products-excl-help--muted {
+  color: rgba(15, 15, 18, 0.48);
+}
+.bb-products-excl-section-label {
+  font: 800 11px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(15, 15, 18, 0.45);
+  margin: 2px 2px 0;
+}
+.bb-products-excl-blocked {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 7px 4px;
+  border-radius: 8px;
+}
+.bb-products-excl-blocked-mark {
+  font: 800 13px/1.2 monospace;
+  color: rgba(160, 45, 45, 0.9);
+  flex-shrink: 0;
+  transform: translateY(-1px);
+}
+.bb-products-excl-blocked-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.bb-products-excl-blocked-name {
+  font: 700 12px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.78);
+}
+.bb-products-excl-blocked-code {
+  font: 750 10px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.5);
+  align-self: flex-start;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(15, 15, 18, 0.07);
+}
+.bb-products-excl-blocked-note {
+  font: 500 10px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.52);
+}
+.bb-products-excl-item--orphan .bb-products-excl-name {
+  font-style: italic;
+}
+.bb-products-excl-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.bb-products-excl-item:hover {
+  background: rgba(15, 15, 18, 0.05);
+}
+.bb-products-excl-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border-radius: 6px;
+  border: 2px solid #b4b6be;
+  background: #d8d9df;
+  position: relative;
+  margin: 0;
+  margin-top: 1px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.bb-products-excl-item input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid #0f0f12;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+  box-sizing: border-box;
+}
+.bb-products-excl-item .bb-products-excl-name {
+  font: 700 12px/1.25 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.9);
+}
+.bb-products-excl-item .bb-products-excl-code {
+  font: 750 10px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.6);
+  margin-left: 6px;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(18, 18, 22, 0.55);
+  color: rgba(255, 255, 255, 0.92);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-menu {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(18, 18, 22, 0.78);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-item input[type="checkbox"] {
+  border-color: #6d6f7a;
+  background: #8b8d97;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-item input[type="checkbox"]:checked::after {
+  border-color: #fafafc;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-item .bb-products-excl-name {
+  color: rgba(255, 255, 255, 0.94);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-item .bb-products-excl-code {
+  color: rgba(255, 255, 255, 0.62);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-details {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-summary {
+  color: rgba(255, 255, 255, 0.55);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-help,
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-help--muted {
+  color: rgba(255, 255, 255, 0.62);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-section-label {
+  color: rgba(255, 255, 255, 0.42);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-blocked-name {
+  color: rgba(255, 255, 255, 0.8);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-blocked-code {
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-blocked-note {
+  color: rgba(255, 255, 255, 0.52);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-excl-blocked-mark {
+  color: rgba(255, 120, 120, 0.85);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-excl-btn {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(18, 18, 22, 0.55);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-menu {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(18, 18, 22, 0.78);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-item input[type="checkbox"] {
+    border-color: #6d6f7a;
+    background: #8b8d97;
+  }
+  body.bb-brand-theme-settings .bb-products-excl-item input[type="checkbox"]:checked::after {
+    border-color: #fafafc;
+  }
+  body.bb-brand-theme-settings .bb-products-excl-item .bb-products-excl-name {
+    color: rgba(255, 255, 255, 0.94);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-item .bb-products-excl-code {
+    color: rgba(255, 255, 255, 0.62);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-details {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.22);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-summary {
+    color: rgba(255, 255, 255, 0.55);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-help,
+  body.bb-brand-theme-settings .bb-products-excl-help--muted {
+    color: rgba(255, 255, 255, 0.62);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-section-label {
+    color: rgba(255, 255, 255, 0.42);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-blocked-name {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-blocked-code {
+    color: rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-blocked-note {
+    color: rgba(255, 255, 255, 0.52);
+  }
+  body.bb-brand-theme-settings .bb-products-excl-blocked-mark {
+    color: rgba(255, 120, 120, 0.85);
+  }
+}
+.bb-products-inv-check-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 28px;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+.bb-products-inv-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1 1 calc(50% - 14px);
+  min-width: min(100%, 240px);
+  cursor: pointer;
+  user-select: none;
+  font: 700 11px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.78);
+}
+.bb-products-inv-check span {
+  flex: 1;
+  min-width: 0;
+}
+.bb-products-inv-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  flex-shrink: 0;
+  margin: 0;
+  margin-top: 1px;
+  border-radius: 6px;
+  border: 2px solid #b4b6be;
+  background: #d8d9df;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+}
+.bb-products-inv-check input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--bb-theme-accent-hex, #1030f4);
+  outline-offset: 2px;
+}
+.bb-products-inv-check input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 3px;
+  width: 6px;
+  height: 12px;
+  border: solid #0f0f12;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+  box-sizing: border-box;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-inv-check input[type="checkbox"] {
+  border-color: #6d6f7a;
+  background: #8b8d97;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-inv-check input[type="checkbox"]:checked::after {
+  border-color: #fafafc;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-inv-check {
+  color: rgba(255, 255, 255, 0.82);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-inv-check input[type="checkbox"] {
+    border-color: #6d6f7a;
+    background: #8b8d97;
+  }
+  body.bb-brand-theme-settings .bb-products-inv-check input[type="checkbox"]:checked::after {
+    border-color: #fafafc;
+  }
+  body.bb-brand-theme-settings .bb-products-inv-check {
+    color: rgba(255, 255, 255, 0.82);
+  }
+}
+
+#bbThemePopupMount .popup .buy-now-button.bb-products-buy-now--sold-out {
+  opacity: 0.56;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.bb-products-fixed-qty-select.bb-products-fixed-qty-select--hidden {
+  display: none !important;
+}
+.bb-products-selectors-row--empty {
+  display: none !important;
+}
+.bb-products-input--sm {
+  padding: 8px 10px;
+}
+.bb-products-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 14px 0;
+}
+
+/* Shopify-like variant cards (≤3 groups) */
+.bb-products-variants-hint {
+  margin: 0 0 10px;
+  font: 600 11px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.55);
+}
+.bb-products-variants-root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bb-products-variant-card {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.65);
+  position: relative;
+  transition: box-shadow 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+}
+.bb-products-variant-card--dragging {
+  opacity: 0.6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+.bb-products-variant-card--drop-before::before,
+.bb-products-variant-card--drop-after::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: #635bff;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.bb-products-variant-card--drop-before::before {
+  top: -7px;
+}
+.bb-products-variant-card--drop-after::after {
+  bottom: -7px;
+}
+.bb-products-variant-card__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.bb-products-variant-card__body {
+  display: block;
+}
+.bb-products-variant-card--collapsed .bb-products-variant-card__top {
+  margin-bottom: 0;
+  cursor: pointer;
+}
+.bb-products-variant-card--collapsed .bb-products-variant-card__title {
+  cursor: pointer;
+}
+.bb-products-variant-card--collapsed .bb-products-variant-card__body {
+  display: none;
+}
+.bb-products-variant-handle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  width: 22px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: rgba(15, 15, 18, 0.4);
+  border-radius: 6px;
+  flex-shrink: 0;
+  touch-action: none;
+}
+.bb-products-variant-handle:hover {
+  background: rgba(15, 15, 18, 0.06);
+  color: rgba(15, 15, 18, 0.75);
+}
+.bb-products-variant-handle:active {
+  cursor: grabbing;
+}
+.bb-products-variant-handle__dots {
+  display: grid;
+  grid-template-columns: repeat(2, 3px);
+  grid-auto-rows: 3px;
+  gap: 2px;
+}
+.bb-products-variant-handle__dots > span {
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.bb-products-variant-card__title {
+  font: 800 11px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(15, 15, 18, 0.45);
+  flex: 1;
+}
+.bb-products-variant-collapse {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(15, 15, 18, 0.55);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.bb-products-variant-collapse:hover {
+  background: rgba(15, 15, 18, 0.06);
+  color: rgba(15, 15, 18, 0.85);
+}
+.bb-products-variant-collapse__chev {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  margin-top: -3px;
+}
+.bb-products-variant-collapse[aria-expanded="false"] .bb-products-variant-collapse__chev {
+  transform: rotate(-45deg);
+  margin-top: 2px;
+}
+.bb-products-variant-remove {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: rgba(15, 15, 18, 0.45);
+  font: 600 11px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 2px 0;
+}
+.bb-products-variant-remove:hover {
+  color: rgba(15, 15, 18, 0.75);
+}
+.bb-products-variant-chip--edit .bb-products-variant-chip-sku-input {
+  flex: 0 1 110px;
+  min-width: 88px;
+  width: auto;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: 0.02em;
+}
+.bb-products-variant-name {
+  margin-bottom: 10px;
+}
+.bb-products-variant-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-height: 4px;
+}
+.bb-products-variant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.95);
+  font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.88);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.bb-products-variant-chip--edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.bb-products-variant-chip--edit .bb-products-variant-chip-value {
+  flex: 1 1 140px;
+  min-width: 120px;
+  padding: 7px 10px;
+}
+.bb-products-variant-chip--edit .bb-products-variant-chip-price-input {
+  flex: 0 0 minmax(72px, 96px);
+  width: auto;
+}
+.bb-products-variant-chip--edit .bb-products-variant-chip-remove {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Link variant value → gallery slot (up to 5 media) */
+.bb-products-variant-media-picker {
+  flex: 1 1 100%;
+  width: 100%;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+.bb-products-variant-media-picker__caption {
+  margin: 0 0 6px;
+  font: 800 10px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(15, 15, 18, 0.45);
+}
+.bb-products-variant-media-picker__thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+.bb-products-variant-media-opt {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 5px;
+  margin: 0;
+  cursor: pointer;
+  font: 600 11px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.65);
+}
+.bb-products-variant-media-opt--disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.bb-products-variant-media-opt input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  margin: 0 0 4px;
+  flex-shrink: 0;
+  accent-color: #635bff;
+}
+.bb-products-variant-media-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  transition: border-color 0.12s ease;
+}
+.bb-products-variant-media-opt:has(input:checked) .bb-products-variant-media-thumb,
+.bb-products-variant-media-opt:has(input:checked) .bb-products-variant-media-opt-fallback {
+  border-color: #635bff;
+}
+.bb-products-variant-media-thumb img,
+.bb-products-variant-media-thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bb-products-variant-media-thumb--empty {
+  font: 800 11px/1 system-ui;
+  color: rgba(15, 15, 18, 0.28);
+}
+.bb-products-variant-media-opt-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.06);
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  font: 800 10px/1 system-ui;
+  color: rgba(15, 15, 18, 0.5);
+}
+
+.bb-products-variant-chip-price {
+  font-weight: 800;
+  color: rgba(15, 15, 18, 0.55);
+  font-size: 11px;
+}
+.bb-products-variant-chip-remove {
+  appearance: none;
+  border: 0;
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(15, 15, 18, 0.55);
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  font: 800 13px/1 system-ui;
+  cursor: pointer;
+  line-height: 18px;
+  padding: 0;
+}
+.bb-products-variant-chip-remove:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: rgba(15, 15, 18, 0.85);
+}
+.bb-products-variant-add-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(72px, 88px) auto;
+  gap: 8px;
+  align-items: center;
+}
+.bb-products-variant-add-btn {
+  margin-top: 4px;
+  align-self: flex-start;
+  appearance: none;
+  border-radius: 10px;
+  border: 1px dashed rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.5);
+  color: rgba(15, 15, 18, 0.65);
+  font: 700 12px/1 system-ui;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+.bb-products-variant-add-btn:hover:not(:disabled) {
+  border-color: rgba(0, 0, 0, 0.26);
+  color: rgba(15, 15, 18, 0.9);
+}
+.bb-products-variant-add-btn:disabled,
+.bb-products-variant-add-btn--max {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Validation pill: Add chip requires option title + value */
+.bb-products-variant-activate-pill {
+  display: none;
+  margin: 10px 0 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(180, 90, 90, 0.35);
+  background: rgba(255, 245, 245, 0.96);
+  font: 800 11px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(90, 35, 35, 0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.bb-products-variant-activate-pill.bb-products-variant-activate-pill--show {
+  display: block;
+}
+.bb-products-variant-add-row .bb-products-input.bb-products-input--warn,
+.bb-products-variant-name.bb-products-input--warn {
+  border-color: rgba(180, 90, 90, 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-variant-activate-pill {
+    background: rgba(55, 28, 28, 0.55);
+    border-color: rgba(255, 160, 160, 0.25);
+    color: rgba(255, 230, 230, 0.95);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-card {
+    background: rgba(18, 18, 22, 0.45);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-chip {
+    background: rgba(28, 28, 34, 0.85);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-chip-price {
+    color: rgba(255, 255, 255, 0.55);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-chip--edit .bb-products-input {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(12, 12, 18, 0.55);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  body.bb-brand-theme-settings .bb-products-variants-hint {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-media-picker {
+    border-top-color: rgba(255, 255, 255, 0.12);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-media-picker__caption {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-media-opt {
+    color: rgba(255, 255, 255, 0.65);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-media-thumb,
+  body.bb-brand-theme-settings .bb-products-variant-media-opt-fallback {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  body.bb-brand-theme-settings .bb-products-variant-media-thumb--empty {
+    color: rgba(255, 255, 255, 0.25);
+  }
+}
+.bb-products-global-ship {
+  display: grid;
+  gap: 10px;
+}
+.bb-products-global-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 10px;
+  align-items: center;
+}
+.bb-products-global-row--single {
+  grid-template-columns: 1fr;
+}
+.bb-products-global-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  border-radius: 999px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  font: 900 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.74);
+}
+
+.bb-products-upload-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+}
+.bb-products-media-limit {
+  margin: 10px 0 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.74);
+  font: 900 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.6);
+}
+
+/* Product pager (1–7) + preview pill under preview popup */
+.bb-preview-modal-stack {
+  position: relative;
+  /* Dots render under the stack in `.bb-preview-stage`; keep stack padding minimal */
+  padding-bottom: 14px;
+}
+.bb-preview-stage {
+  position: relative;
+}
+
+.bb-products-preview-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: var(--bb-theme-preview-modal-max);
+  align-self: center;
+  box-sizing: border-box;
+}
+
+/* Hidden for 2s, then whole block (dots + pill) slides up — see animation-delay */
+.bb-products-preview-controls--intro {
+  opacity: 0;
+  transform: translateY(28px);
+  pointer-events: none;
+  animation: bb-products-preview-controls-slide-up 0.66s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 2s;
+}
+
+@keyframes bb-products-preview-controls-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+.bb-products-preview-pill {
+  margin: 10px 0 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 18px;
+  border-radius: 999px;
+  /* Match `.bb-products-modal-dot` ring weight */
+  border: 3px solid #0b0b10;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  font: 800 13px/1.25 Roboto, system-ui, sans-serif;
+  color: #0b0b10;
+  text-align: center;
+  letter-spacing: 0.01em;
+  animation: bb-products-preview-pill-pulse 3.4s ease-in-out infinite;
+}
+
+@media (min-width: 1651px) {
+  .bb-products-preview-controls {
+    gap: 30px;
+  }
+
+  .bb-products-preview-pill {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 840px) {
+  .bb-products-preview-pill {
+    margin-top: 40px;
+  }
+}
+
+/* One-shot when the selected product number changes (class toggled in JS) */
+.bb-products-preview-pill.bb-products-preview-pill--tick {
+  animation: bb-products-preview-pill-change-pulse 0.62s cubic-bezier(0.33, 1, 0.68, 1) 1 both;
+}
+
+@keyframes bb-products-preview-pill-change-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  }
+  40% {
+    transform: scale(1.07);
+    box-shadow: 0 10px 32px rgba(11, 11, 16, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  }
+}
+
+@keyframes bb-products-preview-pill-change-pulse-dark {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+  40% {
+    transform: scale(1.07);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+}
+
+body.dark-mode.bb-brand-theme-settings .bb-products-preview-pill.bb-products-preview-pill--tick {
+  animation-name: bb-products-preview-pill-change-pulse-dark;
+}
+
+@keyframes bb-products-preview-pill-pulse {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.018);
+    box-shadow: 0 8px 26px rgba(11, 11, 16, 0.12);
+  }
+}
+
+body.dark-mode.bb-brand-theme-settings .bb-products-preview-pill {
+  border-color: #ffffff;
+  border-width: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-preview-pill {
+    border-color: #ffffff;
+    border-width: 3px;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+  body.bb-brand-theme-settings .bb-products-preview-pill.bb-products-preview-pill--tick {
+    animation-name: bb-products-preview-pill-change-pulse-dark;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-products-preview-controls--intro {
+    animation: none;
+    animation-delay: 0s;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .bb-products-preview-pill {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .bb-products-preview-pill.bb-products-preview-pill--tick {
+    animation: none !important;
+  }
+}
+
+/*
+  While the sim is showing, the docked mount still spans the preview card and can steal taps — same
+  problem the z-index swap tried to fix. Reordering stack (sim above mount) puts the mount’s subtree
+  (including the mobile fixed sheet) UNDER the glass sim, so the sheet can fail to paint on top even
+  when `popup-visible` is set. Instead: disable hit-testing on the mount until the sheet is open
+  (`bb-theme-hide-sim`). Children with `.popup.popup-visible` keep interaction via theme CSS.
+*/
+body.bb-brand-theme-settings.bb-theme-sim-active:not(.bb-theme-hide-sim) #bbThemePopupMount {
+  pointer-events: none !important;
+}
+#bbThemeSimulatedHost .brandbased-dynamic-logo-slot {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bb-products-modal-pager.bb-products-modal-pager--below-stack {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: var(--bb-theme-preview-modal-max);
+  align-self: center;
+  box-sizing: border-box;
+  margin-top: 18px;
+  margin-bottom: 0;
+  padding: 0 4px;
+  /* Row is inert; only numbered buttons receive taps (no invisible strip over the sim). */
+  pointer-events: none;
+  z-index: auto;
+}
+@media (max-width: 840px) {
+  .bb-products-modal-pager.bb-products-modal-pager--below-stack {
+    margin-top: 28px;
+    padding-top: 16px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-bottom: 0;
+  }
+}
+
+.bb-products-preview-controls .bb-products-modal-pager.bb-products-modal-pager--below-stack {
+  margin-bottom: 0;
+}
+.bb-products-modal-dot {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 3px solid #0b0b10;
+  background: transparent;
+  color: #0b0b10;
+  font: 900 12px/1 Roboto, system-ui, sans-serif;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  position: relative;
+  pointer-events: auto;
+}
+.bb-products-modal-dot--active {
+  background: #0b0b10;
+  border-color: #0b0b10;
+  color: #ffffff;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-modal-dot {
+  border-color: #ffffff;
+  background: transparent;
+  color: #ffffff;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-modal-dot--active {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #0b0b10 !important;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-modal-dot {
+    border-color: #ffffff;
+    background: transparent;
+    color: #ffffff;
+  }
+  body.bb-brand-theme-settings .bb-products-modal-dot--active {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #0b0b10 !important;
+  }
+}
+
+@keyframes bb-products-modal-dot-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 48, 244, 0.25);
+  }
+  55% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 10px rgba(16, 48, 244, 0.12);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 48, 244, 0);
+  }
+}
+.bb-products-modal-dot--pulse {
+  animation: bb-products-modal-dot-pulse 0.42s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+/* Horizontal “card flip” when switching product slot (desktop only).
+   `perspective` on #bbThemePopupMount makes `position: fixed` children use this box as their
+   containing block; combined with `overflow: hidden` on the mount, the ≤840px bottom sheet
+   is clipped off-screen (breaks sim → popup). Narrow viewports skip the flip animation anyway. */
+@media (min-width: 841px) {
+  #bbThemePopupMount {
+    perspective: 1400px;
+  }
+}
+#bbThemePopupMount.bb-products-popup-flip-active {
+  /* #bbThemePopupMount clips the docked popup normally; temporarily unclip so the flip can “swing” */
+  overflow: visible !important;
+}
+#bbThemePopupMount.bb-products-popup-flip-active .popup {
+  overflow: visible !important;
+}
+/* 3D horizontal flip — same motion as before, shorter duration feels snappier */
+@keyframes bb-products-popup-flip {
+  0% {
+    transform: rotateY(0deg);
+    filter: brightness(1);
+  }
+  46% {
+    transform: rotateY(88deg);
+    filter: brightness(0.93);
+  }
+  49.8% {
+    transform: rotateY(90deg);
+    filter: brightness(0.92);
+  }
+  50% {
+    transform: rotateY(-90deg);
+    filter: brightness(0.92);
+  }
+  53% {
+    transform: rotateY(-88deg);
+    filter: brightness(0.93);
+  }
+  100% {
+    transform: rotateY(0deg);
+    filter: brightness(1);
+  }
+}
+.bb-products-popup-flip-wrap {
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, filter;
+  width: 100%;
+}
+.bb-products-popup-flip-wrap.bb-products-popup-flip {
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, filter;
+  animation: bb-products-popup-flip 0.35s cubic-bezier(0.42, 0, 0.22, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-products-modal-dot--pulse {
+    animation-duration: 0.01ms;
+  }
+  .bb-products-popup-flip-wrap.bb-products-popup-flip {
+    animation-duration: 0.01ms;
+  }
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-media-limit {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(12, 12, 16, 0.5);
+  color: rgba(255, 255, 255, 0.65);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-media-limit {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(12, 12, 16, 0.5);
+    color: rgba(255, 255, 255, 0.65);
+  }
+}
+
+@keyframes bb-products-pill-shake {
+  0% {
+    transform: translateX(0);
+  }
+  18% {
+    transform: translateX(-6px);
+  }
+  36% {
+    transform: translateX(6px);
+  }
+  54% {
+    transform: translateX(-5px);
+  }
+  72% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.bb-products-media-limit--shake {
+  animation: bb-products-pill-shake 0.34s ease-in-out;
+}
+.bb-products-upload-tile {
+  cursor: pointer;
+  user-select: none;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  width: 88px;
+  height: 88px;
+  border-radius: 16px;
+  border: 0;
+  background: rgba(206, 206, 210, 0.92);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.16);
+  position: relative;
+}
+.bb-products-upload-tile:focus-within {
+  outline: 2px solid rgba(16, 48, 244, 0.28);
+  outline-offset: 3px;
+}
+
+@keyframes bb-products-upload-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 48, 244, 0.22);
+    transform: translateY(0);
+  }
+  55% {
+    box-shadow: 0 0 0 14px rgba(16, 48, 244, 0.08);
+    transform: translateY(-1px);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 48, 244, 0);
+    transform: translateY(0);
+  }
+}
+.bb-products-upload-tile:hover .bb-products-upload-plus {
+  animation: bb-products-upload-pulse 0.62s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@keyframes bb-products-gallery-added {
+  0% {
+    transform: scale(0.84);
+    opacity: 0;
+    filter: blur(2px);
+  }
+  70% {
+    transform: scale(1.06);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+.bb-products-gallery-item--added {
+  animation: bb-products-gallery-added 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bb-products-upload-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+.bb-products-upload-plus {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(16, 48, 244, 0.1);
+  border: 1px solid rgba(16, 48, 244, 0.18);
+  font: 900 26px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(16, 48, 244, 0.9);
+}
+.bb-products-upload-caption {
+  font: 900 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.74);
+}
+.bb-products-gallery-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px; /* gives a little drop area around items */
+  margin: -4px; /* keep visual alignment same */
+  transition: gap 0.22s ease, padding 0.22s ease, margin 0.22s ease;
+}
+.bb-products-gallery-list.bb-products-gallery-list--drag-session {
+  gap: 18px;
+  row-gap: 18px;
+  padding: 10px 14px;
+  margin: -10px -14px;
+}
+@keyframes bb-products-gallery-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 48, 244, 0.45);
+    transform: scale(1);
+  }
+  55% {
+    box-shadow: 0 0 0 11px rgba(16, 48, 244, 0.12);
+    transform: scale(1.045);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 48, 244, 0);
+    transform: scale(1);
+  }
+}
+.bb-products-gallery-item--pulse {
+  animation: bb-products-gallery-pulse 0.58s cubic-bezier(0.33, 1, 0.68, 1);
+  z-index: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bb-products-gallery-item--pulse {
+    animation-duration: 0.01ms;
+  }
+  .bb-products-gallery-item--added {
+    animation-duration: 0.01ms;
+  }
+  .bb-products-upload-tile:hover .bb-products-upload-plus {
+    animation-duration: 0.01ms;
+  }
+  .bb-products-media-limit--shake {
+    animation-duration: 0.01ms;
+  }
+  .bb-products-gallery-list {
+    transition: none;
+  }
+}
+.bb-products-media-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.bb-products-media-hint {
+  font: 800 9.5px/1.15 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  color: rgba(15, 15, 18, 0.55);
+  white-space: nowrap;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-media-hint {
+  color: rgba(255, 255, 255, 0.58);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-media-hint {
+    color: rgba(255, 255, 255, 0.58);
+  }
+}
+.bb-products-gallery-item {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  overflow: visible; /* allow delete button to hang outside */
+  position: relative;
+  cursor: grab;
+  user-select: none;
+}
+.bb-products-gallery-item--dragging {
+  opacity: 0.72;
+  cursor: grabbing;
+  transform: scale(1.02);
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.bb-products-gallery-item--dragover {
+  outline: 2px solid rgba(16, 48, 244, 0.35);
+  outline-offset: 3px;
+}
+.bb-products-gallery-media {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden; /* keep media cropped */
+}
+.bb-products-gallery-del {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 0;
+  background: #e11d48;
+  color: #fff;
+  font: 900 16px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+}
+.bb-products-gallery-del {
+  padding-top: 0;
+  font-size: 0; /* render glyph via ::before so we can position it precisely */
+  line-height: 0;
+}
+.bb-products-gallery-del::before {
+  content: "×";
+  display: block;
+  font: 900 16px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  transform: translateY(0px);
+}
+.bb-products-gallery-del:active {
+  transform: translateY(1px);
+}
+.bb-products-gallery-item img,
+.bb-products-gallery-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Dark mode parity with Theme Settings look */
+body.dark-mode.bb-brand-theme-settings .bb-products-label {
+  color: rgba(255, 255, 255, 0.78);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-divider {
+  background: rgba(255, 255, 255, 0.14);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-input,
+body.dark-mode.bb-brand-theme-settings .bb-products-select,
+body.dark-mode.bb-brand-theme-settings .bb-products-textarea {
+  background: rgb(69 69 69 / 62%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-input::placeholder,
+body.dark-mode.bb-brand-theme-settings .bb-products-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+/* Fallback: if dark-mode class isn’t present, still match system dark scheme */
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-input,
+  body.bb-brand-theme-settings .bb-products-select,
+  body.bb-brand-theme-settings .bb-products-textarea {
+    background: rgb(69 69 69 / 62%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+  body.bb-brand-theme-settings .bb-products-input::placeholder,
+  body.bb-brand-theme-settings .bb-products-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.52);
+  }
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-global-pill {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(12, 12, 16, 0.5);
+  color: rgba(255, 255, 255, 0.78);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-gallery-item {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(12, 12, 16, 0.5);
+}
+
+/* Media upload tile: rounded bubble + centered plus (matches screenshot style) */
+.bb-products-upload-tile {
+  border: 0;
+  height: 88px;
+  width: 88px;
+  border-radius: 16px; /* square */
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-upload-tile {
+  background: rgba(206, 206, 210, 0.16);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.35);
+}
+.bb-products-upload-plus {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  background: transparent;
+  border: 0;
+  position: relative;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+}
+.bb-products-upload-plus::before,
+.bb-products-upload-plus::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: rgba(120, 120, 120, 0.95);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+.bb-products-upload-plus::before {
+  width: 44px;
+  height: 5px;
+}
+.bb-products-upload-plus::after {
+  width: 5px;
+  height: 44px;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-upload-plus {
+  background: transparent;
+  color: transparent;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-upload-plus::before,
+body.dark-mode.bb-brand-theme-settings .bb-products-upload-plus::after {
+  background: rgba(255, 255, 255, 0.55);
+}
+.bb-products-upload-caption {
+  display: none;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-upload-caption {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .bb-products-fields {
+    grid-template-columns: 1fr;
+  }
+  .bb-products-upload-row {
+    flex-direction: row;
+  }
+  .bb-products-gallery-list {
+    gap: 8px;
+  }
+  .bb-products-global-row {
+    grid-template-columns: 1fr 110px;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Products page spacing — applies at every viewport because this
+   page lives inside the dashboard iframe which has its own width
+   and a tighter scroll surface than a normal browser window:
+
+     – Push the "Products" title (`.bb-module-head`) down by 20px.
+     – Push the left form panel (`.bb-bts-left`) down by 20px so
+       it sits below the title with consistent breathing room
+       (desktop side-by-side layout) AND keeps an extra gap on
+       mobile where the panel stacks under the title.
+     – Add 50px of extra bottom padding on `.bb-theme-shell` so the
+       iframe can scroll far enough to reveal the last panel
+       without the dashboard chrome clipping it.
+   ------------------------------------------------------------------ */
+.bb-module-head {
+  width: min(572px, 100%);
+  margin-top: 20px;
+  margin-bottom: -20px;
+}
+.bb-bts-left {
+  margin-top: 20px;
+}
+
+/* ------------------------------------------------------------------
+   Desktop "fixed page, internal left-panel scroll" layout.
+
+   The iframe body is locked to 100vh and has overflow hidden, so
+   the dashboard never sees an iframe-wide scrollbar and the right
+   preview column stays anchored in place. The `.bb-bts-layout`
+   grid fills all remaining vertical space after the title row, and
+   only `.bb-bts-left` (the form) can scroll vertically — the right
+   preview never moves.
+
+   This kicks in from ≥1351px so the left panel + right preview
+   stay in the desktop split setup until the existing mobile
+   breakpoint at max-width: 1350px.
+   ------------------------------------------------------------------ */
+@media (min-width: 1351px) {
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .bb-theme-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .bb-module-head {
+    flex: 0 0 auto;
+    /* Desktop only: nudge the "Products" title right to sit over the
+       left-panel content. The left panel has `padding-left: 10px`
+       (products.theme-design.css → @media (min-width: 1351px)), so the
+       form cards start 10px inside the grid column while the title
+       sat at the column edge. Match the indent here. */
+    margin-left: 10px;
+  }
+
+  .bb-bts-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .bb-bts-left {
+    overflow-y: auto;
+    max-height: 100%;
+    /* 140px of inner cushion at the bottom of the scroll so the user
+       can scroll past the last panel comfortably. */
+    padding-bottom: 140px;
+    /* Visually hide the scrollbar while keeping scroll functionality.
+       Firefox: scrollbar-width none. WebKit (Chrome/Safari/Edge):
+       hide the ::-webkit-scrollbar pseudo-element. IE / legacy Edge:
+       -ms-overflow-style none. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .bb-bts-left::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  .bb-bts-right {
+    align-self: start;
+  }
+
+  .bb-bts-right.bb-bts-right--preview {
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
+}
+
+/* Mobile fallback (≤1350px): natural page scroll
+   with a 140px cushion at the bottom of the shell so the user can
+   still scroll past the last panel, AND force the bts-layout into
+   a single column so the page collapses to the mobile look. */
+@media (max-width: 1350px) {
+  .bb-theme-shell {
+    padding-bottom: 140px;
+  }
+  .bb-bts-layout {
+    grid-template-columns: 1fr !important;
+    column-gap: 0;
+  }
+  /* Drop the desktop preview scale-down at this size — the column
+     is already constrained by the narrow viewport. */
+  .bb-bts-right.bb-bts-right--preview {
+    transform: none;
+  }
+}
+
+/* Products page: remove the drop shadow behind the left-side panel card
+   so it matches the visual weight of the Theme Styles left panel.
+   `--bb-shadow` is the token consumed by `.bb-bts-card { box-shadow: var(--bb-shadow); }`
+   in products.theme-design.css. Scoping the override to `.bb-bts-left` only
+   neutralises it on the form column without affecting the CTA card or the
+   right preview. */
+.bb-bts-left {
+  --bb-shadow: 0 18px 45px rgb(0 0 0 / 0%);
+}

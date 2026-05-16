@@ -1,0 +1,4381 @@
+
+
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;  /* Ensures the body and html take up the full height */
+    width: 100%;  /* Ensures the body and html take up the full width */
+    overflow-x: hidden!important;  /* Hide horizontal scrollbar */
+    overflow-y: auto;  /* Enable vertical scrolling when content exceeds the viewport height */
+    box-sizing: border-box;  /* Ensure borders/paddings don't cause overflow */
+    background-color:transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: #0d0d0d;
+  }
+  
+  .light-shard-ui-base {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100vh;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+   
+  }
+  
+  .light-shard-ui-theme {
+    --delay: 0s;
+    --size: 0.4;
+    --speed: 20s;
+  
+    aspect-ratio: 1;
+    width: calc(150% * var(--size));
+    background: linear-gradient(259.53deg, #0A3FFF 6.53%, #F55F0A 95.34%);
+    filter: blur(10vw);
+    border-radius: 50%;
+  
+    position: absolute;
+    top: 0;
+    left: 0;
+  
+    animation: loop var(--speed) infinite linear;
+    animation-delay: var(--delay);
+    transform-origin: 50% 50%;
+    opacity: 0.6;
+  }
+
+  /* Dark-mode-only shard gradient — all blue instead of the
+     orange→blue base. Light mode keeps the original gradient. */
+  body:not(.light-mode) .light-shard-ui-theme {
+    background: linear-gradient(259.53deg, #0A3FFF 6.53%, #635bff 95.34%);
+  }
+  
+  @keyframes loop {
+    0% {
+      transform: translate3D(0%, 51%, 0) rotate(0deg);
+    }
+    5% {
+      transform: translate3D(8%, 31%, 0) rotate(18deg);
+    }
+    10% {
+      transform: translate3D(22%, 13%, 0) rotate(36deg);
+    }
+    15% {
+      transform: translate3D(40%, 2%, 0) rotate(54deg);
+    }
+    20% {
+      transform: translate3D(46%, 21%, 0) rotate(72deg);
+    }
+    25% {
+      transform: translate3D(50%, 47%, 0) rotate(90deg);
+    }
+    30% {
+      transform: translate3D(53%, 80%, 0) rotate(108deg);
+    }
+    35% {
+      transform: translate3D(59%, 98%, 0) rotate(125deg);
+    }
+    40% {
+      transform: translate3D(84%, 89%, 0) rotate(144deg);
+    }
+    45% {
+      transform: translate3D(92%, 68%, 0) rotate(162deg);
+    }
+    50% {
+      transform: translate3D(99%, 47%, 0) rotate(180deg);
+    }
+    55% {
+      transform: translate3D(97%, 21%, 0) rotate(198deg);
+    }
+    60% {
+      transform: translate3D(80%, 7%, 0) rotate(216deg);
+    }
+    65% {
+      transform: translate3D(68%, 25%, 0) rotate(234deg);
+    }
+    70% {
+      transform: translate3D(59%, 41%, 0) rotate(251deg);
+    }
+    75% {
+      transform: translate3D(50%, 63%, 0) rotate(270deg);
+    }
+    80% {
+      transform: translate3D(38%, 78%, 0) rotate(288deg);
+    }
+    85% {
+      transform: translate3D(21%, 92%, 0) rotate(306deg);
+    }
+    90% {
+      transform: translate3D(3%, 79%, 0) rotate(324deg);
+    }
+    100% {
+      transform: translate3D(0%, 51%, 0) rotate(360deg);
+    }
+  }
+  
+
+  
+
+
+/* Apply Roboto with 300 weight to all elements */
+* {
+    font-family: "Roboto", sans-serif;
+    font-weight: 400; /* Light weight for all text */
+    font-style: normal;
+    text-decoration: none;
+  }
+  a,
+  a:hover,
+  a:focus,
+  a:visited {
+    text-decoration: none;
+  }
+  a {
+    color: #102ff5;
+    text-decoration: none;
+    transition: color 0.4s ease;
+  }
+  
+  a:hover {
+    color: black;
+  }
+
+
+  .get-app {
+    bottom:0;
+    margin-bottom: 60px;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    left: 0;
+    right: 0;
+}
+
+#get-code-heading {
+    margin-bottom: 20px;
+    margin-top: 40px;  
+}
+
+@media(max-width:840px) {
+ 
+    .get-app {
+        margin-bottom: 120px;
+    }   
+}
+
+  .app-icons {
+    display: flex;
+    gap: 10px; /* increased gap */
+    align-items: center;
+    width: 120px;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+  }
+  
+  .app-icon {
+    height: 40px;
+    width: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+  }
+  
+  .app-icon img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+    display: block;
+    transition: opacity 0.3s ease;
+  }
+  
+  .app-icon img:hover {
+    opacity: 0.7;
+  }
+  
+  #app-store-heading {
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin-top: 42px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.541);
+  }
+  @media(max-width:840px) {
+    #app-store-heading {
+        margin-top: 55px;
+    } 
+  }
+
+  .fade-in-delay {
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+    animation-delay: 1s;
+  }
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+
+
+
+
+  .password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 530px;
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+  }
+  @media(max-width:540px) {
+    .password-wrapper {
+    max-width: 100%;
+    width: 96%; 
+  }
+}
+  
+  .password-wrapper input {
+    flex: 1;
+    padding-right: 40px; /* space for eye icon */
+  }
+  
+
+  input[type="password"][name="confirm_password"] {
+    padding: 12px;
+    border: 1px solid #ccc;
+    transition: all 0.4s ease;
+    background-color: #ffffff96;
+    letter-spacing: 12px;
+  }
+  
+  input[type="password"][name="password"] {
+    text-align: left;
+    letter-spacing: normal;
+  }
+  
+  input[type="password"][name="password"]:not(:placeholder-shown) {
+    text-align: center;
+    letter-spacing: 12px;
+  }
+
+  .password-wrapper input {
+    flex: 1;
+    padding-right: 40px;
+    text-align: left;
+    letter-spacing: normal;
+  }
+  
+  /* When user has entered text (placeholder is no longer shown) */
+  .password-wrapper input:not(:placeholder-shown) {
+    text-align: center !important;
+    letter-spacing: 50px;
+    padding-left: 45px;
+  }
+  
+  
+
+  .toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+  }
+  
+  .eye-icon {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+
+
+
+  
+
+/********************************************** Start Screen Splash Styles ************************************************************************/
+
+.screen-splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 110%;
+    margin-left: -5%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   background-color: #102ff5;
+    background-size: cover; /* Ensures the background image covers the entire div */
+    background-position: center; /* Keeps the image centered */
+    background-repeat: no-repeat; /* Prevents tiling */
+    z-index: 999999999999; /* Ensures it's on top of other elements */
+    box-sizing: border-box; /* Prevents any border/padding issues */
+    overflow: hidden!important;
+    opacity: 1; /* Fully visible initially */
+    transition: opacity 1s ease-out; /* Smooth fade effect */
+  }
+  
+  /* When the fade-out class is added, it will start fading the opacity */
+  .screen-splash.fade-out {
+    opacity: 0; /* Fades the splash screen */
+  }
+
+  .logo {
+      width: 300px;
+      text-align: center;
+      margin: auto;
+   }
+
+   
+   @media(max-width:840px)
+   {
+    .logo {
+        width: 220px;
+        text-align: center;
+        margin: auto;
+     } 
+   }
+
+   @media(max-width:540px)
+   {
+    .logo {
+        width: 47%;
+        text-align: center;
+        margin: auto;
+     } 
+   }
+
+/* Define the pulse up and in animation */
+@keyframes pulseUpIn {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1) translateY(-10px); /* Increase size and move up */
+      opacity: 0.8; /* Fade out slightly */
+    }
+    100% {
+      transform: scale(1) translateY(0); /* Return to original size and position */
+      opacity: 1; /* Fade back to full opacity */
+    }
+  }
+  
+
+  
+  
+   
+/********************************************** End Screen Splash Styles ************************************************************************/
+
+
+
+/********************************************** Start Screen 1 Styles ************************************************************************/
+  
+  
+  input[type="text"]:focus, 
+input[type="email"]:focus {
+    background-color: #f7f7f7; /* Set your custom background color */
+    outline: none; /* Remove default focus outline (optional) */
+}
+
+/* For autofill fields in Safari and Chrome */
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px #f7f7f7 inset !important; /* Force the autofill background */
+    box-shadow: 0 0 0px 1000px #f7f7f7 inset !important; /* Fallback for other browsers */
+    background-color: #f7f7f7 !important; /* Override autofill color */
+    -webkit-text-fill-color: #000 !important; /* Ensure text color stays readable */
+}
+
+  
+#all-fields-required {
+    display: none;
+    color: #dd5447;
+    padding: 3px;
+    border: 1px solid;
+    border-color: #dd5447;
+    border-radius: 30px;
+    position: absolute;
+    bottom: 0;
+    margin-bottom: 130px;
+    padding-left: 20px;
+    padding-right: 22px;
+    font-size: 15px;
+}
+
+
+.screen {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+background-color: white;
+padding: 20px;
+text-align: center;
+box-sizing: border-box; /* Ensures padding doesn't affect the width/height */
+}
+
+
+/*border blue cut detail at top of form*/
+#screen-1-inputs-signup::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px; /* Make this just enough to show the shape */
+    background-color: #102ff5;
+    clip-path: polygon(0 0, 100% 0%, 100% 80%, 0 30%);
+    z-index: -1;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    height: 100px;
+  }
+  @media(max-width:840px)
+  {
+    #screen-1-inputs-signup::before {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;  
+    }
+  } 
+
+
+
+
+
+
+
+  
+#screen-1-inputs-signup{
+    margin-bottom: 100px;
+    bottom:0px;
+    border:4px solid #fdfdfd8f;
+    padding: 80px;
+    padding-top: 140px;
+    border-radius: 30px;
+    box-shadow: 0 0 1rem 0 rgb(0 0 0 / 7%);
+    background-color: #ffffff17;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+    width: 500px;
+}
+@media(max-width:840px)
+{
+    #screen-1-inputs-signup {
+        margin-bottom: -40px;
+        bottom:0px;
+        padding-bottom: 500px;
+        width: unset;
+        padding: 20px;
+        padding-top: 165px;
+        min-height: 700px;
+        border-radius: 20px;
+        border:none;
+    }
+}
+
+@media (max-width: 840px) and (max-height: 800px) {
+    #screen-1-inputs-signup {
+      min-height: 500px;
+    }
+  }
+  
+  #screen-1-inputs-signup::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    border-radius: 30px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.15) 40%,
+      rgba(255, 255, 255, 0.269) 50%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    background-size: 400% 400%;
+    background-repeat: no-repeat;
+    animation: subtleShine 4s infinite linear;
+    z-index: 2;
+  }
+  
+  @keyframes subtleShine {
+    0% {
+      background-position: -150% -150%;
+    }
+    100% {
+      background-position: 150% 150%;
+    }
+  }
+  
+  @media(max-width:840px)
+  {
+    #screen-1-inputs-signup::after {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;  
+    }
+  } 
+
+
+
+
+
+#screen-1-inputs-login{
+    margin-bottom: 180px;
+    bottom:0px;
+    border:4px solid #fdfdfd8f;
+    padding: 80px;
+    padding-top: 140px;
+    border-radius: 30px;
+    box-shadow: 0 0 1rem 0 rgb(0 0 0 / 7%);
+    background-color: #ffffff17;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+    width: 500px;
+}
+@media(max-width:840px)
+{
+    #screen-1-inputs-login {
+        margin-bottom: -40px;
+        bottom:0px;
+        padding-bottom: 500px;
+        width: unset;
+        padding: 20px;
+        padding-top: 165px;
+        min-height: 700px;
+        border-radius: 20px;
+        border:none;
+    }
+}
+@media (max-width: 840px) and (max-height: 800px) {
+    #screen-1-inputs-login {
+      min-height: 500px;
+    }
+  }
+  
+
+  /*border blue cut detail at top of form*/
+  #screen-1-inputs-login::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px; /* Make this just enough to show the shape */
+    background-color: #102ff5;
+    clip-path: polygon(0 0, 100% 0%, 100% 80%, 0 30%);
+    z-index: -1;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    height: 100px;
+  }
+  @media(max-width:840px)
+  {
+    #screen-1-inputs-login::before {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;  
+    }
+  } 
+
+
+
+
+
+
+
+  #screen-1-inputs-login::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    border-radius: 30px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.15) 40%,
+      rgba(255, 255, 255, 0.269) 50%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    background-size: 400% 400%;
+    background-repeat: no-repeat;
+    animation: subtleShine 4s infinite linear;
+    z-index: 2;
+  }
+  
+  @keyframes subtleShine {
+    0% {
+      background-position: -150% -150%;
+    }
+    100% {
+      background-position: 150% 150%;
+    }
+  }
+
+  @media(max-width:840px)
+  {
+    #screen-1-inputs-login::after {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;  
+    }
+  } 
+
+
+
+
+
+
+
+
+
+/*border blue cut detail at top of form*/
+#screen-1-OTP::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px; /* Make this just enough to show the shape */
+    background-color: #102ff5;
+    clip-path: polygon(0 0, 100% 0%, 100% 80%, 0 30%);
+    z-index: -1;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    height: 100px;
+  }
+  @media(max-width:840px)
+  {
+    #screen-1-OTP::before {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;  
+    }
+  } 
+
+
+
+
+
+
+
+  
+#screen-1-OTP{
+    margin-bottom: 200px;
+    bottom:0px;
+    border:4px solid #fdfdfd8f;
+    padding: 80px;
+    padding-top: 140px;
+    border-radius: 30px;
+    box-shadow: 0 0 1rem 0 rgb(0 0 0 / 7%);
+    background-color: #ffffff17;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+    width: 500px;
+}
+@media(max-width:840px)
+{
+    #screen-1-OTP {
+        margin-bottom: -40px;
+        bottom:0px;
+        padding-bottom: 500px;
+        width: unset;
+        padding: 20px;
+        padding-top: 165px;
+        min-height: 700px;
+        border-radius: 20px;
+        border:none;
+    }
+}
+
+@media (max-width: 840px) and (max-height: 800px) {
+    #screen-1-OTP {
+      min-height: 500px;
+    }
+  }
+  
+  #screen-1-OTP::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    border-radius: 30px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.15) 40%,
+      rgba(255, 255, 255, 0.269) 50%,
+      rgba(255, 255, 255, 0) 60%
+    );
+    background-size: 400% 400%;
+    background-repeat: no-repeat;
+    animation: subtleShine 4s infinite linear;
+    z-index: 2;
+  }
+  
+  @keyframes subtleShine {
+    0% {
+      background-position: -150% -150%;
+    }
+    100% {
+      background-position: 150% 150%;
+    }
+  }
+  
+  @media(max-width:840px)
+  {
+    #screen-1-OTP::after {
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;  
+    }
+  } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.animate__screen1-fast {
+    --animate-duration: -05s;
+  }
+  
+
+
+
+
+.app-interface {
+display: none;
+}
+
+
+.close-join-form {
+    position: absolute; /* Adjust as needed */
+    top: 15px;
+    right: 20px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    background: transparent;
+    border: none;
+    line-height: 1;
+    z-index: 1000;
+  }
+  
+  #join-form,#login-form {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #68686875;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: center;
+    align-items: center;     
+}
+@media(max-width:640px)
+{
+    #join-form,#login-form {
+    background-color: #68686875;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    }
+}
+
+
+
+#OTP-and-App-popup-after-login {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #68686875;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+
+
+
+.join-text {
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+    margin-top: -150px;
+}
+@media(max-width:840px)
+{
+    .join-text {
+        margin-top: -170px;
+    }  
+}
+
+.logo-form{
+   width: 70px;
+   height: 70px;
+   position: absolute;
+   z-index: 1;
+   margin-left: auto;
+   margin-right: auto;
+   left: 0;
+   right: 0;
+   text-align: center;
+   margin-top: -65px;
+}
+@media(max-width:640px)
+{
+    .logo-form{
+        margin-top: -80px;
+    }  
+}
+
+  
+
+
+  .hidden {
+    display: none;
+  }
+
+  .header {
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 20px;
+    width: 260px;
+    height: auto;
+    text-align: center;
+    margin: auto;
+    margin-top: 20px;
+    z-index: 0;
+  }
+  
+
+
+
+
+  .theme-toggle-container {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: sans-serif;
+    top: 20px;
+    margin-top: -14px;
+  }
+  
+  /* Label styling */
+  .theme-label {
+    font-size: 14px;
+    color: white;
+    transition: color 0.3s ease;
+    min-width: 80px;
+    margin-left: -6px;
+  }
+  
+
+.theme-button {
+  position: relative;
+  width: 41px;   
+  height: 23px;
+  border-radius: 100px;
+  border: 2px solid white;
+  display: inline-block;
+  margin-left: 23px;
+  transform: scale(0.9);
+}
+
+
+  
+  /* Hide the checkbox visually but keep it functional */
+  .theme-button .checkbox {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 3;
+    cursor: pointer;
+    margin: 0;
+  }
+  
+  /* Toggle knob */
+  .theme-button .knobs {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    border: 2px solid white;
+    border-radius: 50%;
+    transition: 0.3s ease all;
+    z-index: 2;
+  }
+  
+  /* Background layer */
+  .theme-button .layer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  background-color: transparent;
+    border-radius: 100px;
+    z-index: 1;
+    transition: 0.3s ease all;
+  }
+  
+/* switch on */
+.theme-button .checkbox:checked + .knobs {
+  left: 21px;  /* Adjusted to match new button width */
+}
+
+  
+  .theme-button .checkbox:checked ~ .layer {
+    background-color: grey;
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  .header-logo-desktop{
+  position:absolute;
+  text-align: left;
+  left: 7px;
+  margin-left: 0px; 
+  width: 47px;
+  height: 47px;
+  margin-top: 7px;
+  }
+
+
+  /* Base blue-tinted icon */
+  #blue-icon {
+    position: absolute;
+    z-index: 1;
+    filter: brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(7475%) hue-rotate(233deg) brightness(100%) contrast(101%);
+  }
+
+  #white-icon {
+    position: absolute;
+    z-index: 2;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    mask-size: 300% 100%;
+    -webkit-mask-size: 300% 100%;
+    mask-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+  }
+  
+  /* Left to right shine */
+  @keyframes shineLTR {
+    0% {
+      opacity: 0;
+      mask-position: -150% 0;
+      -webkit-mask-position: -150% 0;
+    }
+    50% {
+      opacity: 1;
+      mask-position: 150% 0;
+      -webkit-mask-position: 150% 0;
+    }
+    100% {
+      opacity: 0;
+      mask-position: 150% 0;
+      -webkit-mask-position: 150% 0;
+    }
+  }
+  
+  /* Right to left shine */
+  @keyframes shineRTL {
+    0% {
+      opacity: 0;
+      mask-position: 150% 0;
+      -webkit-mask-position: 150% 0;
+    }
+    50% {
+      opacity: 1;
+      mask-position: -150% 0;
+      -webkit-mask-position: -150% 0;
+    }
+    100% {
+      opacity: 0;
+      mask-position: -150% 0;
+      -webkit-mask-position: -150% 0;
+    }
+  }
+  
+  /* Combined animation sequence for double shine */
+  .shine-double {
+    animation: shineLTR 2s ease-in-out forwards,
+               shineRTL 2s ease-in-out 2.2s forwards;
+    /* Total animation duration = ~4.2s */
+    mask-image: linear-gradient(
+      120deg,
+      transparent 0%,
+      white 45%,
+      white 55%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      120deg,
+      transparent 0%,
+      white 45%,
+      white 55%,
+      transparent 100%
+    );
+  }
+  
+
+  #header-icon-desktop {
+    display: block;
+  }
+  
+
+
+
+
+
+  
+
+
+  #header-logo-mobile {
+    display: none;
+  }
+@media(max-width:840px)
+{
+    
+    #header-logo-mobile {
+      display: block;
+    }
+
+    #header-icon-desktop {
+      display: none;
+      }
+
+      .bb-typeface {
+        display: none;
+      }
+}
+
+
+
+
+
+
+
+
+  .form-group {
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  .title1 {
+      padding-left: 0px;
+      text-align: center;
+      font-weight: bold;
+      color: #102ff5;;
+  }
+  @media (max-width: 560px) {
+    .title1 {
+        padding-left: 15px;
+          text-align: left;
+    }
+  }
+
+
+  input {
+width: 90%; /* Adjust width for better responsiveness */
+max-width: 500px; /* Prevent input from being too wide on large screens */
+padding: 10px;
+margin: 10px 0;
+border: 1px solid #ccc;
+border-radius: 100px;
+font-size: 0.9rem;
+text-align: center;
+color: #102ff5;;
+
+}
+
+
+
+button {
+width: 100%; /* Adjust width for better responsiveness */
+max-width: 600px; /* Prevent input from being too wide on large screens */
+padding: 10px;
+margin: 10px 0;
+background-color: #102ff5;;
+color:#fff;
+border-radius: 100px;
+font-size: 18px;
+text-align: center;
+opacity: 1; /* Set initial opacity */
+transition: opacity 0.8s ease; /* Apply transition effect to opacity */
+margin-bottom:30px;
+}
+
+@media(max-width:640px)
+{
+    button {
+        width: 98%;
+        max-width: 98%; 
+    }
+}
+
+  button:hover {
+    opacity: 0.7; /* Opacity on hover */
+  }
+  @media(max-width:840px)
+  {
+    button:hover {
+        opacity: unset
+      }
+  }
+
+  .language-selector button {
+    margin: 10px 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .language-selector button:hover {
+    background-color: #f0f0f0;
+  }
+
+
+h1,h2 {
+font-weight: 900;
+}
+
+
+h2, p {
+    color: white;
+}
+
+.message-popup {
+      color: white;
+      padding-top:20px;
+      padding-bottom:20px;
+}
+
+
+#finish-or-continue-pupup {
+    position: absolute;
+    z-index: 9999999999999999;
+    width: 700px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    background-color: #102ff5;;
+    margin-bottom: 0px;
+    bottom: 0px;
+    margin-bottom: 0px;
+    bottom: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    left: 0;
+    right: 0;
+    height: 75vh;
+    padding: 60px;
+    display:none;
+}
+  
+  @media(max-width:840px)
+  {
+    #finish-or-continue-pupup {
+        width: 92%;
+        padding: 4%;
+        height: 80vh;
+    }   
+  }
+
+  #finish-or-continue-pupup {
+    animation-duration: 0.4s;
+  }
+  
+
+
+  
+  .popup-buttons button {
+    margin: 10px 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 100px;
+  }
+
+  @media(max-width:840px)
+  {
+    .popup-buttons {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+        left: 0;
+        right: 0;
+        text-align: center;
+        padding-top: 80px;
+    }   
+    .popup-text {
+        max-width: 90%;
+        margin: auto;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+  }
+
+
+  .popup-buttons button:hover {
+    background-color: #f0f0f0;
+  }
+
+
+
+
+
+  #finish-button,
+  #new-inquiry-button {
+    width: 100%; /* Full width of the parent container */
+    padding: 10px;
+    margin: 10px 0;
+    background-color: #102ff5;;
+    color: #fff;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    text-align: center;
+    opacity: 1; /* Set initial opacity */
+    transition: opacity 0.8s ease; /* Apply transition effect to opacity */
+    margin-top: 10px;
+  }
+  
+  #finish-button:hover,
+  #new-inquiry-button:hover {
+    opacity: 0.7; /* Opacity on hover */
+  }
+  
+
+@media(max-width:640px)
+{
+   
+  #finish-button,
+  #new-inquiry-button {
+        width: 98%;
+        max-width: 98%; 
+    }
+}
+
+  
+
+  @media(max-width:840px)
+  {
+    #finish-button,
+    #new-inquiry-button:hover {
+        opacity: 1!important;
+      }
+  }
+
+  
+  
+
+
+/* Customize input focus */
+input:focus {
+    outline: none; /* Remove the default outline */
+    border: 1px solid #ccc; /* Keep the border size constant */
+    box-shadow: 0 0 0 2px #102ff5;; /* Add a black border-like shadow on focus */
+    text-align: left; /* Align text and caret to the left */
+}
+
+/* Pulsing cursor animation */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.99); } /* Shrink the input field */
+    100% { transform: scale(1); } /* Return to normal size */
+}
+
+
+/* Remove placeholder text when input is focused */
+input:focus::placeholder {
+    opacity: 0;
+}
+
+/* Styling for the form group */
+.form-group input {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc; /* Keep the border size at 1px by default */
+    transition: all 0.4s ease;
+    text-align: left; /* Ensure text is aligned left by default */
+    background-color: #ffffff96;
+}
+
+#popup-link {
+    color: #102ff5;
+    display: inline-block;
+    cursor: pointer;
+    position: relative;
+    margin-left: 3px;
+    font-weight: 500;
+  }
+  
+  #popup-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; /* move the underline lower */
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background-color: #102ff5;
+    transition: width 0.3s ease;
+  }
+  
+  #popup-link:hover::after {
+    width: 100%;
+  }
+  
+
+
+.blue-theme {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: fixed;
+    z-index: 0;
+    background-color: #102ff5;
+    clip-path: polygon(0 60%, 100% 10%, 100% 100%, 0% 100%);
+    margin-top: 270px;
+    z-index: -1;
+  }
+  
+
+/* Adjust for specific mobile behaviors */
+@media (max-width: 768px) {
+    .blue-theme {
+        clip-path: polygon(0 60%, 100% 40%, 100% 100%, 0% 100%);
+        height: 100vh; 
+        position: fixed;
+        margin-top: 120px;
+    }
+}
+
+
+
+.shine-text {
+    font-weight: 900;
+    background: linear-gradient(to right, #878787 0%, white 10%, #ffffff 20%);
+    background-size: 200px 100%; /* Small enough to repeat but still sweep */
+    background-repeat: no-repeat;
+    background-position: -200px 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #969696;
+    animation: shine 6s infinite linear;
+    display: inline-block;
+    will-change: background-position;
+    transform: translateZ(0);
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+  
+  @keyframes shine {
+    0% {
+      background-position: -200px 0;
+    }
+    100% {
+      background-position: calc(100% + 200px) 0;
+    }
+  }
+  
+    
+  
+.text {
+    font-size: 26px;
+    color: #c0c0c0c0;
+    text-align: center;
+    margin-bottom: 300px;
+    width: 500px;
+    line-height: 22px;
+    font-weight: 900;
+    animation-iteration-count: 1;   
+}
+
+
+@media (max-width: 1600px) {
+    .text {
+      width: 90%; 
+      margin-bottom: 250px;
+      font-size: 26px;
+    }
+   }
+
+   @media (max-width: 640px) {
+ .text {
+   width: 90%; 
+   margin-bottom: 400px;
+   font-size: 20px;
+ }
+}
+ 
+.text::after {
+    content: '';
+    display: block;
+    width: 120px;
+    height: 8px;
+    margin: 12px auto 0;
+    background: linear-gradient(to right, #a5a5a500 0%,  #102ff5 50%,  #102ff5 100%);
+    background-size: 200px auto;
+    background-repeat: no-repeat;
+    background-position: -200px 0;
+    animation: shine 6s infinite linear;
+  }
+  @media (max-width: 640px) {
+.text::after { 
+    height: 6px;
+}
+}
+  
+  @keyframes lineFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @media(max-width:840px){
+    .text::after {
+        width: 90px;          
+      }
+  }
+
+.button-holder {
+    display: flex;
+    gap: 20px; 
+    bottom:0px;
+    margin-bottom:60px;
+  }
+
+  @media(max-width:1250px){
+    .button-holder {
+        display: flex;
+        gap: 20px; 
+        bottom:0px;
+        margin-bottom: 120px;
+      }
+  }
+
+  @media(max-width:640px){
+    .button-holder {
+        margin-bottom: 40px;
+      }
+  }
+  
+  .join-button,
+  .login-button {
+    padding: 10px 65px;
+    border: 2px solid white;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    border-radius: 30px;
+  }
+
+  .join-button {
+    background-color: white;
+    color: #102ff5;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .join-button:hover {
+    background-color: transparent;
+    color: white;
+  }
+  
+  .login-button {
+    background-color: transparent;
+    color: white;
+    background-color: transparent;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .login-button:hover {
+    background-color: white;
+    color: #102ff5;
+  }
+/* Disable hover effects on smaller screens */
+@media (max-width: 840px) {
+    .join-button:hover {
+      background-color: white;
+      color: #102ff5;
+    }
+  
+    .login-button:hover {
+      background-color: transparent;
+      color: white;
+    }
+  }
+
+
+  button {
+    all: unset;
+    cursor: pointer;
+  }
+  
+  #submit-button {
+    margin-top: 10px;
+    background-color: #102ff5;
+    color: white;
+    padding: 14px;
+    width: 90%;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+    justify-content: center;
+  }
+  
+  #submit-button:hover {
+    background-color: transparent;
+    color: #102ff5;
+    background-color:  silver;
+    border:2px solid #102ff5!important;
+    padding: 12px;
+  }   
+
+
+
+  @media (max-width: 840px) {
+    #submit-button {
+        width: 90%;
+        max-width: 500px; 
+    }
+  }
+
+
+
+
+  #get-otp-code {
+    margin-top: 10px;
+    background-color: #102ff5;
+    color: white;
+    padding: 14px;
+    width: 90%;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+  }
+  
+  #get-otp-code:hover {
+    background-color: transparent;
+    color: #102ff5;
+    background-color:  silver;
+    border:2px solid #102ff5!important;
+    padding: 12px;
+  }   
+
+
+
+  @media (max-width: 840px) {
+    #get-otp-code {
+        width: 90%;
+        max-width: 500px; 
+    }
+  }
+
+
+  #terms {
+    bottom: 0;
+    margin-bottom: 10px;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    left: 0;
+    right: 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.541);
+  }
+
+  @media (max-width: 840px) {
+  #terms {
+    bottom: 0;
+    margin-bottom: 80px;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    left: 0;
+    right: 0;
+    font-size: 12px;
+  }
+}
+
+
+#continue-to-app {
+    justify-content: center;
+}
+
+
+#continue-to-app {
+    justify-content: center;
+}
+#otp-code-entry-field {
+    justify-content: center;
+}
+  /********************************************** End Screen 1 Styles ************************************************************************/
+
+
+
+
+
+
+  /********************************************** Start Screen 2 Home Screen of App ************************************************************************/
+
+
+
+  .account {
+    margin-top: 10px;
+    position: absolute;
+    text-align: right;
+    right: 0px;
+    margin-right: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px; /* spacing between text and icon */
+    font-size: 14px;
+  }
+
+  #account-title {
+    color: #909090;
+  }
+
+  .account img {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%; /* makes it a circle */
+    object-fit: cover; /* ensures the image fits inside */
+    background-color: rgba(192, 192, 192, 0.057);
+    padding:2px;
+    border:2px solid white;
+  }
+
+
+  @media(max-width:840px)
+  {
+    #account-title {
+    display: none;
+    }
+
+    .account {
+      margin-right: 10px;
+      margin-top: 12px;
+    }
+
+  .account img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%; /* makes it a circle */
+    object-fit: cover; /* ensures the image fits inside */
+    background-color: rgba(192, 192, 192, 0.057);
+    padding:2px;
+    border:1px solid white;
+  }
+  }
+
+  .get-premium {
+    position: absolute;
+    text-align: right;
+    margin-top: 18px;
+    /* Nudged 15px left on desktop (was 140px). Mobile keeps its own
+       right offset further below. */
+    right: 155px;
+    padding: 3px 12px;
+    border: 2px solid #102ff5;
+    background-color: #102ff5;
+    cursor: pointer;
+    font-weight: 500;
+    color: white;
+    /* The Get Premium CTA is only relevant to Freemium accounts.
+       Hidden by default (= Premium user). Revealed below when the
+       dev Freemium-mode body class is present. Wire to your real
+       plan-tier flag for production. */
+    display: none;
+    border-radius: 30px;
+    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+  }
+  
+  .get-premium:hover {
+    background-color: silver;
+    border: 2px solid #102ff5;
+    color: #102ff5;
+    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+  }
+  
+  
+  @media(max-width:840px)
+  {
+    .get-premium {
+      padding: 4px 18px;
+      margin-top: 15px;
+      right: 65px;
+      font-size: 14px;
+    }
+
+    .get-premium:hover {
+      transition: unset;
+      font-size: 14px;
+      border: 2px solid #102ff5;;
+      background-color: #102ff5;
+      color:white;
+    }
+  }
+
+  /* Reveal the Get Premium CTA only when the user is on Freemium
+     (dev simulation flag → `body.bb-dev-freemium-mode`). Premium
+     users keep it hidden. */
+  body.bb-dev-freemium-mode .get-premium {
+    display: block;
+  }
+
+  /* Freemium users don't have any Subscriptions yet, so the chip
+     should read just "Account". The " & Subscriptions" suffix lives
+     in its own span so we can hide it without touching the chip's
+     accessible label structure. */
+  body.bb-dev-freemium-mode .account-title__subs {
+    display: none;
+  }
+
+  /* Desktop-only: Freemium-mode CTA position (wider .account chip). */
+  @media (min-width: 841px) {
+    body.bb-dev-freemium-mode .get-premium {
+      right: 125px;
+    }
+  }
+
+
+/*header Nav*/
+.header-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    height: 60px;
+    background-color: #ffffff0a;
+    width: 100%;
+    border-top: none!important;
+    border: 3px solid #fdfdfd00;
+    box-shadow: 4px 4px 59px 0px rgba(0,0,0,0.75);
+-webkit-box-shadow: 4px 4px 59px 0px rgba(0,0,0,0.75);
+-moz-box-shadow: 4px 4px 59px 0px rgba(0,0,0,0.75);
+box-sizing: border-box;
+}
+@media (max-width:840px) {
+  .header-nav {
+    background-color: transparent;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    height: 55px;
+  }
+}
+
+/* Mobile/tablet (≤1440px, sidebar hidden): the header sits at
+   `position: fixed; top: 0; z-index: 9999` and visually covers the
+   top of the iframe area. On Theme Styles + Products the bottom-sheet
+   preview modal puts its X close button at `top: -5px` of the iframe
+   viewport — visible (the header is transparent on mobile) but the
+   click lands on `.header-nav` instead of the iframe, so the modal
+   wouldn't close. Make `.header-nav` itself pointer-transparent so
+   clicks fall through to whatever's beneath (the iframe), and re-enable
+   pointer-events on the interactive children (.account, .get-premium,
+   #account-popup) so the dashboard's own controls still work. */
+@media (max-width: 1440px) {
+  .header-nav {
+    pointer-events: none;
+  }
+  .header-nav .account,
+  .header-nav .get-premium,
+  .header-nav #account-popup {
+    pointer-events: auto;
+  }
+}
+
+
+#animate-header-line {
+  position: relative;
+  margin-top: 60px;
+  width: 105%;
+  margin-left: -5%;
+  height: 3px;
+  background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0) 30%, #1655fb 50%, transparent 70%, transparent 100%);
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  animation: headerColorFlow 12s infinite ease-in-out;
+  overflow: hidden;
+  z-index: -1;
+}
+  
+@keyframes headerColorFlow {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 0%;
+  }
+}
+@media (max-width:840px) {
+  #animate-header-line {
+    margin-top: 55px;
+  }
+}
+
+
+@media (max-width:840px) {
+  .header-logo{
+    position: absolute;
+    width: 160px;
+    height: 110px;
+    text-align: left;
+    margin-left: 10px;
+    left: 0;
+    display: block;
+    margin-top: -28px;
+  }
+}
+
+.bb-typeface {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  margin-top: -44px;
+  margin-left: 60px;
+}
+
+/** Sidebar and Footer **/
+
+.nav-container {
+  position: fixed;
+  top: 13%;
+  left: -40px;
+  margin-left: 0;
+  padding-top: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  padding-left: 60px;
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 999;
+  height: auto;
+  background-color: rgb(255 253 253 / 10%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #60606059;
+  box-shadow: 4px 4px 59px 0px rgb(0 0 0);
+  -webkit-box-shadow: 4px 4px 59px 0px rgb(0 0 0 / 10%);
+  -moz-box-shadow: 4px 4px 59px 0px rgb(0 0 0 / 27%);
+  
+  /* animation */
+  animation: slideInLeftStatic 0.8s ease-out both;
+}
+
+@media(max-width:1550px){
+  .nav-container {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    top: 10%;
+    height: auto;
+    padding-left: 40px;
+    padding-right: 20px;
+    margin-left: 10px;
+    gap: 6px; 
+   
+  }
+}
+
+/*hide on desktop*/
+@media(max-width:1440px){
+  .nav-container {
+    display: none;
+  }
+}
+
+@keyframes slideInLeftStatic {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+
+
+  @keyframes fixedSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px); /* small up motion */
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .nav-container.animate-in {
+    animation: fixedSlideUp 0.6s ease-out forwards;
+  }
+  
+  
+  
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    filter: brightness(0.9);
+    transform: scale(0.95);
+  }
+  .nav-item:hover {
+    transform: scale(1);
+  }
+  
+  
+  .nav-item img {
+    width: 28px;
+    height: 28px;
+  }
+
+
+
+
+/* Hide the old sidebar/nav on mobile */
+@media (max-width: 1440px) {
+  .nav-container {
+    display: none !important;
+  }
+}
+
+/* ====================== NEW MOBILE FOOTER ====================== */
+
+
+
+.mobile-footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: none;
+  justify-content: space-between; /* brand left, settings right */
+  align-items: center;
+  z-index: 9;
+  background: #1f2bd6;
+  padding: 10px 20px; /* top/bottom + side padding */
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  height: 70px;
+  box-sizing: border-box;
+}
+
+@media(max-width:1440px){
+  .mobile-footer-bar {
+    display: flex;
+  }
+}
+
+.mobile-footer-bar-item {
+  display: flex;
+  flex-direction: column; /* keep icon + text stacking if needed */
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Icon sizing */
+.mobile-footer-bar-item img {
+  width: 32px;   /* fixed size for all icons */
+  height: 32px;
+}
+
+/* Special case: middle icon can be slightly bigger */
+#open-footer-nav img {
+  width: 40px;
+  height: 40px;
+}
+
+
+
+
+
+/* MOBILE FOOTER NAV - hidden initially */
+/* Base style */
+/* Container */
+.close-mobile-nav {
+  position: absolute;
+  top: 20px;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Image rotation */
+.close-mobile-nav img {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.1s ease; /* animate rotation */
+}
+
+.close-mobile-nav.minus img {
+  transform: rotate(90deg); /* rotate image 90° */
+}
+
+
+.mobile-footer-nav {
+display: none;
+}
+
+@media (max-width: 1440px) {
+
+  .mobile-footer-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    height: 750px;
+
+    background-color: #102ff5;
+    border-radius: 40px 40px 0 0;
+    padding: 20px 20px 12px 20px;
+
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15);
+    z-index: 9999999999;
+
+    display: block;
+
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+    will-change: transform;
+  }
+
+  .mobile-footer-nav.active {
+    transform: translateY(0);
+    /* Slide-up panel fills 90% of the viewport when open — full
+       height felt slightly too tall and pushed the grid items too
+       far apart. `90dvh` accounts for mobile browser chrome
+       (URL bar / bottom safe area) on iOS / Android; `90vh`
+       is the fallback for browsers without dynamic-viewport
+       support. */
+    height: 90vh;
+    height: 90dvh;
+  }
+
+}
+
+
+
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 6px;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  height: 100%;
+  margin-top: -20px;
+  /* Let rows stretch evenly inside the panel so spacing reads
+     naturally. `.mobile-footer-nav.active` controls the overall
+     panel height (currently 90dvh) — that's the lever for how
+     spread out the icons feel. */
+}
+
+.footer-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.footer-item:hover {
+  opacity: 1;
+}
+
+.footer-item img {
+  width: 38px;
+  height: 38px;
+  margin-bottom: 6px;
+  filter: brightness(0) invert(1); /* Makes icons white */
+}
+
+/* Some icon SVGs render with more visual mass than others because
+   they fill more of their viewBox. The Theme Styles glyph is one
+   such offender — slightly shrink it so it sits flush with the rest
+   of the row. Scoped to the footer-nav icon to avoid touching the
+   sidebar copy. */
+.footer-item img[src$="theme-design.svg"] {
+  transform: scale(0.8);
+  transform-origin: center;
+}
+.footer-item img[src$="hotspots.svg"] {
+  transform: scale(0.9);
+  transform-origin: center;
+}
+.footer-item img[src$="products-mobile.svg"] {
+  transform: scale(1.155);
+  transform-origin: center;
+}
+
+.footer-item p {
+  font-size: 11.5px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Special larger center item (Products) */
+#start-new-brandbased {
+  transform: scale(1.25);
+}
+
+#start-new-brandbased img {
+  width: 34px;
+  height: 34px;
+}
+
+
+
+
+
+
+  #b-icon-desktop {
+    margin-left: -4px;
+    width: 32px;
+    height: 32px; 
+    margin-right: -2px;
+    display: block;
+  }
+
+  #b-icon-mobile {
+    margin-left: -8px;
+    width: 38px;
+    height: 38px; 
+    margin-right: -5px;
+    display: none;
+  }
+
+
+ 
+
+
+
+
+
+  
+
+  #account-popup {
+    margin-top: 62px;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    background-color: rgb(188 187 187 / 43%);
+    border: 1px solid #ffffff14;
+    box-shadow: 4px 4px 59px 0px rgb(0 0 0);
+    border-radius: 12px;
+    padding: 10px;
+    position: absolute;
+    text-align: right;
+    right: 0;
+    margin-right: 20px;
+    width: 150px;
+    height: 70px;
+    display: none;
+    z-index: 999999999;
+  }
+  @media (max-width:840px) {
+    #account-popup {
+    margin-top: 61px;
+    margin-right: 0px;  
+  }
+}
+
+  .logout-button {
+    position: absolute;
+    text-align: center;
+    margin-top: 35px;
+    padding: 3px 8px;
+    border: 2px solid #fff;
+    background-color: #102ef500;
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    border-radius: 30px;
+    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+    width: 130px;
+  }
+  
+  .logout-button:hover {
+    border: 2px solid #102ff5;
+    color: #fff;
+    background-color: #102ff5;
+    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+  }
+  
+
+ 
+  .content-block {
+    width: 80%;
+    height: 86%;
+    min-height: 80%;
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 30px;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    background-color: rgb(121 120 120 / 43%);
+    box-shadow: 4px 4px 59px 0px rgb(0 0 0);
+    -webkit-box-shadow: 4px 4px 59px 0px rgb(0 0 0 / 10%);
+    position: absolute;
+    position: absolute;
+    right: 0;
+    z-index: 8;
+    margin-right: 1%;
+    margin-left: 2%;
+    border: 4px solid #ffffffb8;
+  }
+  
+  
+  @media(max-width:2300px)
+  {
+    .content-block {
+      width: 85%;
+      margin-left: 10%;
+  }
+}
+
+@media(max-width:1650px)
+{
+  .content-block {
+    width: 84%;
+}
+}
+
+
+
+@media(max-width:1440px)
+{
+  .content-block {
+    width: 90%;
+    left: 0;
+    right: 0;
+    margin-right: auto;
+    margin-left: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+}
+
+/* Phone / very-narrow tablet (≤740px): give the content-block (the
+   dashboard card that hosts the module iframe) the full viewport
+   width and zero horizontal padding so the iframes inside run
+   nearly edge-to-edge. Vertical padding is kept so the card still
+   has breathing room above/below the iframe. The rounded corners
+   stay so the card still reads as a card — only the side gutters
+   are gone. */
+@media (max-width: 740px) {
+  .content-block {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 12px 0 !important;
+    border-radius: 20px !important;
+  }
+}
+
+/* Wide dashboard (sidebar visible): nudge the main iframe card down slightly. */
+@media (min-width: 1441px) {
+  .content-block {
+    margin-top: 40px;
+  }
+}
+
+.content-block {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Your video as background */
+.video-bg-content-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100px; /* match the blue shape height */
+  object-fit: cover;
+  z-index: -2;
+  pointer-events: none;
+
+  /* 👇 this is the key */
+  clip-path: polygon(0 0, 100% 0%, 100% 80%, 0 30%);
+}
+
+/* Keep your blue clipped shape above video */
+.content-block::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background-color: #102ef570;
+  clip-path: polygon(0 0, 100% 0%, 100% 80%, 0 30%);
+  z-index: -1;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  /* Purely decorative banner — must never intercept taps. With the
+     later `.content-block::before { z-index: 3 }` override it would
+     otherwise sit above the iframe and steal clicks at the top of the
+     iframe area (e.g. the Theme Styles / Products bottom-sheet X close
+     button at mobile widths). */
+  pointer-events: none;
+}
+
+/* Ensure text is on top */
+#content-heading {
+  position: relative;
+  z-index: 1;
+  color: white; /* optional but likely needed */
+}
+
+#content-heading {
+  margin-top: -10px;
+}
+
+
+
+/* Default styling for the loading div */
+#loading {
+   display:none; /* Hidden by default */
+    text-align: center; /* Centers the content inside the div */
+    margin-bottom: 50px;
+    display:none;
+    position:absolute;
+    margin-left:auto;
+    margin-right:auto;
+    left:0;
+    right:0;
+      margin-bottom: 240px;
+    bottom: 0;
+}
+
+
+/* Loader Icon for comments */
+#loading img {
+  animation: spin 0.7s linear infinite;
+  opacity: 1;
+  width:40px;
+  height:40px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media(max-width:840px)
+{
+  #loading img {
+  animation: spin 0.7s linear infinite;
+  opacity: 1;
+  width:40px;
+  height:40px;
+  margin-bottom: 30px;
+    bottom: 0;
+}
+}
+
+
+
+.loading-image-icon img {
+  animation: spin 0.7s linear infinite;
+  opacity: 1;
+  width:20px;
+  height:20px;
+   display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.uploading-text {
+  font-size: 14px;
+  color:#102ff5;;
+  vertical-align: middle;
+}
+
+
+/* Flash animation for uploading text */
+.animate__flash {
+  animation: flash 2s ease-in-out infinite;
+}
+
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+
+
+
+
+
+  .video-background {
+    position: absolute;
+    width: 100%;
+    height: 100vh; /* Full viewport height */
+    overflow: hidden;
+    z-index: -2;
+  }
+
+  .video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    z-index: -1;
+  }
+
+
+
+
+
+ 
+
+
+
+@media (max-height: 400px) {
+    
+    #login-form {
+       margin-top:400px;
+    }
+}
+
+
+
+
+  /********************************************** Admin Area Styles ************************************************************************/
+
+  #screen2 {
+background-color: transparent;
+  }
+
+  .footer-bar-brand-console {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    height: 30px;
+    background-color: rgba(51, 51, 51, 0.255);
+    color: #fff;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 2147483647 !important; /* max z-index */
+    font-size: 12px;
+    box-sizing: border-box;
+    backdrop-filter: blur(90px);
+    -webkit-backdrop-filter: blur(90px);
+    border-top: 2px solid rgba(255, 255, 255, 0.603);
+  }
+  @media(max-width:1440px){
+    .footer-bar-brand-console {
+      display: none;
+    }
+  }
+  
+  .footer-left, .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .footer-left {
+    flex-shrink: 1;
+  }
+  
+  .footer-right {
+    flex-shrink: 0;
+  }
+  
+  .footer-left h5, .footer-right h5 {
+    font-weight: 600;
+    font-size: larger;
+    margin: 0;
+    white-space: nowrap;
+  }
+  
+  /* Link styles with sliding underline */
+  .footer-bar-brand-console a {
+    color: #fff;
+    text-decoration: none;
+    position: relative;
+    display: inline-block;
+    transition: color 0.3s ease;
+  }
+  
+  .footer-bar-brand-console a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 0;
+    background-color: #fff;
+    transition: width 0.3s ease;
+  }
+  
+  .footer-bar-brand-console a:hover::after {
+    width: 100%;
+  }
+  
+  /* hide console footer on mobile */
+  @media (max-width: 1440px) {
+    .footer-bar-brand-console {
+    display: none!important;
+    }
+  }
+
+  @media (min-width: 1440px) {
+#custom-ai-logic-size {
+  width: 35px;
+  height: 35px;
+ }
+}
+
+
+
+/**Dark mode**/
+@media (prefers-color-scheme: dark) {
+    
+  .footer-bar-brand-console {
+    border-color: rgba(103, 103, 103, 0.139);
+  }
+    
+  .light-shard-ui-base {
+    opacity: 0.7;
+  }
+
+  /* Dark-mode content card: same level of subtlety as light mode
+     (light mode uses rgb(249 249 249 / 39%) on the same element).
+     Previously this was rgb(24 25 25 / 70%), which read as an opaque
+     grey card *behind* the now-transparent module iframes — that's
+     what showed up as "an iframe background" in dark mode. */
+  .content-block {
+    background-color: transparent !important;
+  }
+
+
+.form-group input {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc; /* Keep the border size at 1px by default */
+    transition: all 0.4s ease;
+    text-align: left; /* Ensure text is aligned left by default */
+    background-color: #09090996;
+}
+
+
+input[type="text"]:focus, 
+input[type="email"]:focus {
+    background-color: #09090996;
+    outline: none; /* Remove default focus outline (optional) */
+}
+
+/* For autofill fields in Safari and Chrome */
+input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px #f7f7f7 inset !important;
+    box-shadow: 0 0 0px 1000px #f7f7f7 inset !important;
+    background-color: #f7f7f700 !important;
+    -webkit-text-fill-color: #102ff5 !important;
+}
+
+    #submit-button:hover {
+        background-color: transparent;
+        color: #102ff5;
+        background-color: silver;
+        border:2px solid #102ff5!important;
+        padding: 13px;
+      }   
+  
+      #get-otp-code:hover {
+        background-color: transparent;
+        color: #102ff5;
+        background-color: silver;
+        border:2px solid #102ff5!important;
+        padding: 13px;
+      }   
+    
+
+  .screen-splash {
+    background-color: #102ff5 !important; 
+  }
+
+
+/* Fade out while keeping background color */
+.screen-splash.fade-out {
+    opacity: 0;
+    pointer-events: none; /* Ensures it doesn’t interfere */
+}
+
+
+
+  
+  .input-container {
+      background: transparent;
+  }
+  
+   div[contenteditable] {
+       color:white;
+   }
+   
+   
+   /* Customize input focus */
+input:focus {
+    outline: none; /* Remove the default outline */
+    
+}
+
+
+button {
+    outline: none !important;
+    border: 1px solid #ffffffab;
+}
+    
+    
+    .text,.text2, .title1, .text-chinese { 
+        color:white;
+    }
+    
+    
+    #screen-1-inputs-signup {
+        background-color: #d4d4d41a;
+    }
+    
+    
+    input {
+    color: white;
+    background: #25282b;
+    }
+}
+    
+@media (max-width: 1340px) {
+  .button-holder {
+    margin-bottom: 40px;
+  }
+}
+
+/* Mobile: stack buttons vertically */
+@media (max-width: 740px) {
+  .button-holder {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* spacing between buttons */
+    align-items: center; /* full width buttons */
+    margin-bottom: 40px;
+  }
+
+  .login-button,
+  .join-button {
+    width: 100%;
+    text-align: center;
+  }
+  .join-button {
+    margin-top: 10px;
+  }
+}
+
+
+
+
+/*************************************** Dark mode is defualt, light mode can be switched on *************************************/
+/* Light Mode Styles */
+body.light-mode {
+  background: rgb(249, 249, 249);
+}
+
+
+body.light-mode .bb-typeface {
+  filter: brightness(0);
+}
+
+
+
+
+body.light-mode #header-logo-mobile {
+  filter: brightness(0) saturate(100%) invert(15%) sepia(100%) saturate(7475%) hue-rotate(233deg) brightness(100%) contrast(101%);
+}
+
+body.light-mode .content-block {
+  background: rgb(249 249 249 / 39%);
+}
+
+/* Dark mode (toggle-driven OR OS-driven): a near-black translucent
+   card behind the iframe so the now-transparent module iframes read
+   against a clean surface. Pairs with light mode's subtle white-glass
+   card above for visual parity. */
+body:not(.light-mode) .content-block {
+  background: #000000a1 !important;
+  background-color: #000000cc !important;
+}
+
+body.light-mode .get-premium:hover {
+  background-color: grey;
+}
+
+body.light-mode .nav-container {
+  background-color: rgb(254 254 254 / 55%);
+  border: 2px solid #ffffffb3;
+}
+
+body.light-mode .nav-item {
+  filter: brightness(0.5);
+}
+@media(max-width:1450px) {
+  body.light-mode .nav-item {
+    filter: brightness(1);
+  } 
+}
+
+body.light-mode .account {
+  filter: brightness(0.5);
+}
+
+/* "Account" label in the header trio reads as a muted grey on light
+   mode so the surrounding chrome (which is already darkened to ~0.5
+   brightness) doesn't compete with the white avatar circle. h2 + p
+   share the same tone for any future markup that uses either tag in
+   the account block. */
+body.light-mode #account-title {
+  color: #909090;
+}
+
+body.light-mode .account h2,
+body.light-mode .account p {
+  color: #8b8b8bad;
+}
+
+body.light-mode .light-shard-ui-base {
+  opacity: 0.5;
+}
+
+body.light-mode .header-nav {
+  background-color: #ffffff87;
+  box-shadow: rgb(172 133 164 / 49%) 4px 4px 59px 0px;
+  border-bottom: 3px solid white;
+}
+
+/* Dark mode (toggle OR OS-driven): a soft black wash behind the
+   header nav plus a hairline white border for separation against
+   the dashboard backdrop. Pairs with the light-mode rule above. */
+body:not(.light-mode) .header-nav {
+  background-color: #0000005e;
+  border: 1px solid #fdfdfd1c;
+}
+
+
+body.light-mode #animate-header-line {
+  height: 4px;
+  margin-top: 57px;
+  z-index: 2;
+}
+@media(max-width:840px) {
+body.light-mode #animate-header-line {
+  margin-top: 52px;
+ }
+}
+
+
+body.light-mode .theme-label {
+  color: #000000;
+}
+
+body.light-mode .theme-button {
+  border-color: silver;
+}
+body.light-mode .theme-button .knobs {
+  border-color: silver;
+  background-color: #fff;
+}
+body.light-mode .theme-button .checkbox:checked ~ .layer {
+  background-color: #102ff5;
+}
+
+
+body.light-mode .get-premium:hover {
+  background-color: transparent;
+}
+
+body.light-mode #account-popup {
+  background-color: rgb(255 255 255 / 88%);
+  border: 1px solid #ffffff14;
+  box-shadow: 4px 4px 59px 0px rgb(0 0 0 / 13%);    
+  }
+  
+  @media (max-width:840px) {
+    body.light-mode #account-popup {
+    margin-top: 58px;
+  }
+}
+
+  body.light-mode .logout-button {
+    border: 2px solid silver;
+    background-color: #102ef500;
+    color: silver;
+    cursor: pointer;
+    font-weight: 500;
+    border-radius: 30px;
+    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+    width: 130px;
+  }
+  
+  body.light-mode .logout-button:hover {
+    border: 2px solid #102ff5;
+    color: #fff;
+    background-color: #102ff5;
+    transition: background-color 0.5s ease, color 0.5s ease, border 0.5s ease;
+  }
+
+/* ====================================================================
+   Brand Console — Dashboard router shell
+   Module pages are rendered into an iframe inside .content-block so
+   each module continues to ship its own CSS / JS in isolation. While
+   a new module is loading we cover the frame with a blurred glass
+   overlay containing the B icon (breathing) and a blue sweep line
+   (matching the shared sync-popup loader vocabulary).
+   ==================================================================== */
+.bb-dash-frame-wrap {
+  position: relative;
+  margin-top: -15px;
+  /* Slight negative bottom margin so the iframe overhangs the
+     content card's natural bound (visually "overlapping the
+     height" the user asked for). */
+  margin-bottom: -42px;
+  width: 100%;
+  min-height: 90vh;
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+/* Start Now page: pull the iframe wrap a little further up so the
+   hero pitch + CTA buttons sit closer to the dashboard heading.
+   Scoped to the iframe src via :has() so it only affects the
+   Start Now route — no router/JS change required. */
+.screen:has(#bbDashFrame[src*="Start-Now.html"]) .bb-dash-frame-wrap {
+  margin-top: -40px;
+}
+
+/* Products + Theme Styles pages: pull the iframe wrap's bottom
+   overhang back to -30px (from the default -42px) so the bottom
+   edge of the content card sits a bit further away from the
+   dashboard footer. Same :has() trick — no router changes. */
+.screen:has(#bbDashFrame[src*="Products.html"]) .bb-dash-frame-wrap,
+.screen:has(#bbDashFrame[src*="Brand-Theme-Settings-Module.html"]) .bb-dash-frame-wrap {
+  margin-bottom: -30px;
+  background: transparent;
+  isolation: isolate;
+}
+
+#bbDashFrame.bb-dash-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 90vh;
+  margin-top: 0;
+  border: 0;
+  background: transparent;
+  /* color-scheme decides the browser's *canvas* colour for the iframe
+     (the surface that paints before — and behind — the loaded
+     document's own CSS). Pin it to the dashboard's current theme,
+     not the OS, so we don't get a white flash when the dashboard is
+     in dark mode but the host OS is light. */
+  color-scheme: dark;
+}
+body.light-mode #bbDashFrame.bb-dash-frame {
+  color-scheme: light;
+}
+
+@media (max-width: 1440px) {
+  .bb-dash-frame-wrap,
+  #bbDashFrame.bb-dash-frame {
+    min-height: 85vh;
+  }
+}
+
+/* Sync-popup-styled loader: same glass card, breathing B logo with
+   brand-purple halo, "Loading" shine label, and an indeterminate
+   brand-purple sweep bar (the sync popup uses a deterministic fill
+   tied to its duration — we don't know how long a module will take,
+   so we sweep continuously). Brand purple #635bff to match the
+   shared sync popup.
+
+   The overlay is `position: fixed` so it blurs the *entire*
+   dashboard (sidebar, header, footer, iframe), not just the iframe
+   area — `body.bb-dash-loading` toggles it on. While the overlay is
+   up the iframe is faded out so the user never sees its first paint
+   flash. */
+.bb-dash-loader {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 11, 26, 0.46);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+  z-index: 99999;
+  padding: 16px;
+  box-sizing: border-box;
+}
+body.bb-dash-loading .bb-dash-loader,
+.bb-dash-loader--show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hide the iframe (and its wrapper background) while the dashboard
+   loader is up. We use opacity + visibility so layout is preserved
+   but no paint flash leaks through the blurred overlay. */
+body.bb-dash-loading #bbDashFrame,
+body.bb-dash-loading .bb-dash-frame-wrap {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.18s ease;
+}
+#bbDashFrame,
+.bb-dash-frame-wrap {
+  transition: opacity 0.24s ease;
+}
+
+.bb-dash-loader-popup {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(360px, 100%);
+  padding: 28px 28px 22px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+  backdrop-filter: blur(28px) saturate(1.2);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+  color: #fff;
+  isolation: isolate;
+  transform: translateY(8px) scale(0.985);
+  opacity: 0;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .bb-dash-loader-popup {
+    background: rgba(15, 23, 42, 0.92);
+  }
+}
+.bb-dash-loader--show .bb-dash-loader-popup {
+  opacity: 1;
+  transform: none;
+}
+
+.bb-dash-loader-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  animation: bb-dash-loader-logo-pulse 1.4s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, box-shadow;
+}
+.bb-dash-loader-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  /* The shared sync popup also paints the white B inside a white
+     circle and relies on the SVG's own dark interior. Our b-white.svg
+     is solid white, so tint it to brand purple via a filter chain
+     so the icon is actually visible on the white halo. */
+  filter:
+    brightness(0)
+    saturate(100%)
+    invert(28%)
+    sepia(89%)
+    saturate(2997%)
+    hue-rotate(239deg)
+    brightness(101%)
+    contrast(101%);
+}
+
+@keyframes bb-dash-loader-logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.22),
+      0 0 0 0 #635bff;
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.28),
+      0 0 0 10px rgba(99, 91, 255, 0.001),
+      0 0 22px 6px #635bff;
+  }
+}
+
+.bb-dash-loader-label {
+  margin: 0;
+  font: 700 17px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffffff 35%,
+    #d8d5ff 48%,
+    #635bff 54%,
+    #ffffff 68%,
+    #ffffff 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: bb-dash-loader-label-shine 2.4s ease-in-out infinite;
+}
+@keyframes bb-dash-loader-label-shine {
+  0%   { background-position: 120% 50%; }
+  100% { background-position: -120% 50%; }
+}
+
+/* Light mode: white text disappears against the white glass card, so
+   swap the white edges of the shine gradient for black. The
+   brand-purple shine band stays the same so the animation still
+   reads clearly. */
+body.light-mode .bb-dash-loader-label {
+  background: linear-gradient(
+    100deg,
+    #000000 0%,
+    #000000 35%,
+    #d8d5ff 48%,
+    #635bff 54%,
+    #000000 68%,
+    #000000 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+.bb-dash-loader-bar {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+  margin-top: 6px;
+}
+.bb-dash-loader-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -45%;
+  width: 45%;
+  background: #635bff;
+  border-radius: 999px;
+  box-shadow: 0 0 12px #635bff;
+  animation: bb-dash-loader-bar-sweep 1.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+@keyframes bb-dash-loader-bar-sweep {
+  0%   { transform: translateX(0%);   opacity: 0.0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(322%); opacity: 0.0; }
+}
+
+/* Active sidebar — brand blue only on wide layout (≥1441px).
+   Footer grid lives under `.mobile-footer-nav` only; it never uses this
+   blue (icons stay white — see `.footer-item` rules + `.mobile-footer-nav`
+   grid overrides below). */
+@media (min-width: 1441px) {
+  .nav-container .nav-item.is-active {
+    filter: none !important;
+    transform: scale(1) !important;
+    position: relative;
+    color: #102ff5 !important;
+  }
+  .nav-container .nav-item.is-active p {
+    color: #102ff5 !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.005em;
+  }
+  /* SVG icons are loaded via <img>, so we colour-shift them with a
+     normalised filter chain. brightness(0)+saturate(100%) flattens the
+     source to pure black; the rest tints it to #102ff5 brand blue. */
+  .nav-container .nav-item.is-active img {
+    filter:
+      brightness(0)
+      saturate(100%)
+      invert(13%)
+      sepia(95%)
+      saturate(7491%)
+      hue-rotate(243deg)
+      brightness(99%)
+      contrast(108%) !important;
+  }
+  .nav-container .nav-item.is-active::before {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 22px;
+    border-radius: 2px;
+    background: #102ff5;
+    box-shadow: 0 0 12px rgba(16, 48, 245, 0.6);
+  }
+}
+
+/* Mobile footer nav: keep icons + labels white in *every* state
+   (default / hover / active). The blue accent rail (::before above)
+   marks the active row on desktop; at ≤1440px that rail is removed
+   for sidebar + footer nav — see @media block below. */
+.footer-item,
+.footer-item:hover,
+.footer-item.is-active,
+.footer-item.is-active:hover {
+  color: #ffffff !important;
+}
+.footer-item p,
+.footer-item:hover p,
+.footer-item.is-active p,
+.footer-item.is-active:hover p {
+  color: #ffffff !important;
+}
+.footer-item img,
+.footer-item:hover img,
+.footer-item.is-active img,
+.footer-item.is-active:hover img {
+  /* `brightness(0) invert(1)` flattens the source SVG to solid white. */
+  filter: brightness(0) invert(1) !important;
+}
+
+@media (max-width: 1440px) {
+  .nav-item,
+  .nav-item.is-active {
+    color: #ffffff !important;
+    filter: none !important;
+  }
+  .footer-item,
+  .footer-item.is-active {
+    color: #ffffff !important;
+  }
+  .nav-item p,
+  .nav-item.is-active p,
+  .footer-item p,
+  .footer-item.is-active p {
+    color: #ffffff !important;
+  }
+  .nav-item img,
+  .nav-item.is-active img {
+    filter: brightness(0) invert(1) !important;
+  }
+
+  .nav-item.is-active::before,
+  .footer-item.is-active::before {
+    content: none !important;
+    display: none !important;
+  }
+}
+
+body.light-mode .bb-dash-loader {
+  background: rgba(8, 11, 26, 0.28);
+}
+body.light-mode .bb-dash-loader-popup {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(255, 255, 255, 0.65);
+  color: #1a1a1a;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+body.light-mode .bb-dash-loader-bar {
+  background: rgba(99, 91, 255, 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-dash-loader-logo,
+  .bb-dash-loader-bar-fill,
+  .bb-dash-loader-label {
+    animation: none !important;
+  }
+  .bb-dash-loader,
+  .bb-dash-loader-popup {
+    transition: none !important;
+  }
+}
+
+/* Dashboard chrome — heading + header video.
+   dashboard-router.js toggles these body classes based on the iframe
+   route so chrome only collapses where it should:
+     • bb-dash-hide-content-header        → Brands grid (all sizes)
+     • bb-dash-hide-content-header-mobile → Start Now (≤1440px only,
+       so the desktop layout still shows the host title + video)
+   /logo-upload/* (Upload Brand Assets, Meta / Brand Verification)
+   and all other modules keep the heading visible. */
+body.bb-dash-hide-content-header #content-heading,
+body.bb-dash-hide-content-header .video-bg-content-header {
+  display: none !important;
+}
+
+body.bb-dash-hide-content-header .content-block::before {
+  content: "";
+  background-color: transparent !important;
+}
+
+@media (max-width: 1440px) {
+  body.bb-dash-hide-content-header-mobile #content-heading,
+  body.bb-dash-hide-content-header-mobile .video-bg-content-header {
+    display: none !important;
+  }
+
+  body.bb-dash-hide-content-header-mobile .content-block::before {
+    content: "";
+    background-color: transparent !important;
+  }
+}
+
+/* Dashboard chrome overrides — the blue diagonal patch (::before)
+   and the background video sit at z-index 3 (just above the iframe
+   surface). The heading rides much higher so it always paints on
+   top of the patch / video. */
+.content-block::before,
+.video-bg-content-header {
+  z-index: 3 !important;
+}
+#content-heading {
+  z-index: 999999999999999999 !important;
+}
+
+.footer-bar-brand-console {
+  font-size: 9px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+}
+
+/* Footer is full-width again; only the left cluster (B icon +
+   "© 2026 BrandBased…") sits 5px from the viewport's left edge.
+   Parent .footer-bar-brand-console has padding: 0 15px, so we
+   pull the left cluster back by 10px to land at the requested 5px. */
+.footer-bar-brand-console .footer-left {
+  margin-left: -10px !important;
+}
+
+/* Shrink the BrandBased B in the bottom footer so it sits neatly
+   inside the 20px-tall slim footer. Scales the inline <img> too
+   since the markup hard-codes width/height="17".
+   Lifted by 2px via translateY so it optically aligns with the
+   "© 2026 BrandBased…" baseline. */
+.footer-b-icon {
+  max-height: 12px !important;
+  display: inline-flex;
+  align-items: center;
+  transform: translateY(-2px);
+}
+.footer-b-icon img {
+  max-height: 12px !important;
+  width: auto !important;
+  height: auto !important;
+  display: block;
+}
+
+/* Lift dashboard chrome (top header, sidebar, mobile footer bar, the
+   slide-up mobile nav) above EVERY popup/overlay on the dashboard —
+   the page loader (z 99999), sync/publishing/verify backdrops
+   (z 99999), the dev Freemium gate (z 99999), AND the Preferences
+   modal (z 200000). The loader and popup *cards* sit in the centre
+   of the viewport where chrome doesn't visually overlap, so chrome
+   paints cleanly on top but the cards still read through the gap.
+
+   `.account` / `#account-popup` / `.get-premium` get their own
+   even higher bump further down so they're guaranteed on top of
+   any popup appended to <body> before the router relocates it into
+   `.screen`. */
+.header-nav,
+.nav-container,
+.mobile-footer-bar,
+.mobile-footer-nav,
+.footer-bar-brand-console {
+  z-index: 300000 !important;
+}
+
+/* Sync popups (Syncing / Verifying / Publishing / etc.) sit at the
+   same layer as the page Loader — under the dashboard chrome
+   (top header, sidebar, mobile footer). The popup card itself
+   appears in the centre of the viewport where the chrome doesn't
+   visually overlap, so the chrome paints above the popup blur but
+   the card still reads clearly through the gap. */
+.bb-sync-popup-backdrop {
+  z-index: 99999 !important;
+}
+
+/* Belt-and-braces: the shared sync-popup helper sometimes appends
+   its backdrop to <body> before the router relocates it into
+   `.screen`. During that brief window the popup is at document-root
+   level and can land above the chrome's stacking context. Pinning
+   `.account`, `#account-popup` and `.get-premium` to a much higher
+   z-index than any popup (sync/publishing/freemium-gate) guarantees
+   the header trio is *always* on top — even mid-flight. The
+   Preferences modal (z 200000) is opened from `.account` itself,
+   so we deliberately stay above it too: by the time Preferences
+   shows, the user no longer needs to interact with `.account`. */
+.header-nav .account,
+.header-nav #account-popup,
+.header-nav .get-premium {
+  z-index: 300001 !important;
+}
+
+/* ====================================================================
+   Account header dropdown + Preferences modal
+   --------------------------------------------------------------------
+   Tap `.account` to open `#account-popup`. Glass matches the shared
+   `.bb-sync-popup` card (soft frosted panel — no heavy radial shine).
+   Subscription / Preferences rows sit above Theme + Log Out.
+   Preferences opens `#bbAccountPrefsBackdrop` with the same glass.
+   ==================================================================== */
+
+/* Override the legacy fixed-size popup with a glass dropdown that
+   grows to fit its contents. Display is toggled by the
+   `account-popup--open` class set in the inline wiring script. */
+#account-popup {
+  /* All of these win the cascade with !important to override the
+     legacy width:150px / height:70px / display:none rules without
+     having to touch the original block. */
+  width: 220px !important;
+  height: 170px !important;
+  min-height: 170px !important;
+  padding: 10px !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.32) !important;
+  outline: none;
+  /* Match `.bb-sync-popup` — subtle frosted glass */
+  background: rgba(255, 255, 255, 0.18) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+          backdrop-filter: blur(28px) saturate(1.2);
+  isolation: isolate;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff;
+  /* Default closed state. `account-popup--open` flips this to flex
+     and stacks the menu items in normal flow. */
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left !important;
+}
+
+#account-popup.account-popup--open {
+  display: flex;
+}
+
+/* Glass menu items (Subscription / Preferences). Same frosted row
+   treatment as `.bb-brands-action-item` on the Brands page. */
+.bb-account-menu-item {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: auto;
+  align-self: stretch;
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.bb-account-menu-item:hover,
+.bb-account-menu-item:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+}
+
+.bb-account-menu-divider {
+  height: 1px;
+  margin: 5px 4px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Re-flow the legacy theme toggle + Log Out button so they sit
+   beneath the new menu items in normal flow instead of stacked on
+   top of each other via `position: absolute`.
+
+   Indent the theme row's label so "Theme Dark/Light" lines up with
+   "Preferences" / "Subscription" above it. Those rows have a 4px
+   outer margin + 10px inner padding-left → text starts at 14px;
+   matching with margin-left: 8px on the container (its label has
+   no inner padding, just the parent margin) keeps the label flush
+   to the requested indent. */
+#account-popup .theme-toggle-container {
+  position: static !important;
+  margin: 6px 6px 4px 8px !important;
+  top: auto !important;
+}
+
+/* Match the Preferences / Subscription row typography exactly so the
+   theme label reads as part of the same menu list. The legacy global
+   `.theme-label` rule pulls itself left with `margin-left: -6px` — we
+   neutralise that inside the popup so the label sits at the start
+   of the indent we just set on the container. */
+#account-popup .theme-toggle-container .theme-label {
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0;
+  color: inherit;
+  margin-left: 0;
+  min-width: 0;
+}
+
+#account-popup .logout-button {
+  position: static !important;
+  margin: 6px auto 2px !important;
+  top: auto !important;
+  /* Never inherit frosted-glass blur from the parent popup — the
+     button should read as an opaque pill, not a glass layer. */
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+/* Logout hover: solid grey fill, white label + white ring — no blur. */
+#account-popup .logout-button:hover,
+#account-popup .logout-button:focus-visible {
+  outline: none;
+  background-color: #c4c4c8 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+/* Light mode: frosted panel on the light header (still no radial shine). */
+body.light-mode #account-popup {
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+          backdrop-filter: blur(28px) saturate(1.2);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06) !important;
+  color: #0c0c14;
+}
+
+body.light-mode .bb-account-menu-item {
+  color: #0c0c14;
+}
+
+body.light-mode .bb-account-menu-item:hover,
+body.light-mode .bb-account-menu-item:focus-visible {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .bb-account-menu-divider {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+/* Logout button — light mode only. The default style uses a white
+   border + white label which disappears on the light-mode frosted
+   popup. Swap to black so the pill reads against the lighter glass.
+   Scoped to `#account-popup` so any other dashboards reusing the
+   button class are unaffected. */
+body.light-mode #account-popup .logout-button {
+  border: 2px solid #000000;
+  color: #000000;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+body.light-mode #account-popup .logout-button:hover,
+body.light-mode #account-popup .logout-button:focus-visible {
+  background-color: #c4c4c8 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+/* ----------------------------------------------------------------
+   Preferences modal — frosted dialog (same glass as `.bb-sync-popup`).
+   Sits above the dashboard chrome (interactive form).
+   ---------------------------------------------------------------- */
+.bb-account-prefs-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  /* Heavier wash + deeper blur than the sync popups — this is a
+     modal the user dwells in, so the chrome behind it should fully
+     recede instead of staying readable. */
+  background: rgba(8, 11, 26, 0.62);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+          backdrop-filter: blur(12px) saturate(1.05);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+
+.bb-account-prefs-backdrop--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bb-account-prefs-dialog {
+  position: relative;
+  width: min(440px, 100%);
+  padding: 24px 24px 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  outline: none;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+          backdrop-filter: blur(28px) saturate(1.2);
+  isolation: isolate;
+  color: #ffffff;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+  transform: translateY(6px) scale(0.985);
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bb-account-prefs-backdrop--open .bb-account-prefs-dialog {
+  transform: none;
+}
+
+/* Brand B-mark — same recipe as the dashboard loader logo
+   (`.bb-dash-loader-logo` / `img`): white circle, purple-tinted B
+   via filter chain. Sits centred above the title to anchor the
+   dialog as a BrandBased surface. No pulse — this is a calm modal,
+   not a loader. */
+.bb-account-prefs-mark {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  box-sizing: border-box;
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.30),
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 0 18px 2px rgba(99, 91, 255, 0.45);
+}
+
+.bb-account-prefs-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter:
+    brightness(0)
+    saturate(100%)
+    invert(28%)
+    sepia(89%)
+    saturate(2997%)
+    hue-rotate(239deg)
+    brightness(96%)
+    contrast(101%);
+}
+
+/* Stripe-verify variant — shares the Preferences glass; swaps the
+   B mark's purple halo for a Stripe-style indigo/blue (#635bff is
+   the brand purple already used elsewhere, but Stripe leans blue
+   so this halo nudges towards #4f7cff to read as the payment flow
+   without breaking BrandBased palette). */
+.bb-account-prefs-mark--stripe {
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.30),
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 0 22px 3px rgba(79, 124, 255, 0.55);
+}
+
+/* Brand Support info modal — reuses the Preferences glass; gives
+   the B mark a calm teal halo so it reads as a help/support
+   surface and not the Stripe payment one. The dialog itself is
+   slightly narrower since there are no form fields. */
+.bb-account-prefs-mark--support {
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.30),
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 0 22px 3px rgba(56, 178, 172, 0.50);
+}
+.bb-account-prefs-dialog--support {
+  max-width: 420px;
+}
+.bb-account-prefs-dialog--support .bb-account-prefs-body {
+  margin-bottom: 8px;
+}
+/* The dedicated email row underneath the body copy. Slightly tighter
+   leading + bottom margin so the address sits as a clear "this is
+   what to click" line above the Close button. */
+.bb-account-prefs-body--email {
+  margin-top: 0 !important;
+  margin-bottom: 20px !important;
+  text-align: center;
+}
+
+/* Inline email link inside the Brand Support modal — inherits body
+   text colour; hover stays the same (no colour flash). */
+.bb-support-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+.bb-support-link:hover,
+.bb-support-link:focus-visible {
+  color: inherit;
+}
+
+/* Light mode: blue link; hover unchanged (still blue). */
+body.light-mode .bb-support-link {
+  color: #3b82f6 !important;
+}
+body.light-mode .bb-support-link:hover,
+body.light-mode .bb-support-link:focus-visible {
+  color: #3b82f6 !important;
+}
+
+.bb-account-prefs-title {
+  margin: 0 0 6px;
+  font: 800 16px/1.25 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.005em;
+  text-align: center;
+}
+
+/* Centre the helper copy too, so the mark + title + body read as a
+   single composed header. The form/inputs below stay left-aligned. */
+.bb-account-prefs-body {
+  text-align: center;
+}
+
+.bb-account-prefs-body {
+  margin: 0 0 16px;
+  font: 500 13.5px/1.5 Roboto, system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.bb-account-prefs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bb-account-prefs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bb-account-prefs-field span {
+  font: 700 12px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.bb-account-prefs-field input {
+  appearance: none;
+  -webkit-appearance: none;
+  /* Inputs need border-box so width:100% + horizontal padding don't
+     overflow the dialog padding and clip into the bevel. */
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font: 500 13.5px/1 Roboto, system-ui, sans-serif;
+  /* Force left-align — the dashboard has plenty of inherited
+     `text-align: center` rules on heading/content containers that
+     would otherwise centre the placeholder and typed value. */
+  text-align: left;
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.bb-account-prefs-field input::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+  text-align: left;
+}
+
+.bb-account-prefs-field input::-webkit-input-placeholder {
+  text-align: left;
+}
+
+.bb-account-prefs-field input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.32);
+}
+
+.bb-account-prefs-actions {
+  /* Centered, equal-width buttons that match the Delete-confirm
+     popup's action row (.bb-confirm-popup__actions). The single-
+     button variant below opts out of the flex-1 sizing. */
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.bb-account-prefs-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font: 600 14px/1 Roboto, system-ui, sans-serif;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease,
+              box-shadow 160ms ease, color 160ms ease;
+}
+
+/* Single-button rows (e.g. Brand Support "Close") keep their
+   natural width and stay centered. */
+.bb-account-prefs-actions--single .bb-account-prefs-btn {
+  flex: 0 0 auto;
+  min-width: 140px;
+}
+
+.bb-account-prefs-btn:hover,
+.bb-account-prefs-btn:focus-visible {
+  outline: none;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.bb-account-prefs-btn--primary {
+  background: linear-gradient(180deg, #1f3aff 0%, #102ff5 100%);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  box-shadow:
+    0 10px 22px rgba(16, 48, 245, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.bb-account-prefs-btn--primary:hover,
+.bb-account-prefs-btn--primary:focus-visible {
+  background: linear-gradient(180deg, #2a47ff 0%, #1a3aff 100%);
+  border-color: rgba(255, 255, 255, 0.72);
+  color: #ffffff;
+  box-shadow:
+    0 14px 28px rgba(16, 48, 245, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.50),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20);
+}
+
+/* Light mode: the *card* gets a soft white veil so it reads as a
+   clean modal over the bright dashboard surface. Backdrop wash
+   stays the shared dark veil. Pairs with the matching
+   .bb-confirm-popup and .bb-dev-freemium-gate-dialog overrides. */
+body.light-mode .bb-account-prefs-dialog {
+  background: #ffffff78;
+}
+
+/* ----------------------------------------------------------------
+   Preferences modal — Subscription tier badge + Delete Account link
+   ----------------------------------------------------------------
+   Subscription badge sits above the form fields; the pill colour
+   swaps based on `body.bb-dev-freemium-mode` so it follows the
+   dev toggle in real time. Delete Account is a subtle text link
+   beneath the Save / Cancel row that triggers a danger confirm. */
+
+.bb-account-prefs-sub {
+  margin: -2px 0 14px;
+  text-align: center;
+  font: 600 12px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.78);
+  text-transform: uppercase;
+}
+
+.bb-account-prefs-sub__tier {
+  display: none;
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font: 700 11px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  vertical-align: 1px;
+}
+
+.bb-account-prefs-sub__tier--premium {
+  background: linear-gradient(180deg, #1f3aff 0%, #102ff5 100%);
+  color: #fff;
+  box-shadow:
+    0 6px 14px rgba(16, 48, 245, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.bb-account-prefs-sub__tier--freemium {
+  background: linear-gradient(180deg, #f5a623, #d68910);
+  color: #fff;
+  box-shadow:
+    0 6px 14px rgba(245, 166, 35, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+/* Show the Premium pill by default; swap to Freemium when the dev
+   simulation flag is on. Wire your production plan-tier flag to the
+   same body class to make this real. */
+.bb-account-prefs-sub__tier--premium { display: inline-block; }
+body.bb-dev-freemium-mode .bb-account-prefs-sub__tier--premium  { display: none; }
+body.bb-dev-freemium-mode .bb-account-prefs-sub__tier--freemium { display: inline-block; }
+
+/* Light-mode label colour — the dark glass card stays dark in light
+   mode but the "Your Subscription type:" prefix needs more weight. */
+body.light-mode .bb-account-prefs-sub {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.bb-account-prefs-delete {
+  display: block;
+  margin: 14px auto 0;
+  padding: 6px 4px;
+  background: transparent;
+  border: 0;
+  font: 600 12px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.62);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.32);
+  cursor: pointer;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.bb-account-prefs-delete:hover,
+.bb-account-prefs-delete:focus-visible {
+  outline: none;
+  color: #e74c3c;
+  text-decoration-color: rgba(231, 76, 60, 0.6);
+}
+
+/* ----------------------------------------------------------------
+   Dev: Freemium dashboard simulation — full-viewport frosted blur,
+   same layering vocabulary as `.bb-sync-popup-backdrop`. Lives
+   INSIDE `.screen` so dashboard chrome (header / sidebar / mobile
+   footer at z-index 100001) still paints above the blur.
+
+   Hidden under the load overlay (`body.bb-dash-loading`) because
+   that one is meant to dominate during nav.
+   ---------------------------------------------------------------- */
+.bb-dev-freemium-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  box-sizing: border-box;
+  background: rgba(8, 11, 26, 0.46);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+          backdrop-filter: blur(18px) saturate(1.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.bb-dev-freemium-gate.bb-dev-freemium-gate--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* The dashboard's full-page loader takes precedence during nav. */
+body.bb-dash-loading .bb-dev-freemium-gate {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Frosted card — larger than `.bb-account-prefs-dialog`. */
+.bb-dev-freemium-gate-dialog {
+  position: relative;
+  width: min(640px, 100%);
+  max-width: 100%;
+  padding: 38px 40px 30px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  outline: none;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+          backdrop-filter: blur(28px) saturate(1.2);
+  isolation: isolate;
+  color: #ffffff;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+  transform: translateY(8px) scale(0.985);
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bb-dev-freemium-gate.bb-dev-freemium-gate--visible .bb-dev-freemium-gate-dialog {
+  transform: none;
+}
+
+.bb-dev-freemium-gate-mark {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px;
+  box-sizing: border-box;
+  /* Breathing pulse + brand-purple halo — same recipe as the
+     dashboard loader's B mark (`bb-dash-loader-logo-pulse`) so the
+     gate feels like a calm cousin of the sync popup, not an alert. */
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 0 22px 3px rgba(99, 91, 255, 0.48);
+  transform-origin: center;
+  will-change: transform, box-shadow;
+  animation: bb-dev-freemium-gate-breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes bb-dev-freemium-gate-breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.32),
+      0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+      0 0 0 0 #635bff;
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow:
+      0 14px 32px rgba(0, 0, 0, 0.36),
+      0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+      0 0 0 10px rgba(99, 91, 255, 0.001),
+      0 0 26px 6px #635bff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-dev-freemium-gate-mark {
+    animation: none;
+  }
+}
+
+.bb-dev-freemium-gate-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  filter:
+    brightness(0)
+    saturate(100%)
+    invert(28%)
+    sepia(89%)
+    saturate(2997%)
+    hue-rotate(239deg)
+    brightness(96%)
+    contrast(101%);
+}
+
+/* Title + body match the BrandBased typeface logo vibe — Roboto
+   at its heaviest weight, sized up to read as a hero block rather
+   than a small modal heading. Title is solid brand purple; body stays
+   solid white. */
+.bb-dev-freemium-gate-title {
+  margin: 0 0 14px;
+  text-align: center;
+  font: 900 26px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.005em;
+}
+
+.bb-dev-freemium-gate-title-shine {
+  display: inline-block;
+  font: inherit;
+  /* Same brand purple as sync / Upgrade CTA (#635bff). Solid fill so
+     it never fades out; soft glow keeps it legible on the frosted
+     glass in both dashboard themes. */
+  color: #635bff;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 22px rgba(99, 91, 255, 0.55);
+}
+
+body.light-mode .bb-dev-freemium-gate-title-shine {
+  /* Slightly deeper on light glass so it still pops. */
+  color: #5248e8;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 18px rgba(99, 91, 255, 0.35);
+}
+
+.bb-dev-freemium-gate-body {
+  margin: 0 0 22px;
+  font: 900 21px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  text-align: center;
+  color: #ffffff;
+}
+
+/* Sync-style purple CTA — same brand-purple (#635bff) as the
+   sync/publishing popups. Solid pill, soft halo, gentle hover lift.
+   Pulses subtly via the same breathing rhythm as the B mark so the
+   button feels alive without competing for attention. */
+.bb-dev-freemium-gate-cta {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-block;
+  margin: 0 auto 18px;
+  padding: 12px 32px;
+  border: 0;
+  border-radius: 999px;
+  background: #635bff;
+  color: #ffffff;
+  font: 800 15px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    0 10px 24px rgba(99, 91, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+    0 0 0 0 rgba(99, 91, 255, 0.55);
+  transition:
+    transform 160ms ease,
+    box-shadow 220ms ease,
+    background 160ms ease;
+  animation: bb-dev-freemium-gate-cta-breathe 1.8s ease-in-out infinite;
+}
+
+.bb-dev-freemium-gate-cta:hover,
+.bb-dev-freemium-gate-cta:focus-visible {
+  outline: none;
+  background: #7872ff;
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 30px rgba(99, 91, 255, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+    0 0 0 6px rgba(99, 91, 255, 0.20);
+}
+
+.bb-dev-freemium-gate-cta:active {
+  transform: translateY(0);
+}
+
+@keyframes bb-dev-freemium-gate-cta-breathe {
+  0%, 100% {
+    box-shadow:
+      0 10px 24px rgba(99, 91, 255, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.20),
+      0 0 0 0 rgba(99, 91, 255, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 12px 28px rgba(99, 91, 255, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.36),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.22),
+      0 0 0 10px rgba(99, 91, 255, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-dev-freemium-gate-cta {
+    animation: none;
+  }
+}
+
+@media (max-width: 740px) {
+  .bb-dev-freemium-gate-dialog {
+    padding: 28px 22px 22px;
+  }
+  .bb-dev-freemium-gate-body {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+  .bb-dev-freemium-gate-title {
+    font-size: 20px;
+  }
+  .bb-dev-freemium-gate-cta {
+    padding: 11px 26px;
+    font-size: 14px;
+  }
+}
+
+.bb-dev-freemium-gate-hint {
+  margin: 0;
+  font: 500 11px/1.45 Roboto, system-ui, sans-serif;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.bb-dev-freemium-gate-hint a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 700;
+}
+
+.bb-dev-freemium-gate-hint a:hover,
+.bb-dev-freemium-gate-hint a:focus-visible {
+  color: rgba(255, 255, 255, 0.85);
+  outline: none;
+}
+
+body.light-mode .bb-dev-freemium-gate-hint a:hover,
+body.light-mode .bb-dev-freemium-gate-hint a:focus-visible {
+  color: #102ff5;
+}
+
+/* Light dashboard mode: keep the dark veil + bright white copy so
+   the hero text still reads as the BrandBased typeface against the
+   blurred page behind it. */
+body.light-mode .bb-dev-freemium-gate {
+  background: rgba(12, 12, 20, 0.50);
+}
+
+body.light-mode .bb-dev-freemium-gate-dialog {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  /* Soft white veil on the card itself — pairs with the dark
+     backdrop wash so the popup reads as a clean modal in light
+     mode without flattening the chrome behind it. */
+  background: #ffffff78;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Footer slide-up `.footer-grid`: every <img> (SVG sources) forced white.
+   #screen2 = main shell; EOF + load brand-console-styles.css *after*
+   animate / sync / metrics in brand-console-dashboard.html. */
+#screen2 .mobile-footer-nav .footer-grid img,
+#screen2 .mobile-footer-nav .footer-grid picture img {
+  filter: brightness(0) invert(1) !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+}
+
+#screen2 .mobile-footer-nav .close-mobile-nav img {
+  filter: brightness(0) invert(1) !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+}

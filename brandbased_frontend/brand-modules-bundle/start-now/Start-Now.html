@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Start Now — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="../favicons/manifest.webmanifest" />
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+  <link rel="stylesheet" href="../platforms/platforms.css?v=platforms-46" />
+  <link rel="stylesheet" href="../hotspots/hotspots.css?v=hotspots-8" />
+  <link rel="stylesheet" href="./start-now.css?v=startnow-31" />
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-platforms-page bb-hotspots-page bb-start-now-page">
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <div id="bbStartNowMount" class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="Start-Now.html">Start Now</a>
+        <a href="../logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="../brands/Brands.html">Brands</a>
+        <a href="../Brand-Settings-Module.html">Brand Settings</a>
+        <a href="../Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="../products/Products.html">Products</a>
+        <a href="../Product-Scheduling-Module.html">Scheduling</a>
+        <a href="../platforms/Platforms.html">Platforms</a>
+        <a href="../hotspots/Hotspots.html">Hotspots</a>
+        <a href="../ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="../ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+        <a href="../metrics/Metrics.html">Metrics</a>
+        <a href="../payments/Payments.html">Payments</a>
+        <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <h1>Start Now</h1>
+    </header>
+
+    <main class="bb-startnow-main" role="main" aria-label="Start Now">
+
+      <!-- =====================================================
+           Free tier row
+           ===================================================== -->
+      <section class="bb-startnow-row bb-startnow-row--free" aria-labelledby="bbStartFreeHeading">
+        <div class="bb-startnow-pitch">
+          <h2 id="bbStartFreeHeading" class="bb-startnow-pitch__heading">Discover &amp; Promote Free</h2>
+          <p class="bb-startnow-pitch__sub">Reach new audiences and build your brand at no cost.</p>
+          <a class="bb-startnow-cta bb-startnow-cta--free"
+             href="../freemium/Freemium-Logo-upload-and-Crop-module.html">
+            <span class="bb-startnow-cta__plus" aria-hidden="true">+</span>
+            <span class="bb-startnow-cta__label">Start FREE</span>
+            <span class="bb-startnow-cta__arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div class="bb-startnow-mock">
+          <a class="bb-startnow-modal-link bb-startnow-modal-link--free"
+             href="../freemium/Freemium-Logo-upload-and-Crop-module.html"
+             aria-label="Start FREE — open the Logo Upload &amp; Crop module">
+            <div class="bb-startnow-modal bb-startnow-modal--free" aria-hidden="true">
+              <span class="bb-startnow-modal__close">×</span>
+              <span class="bb-startnow-modal__bicon bb-startnow-modal__bicon--lg">
+                <img src="../brandbased-logo.svg" alt="" />
+              </span>
+              <span class="bb-startnow-modal__explore">Explore</span>
+            </div>
+          </a>
+          <div class="bb-startnow-modal-dots" aria-hidden="true">
+            <span class="is-active"></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <ul class="bb-startnow-features">
+          <li>
+            <h3>Dynamic Hotspots</h3>
+            <p>Place interactive product promos anywhere on a page, engaging users without interrupting their browsing.</p>
+          </li>
+          <li>
+            <h3>Cross-Page Reach</h3>
+            <p>Send customers directly to your products from any page, boosting visibility and conversion.</p>
+          </li>
+          <li>
+            <h3>Automated Promotions</h3>
+            <p>Schedule and rotate campaigns seamlessly, keeping your offerings fresh and timely.</p>
+          </li>
+          <li>
+            <h3>Freemium Access</h3>
+            <p>Start using BrandBased with no cost, unlocking key tools to showcase and distribute products instantly.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- =====================================================
+           Premium tier row
+           ===================================================== -->
+      <section class="bb-startnow-row bb-startnow-row--premium" aria-labelledby="bbStartPremiumHeading">
+        <div class="bb-startnow-pitch">
+          <h2 id="bbStartPremiumHeading" class="bb-startnow-pitch__heading">AI Driven Brand Commerce</h2>
+          <p class="bb-startnow-pitch__sub">Get on board the first platform that turns static brand mentions into real-time, AI-powered shoppable moments across the internet.</p>
+          <!-- Premium CTA — currently routes to the Logo Upload &
+               Crop module (same destination as the Free tier above)
+               so both tiers funnel new users into onboarding.
+               When a real Stripe Payment Link / Checkout Session
+               URL is ready, swap the `href` back to the Stripe link
+               and restore `target="_blank"`, `rel="noopener noreferrer"`,
+               and `data-bb-stripe-checkout="premium"` here AND on the
+               matching .bb-startnow-modal-link--premium below. -->
+          <a class="bb-startnow-cta bb-startnow-cta--premium"
+             href="../logo-upload/Logo-upload-and-Crop-module.html">
+            <span class="bb-startnow-cta__plus" aria-hidden="true">+</span>
+            <span class="bb-startnow-cta__label">Go Premium</span>
+            <span class="bb-startnow-cta__arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div class="bb-startnow-mock bb-startnow-mock--premium">
+          <a class="bb-startnow-modal-link bb-startnow-modal-link--premium"
+             href="../logo-upload/Logo-upload-and-Crop-module.html"
+             aria-label="Go Premium — open the Logo Upload &amp; Crop module">
+            <div class="bb-startnow-modal bb-startnow-modal--premium" aria-hidden="true">
+            <div class="bb-startnow-modal__head">
+              <span class="bb-startnow-modal__bicon">
+                <img src="../brandbased-logo.svg" alt="" />
+              </span>
+              <span class="bb-startnow-modal__title">Product Display Name</span>
+              <span class="bb-startnow-modal__close">×</span>
+            </div>
+
+            <div class="bb-startnow-modal__body">
+              <div class="bb-startnow-modal__media">
+                <img src="./bb-placeholder.png" alt="" />
+              </div>
+              <p class="bb-startnow-modal__desc">
+                Every product has a story, and yours is no exception. Share what inspired its creation, the craftsmanship or technology behind it, and the unique qualities that make it stand out. Highlight the details that customers will notice and appreciate, from the design and materials to the thoughtful features that make life easier or more enjoyable. Tell them why this product is more than just an item — it's an experience, a solution, or a statement they can connect with. The more your customers understand the value and passion behind your product, the more they'll be drawn to it and motivated to make it part of their lives.
+              </p>
+            </div>
+
+            <div class="bb-startnow-modal__selectors">
+              <span>Qty <i aria-hidden="true">▾</i></span>
+              <span>Version <i aria-hidden="true">▾</i></span>
+              <span>Color <i aria-hidden="true">▾</i></span>
+            </div>
+
+            <div class="bb-startnow-modal__buy">
+              <span class="bb-startnow-modal__buy-compass" aria-hidden="true">
+                <svg viewBox="0 0 122.88 122.88" focusable="false">
+                  <path fill="currentColor" d="M61.44,0A61.46,61.46,0,1,1,18,18,61.23,61.23,0,0,1,61.44,0Zm5.25,73.85-3.64-3.69-.15,0a8.38,8.38,0,0,1-.88,0,8.86,8.86,0,0,1-8.88-8.87,9.2,9.2,0,0,1,0-.94l0-.2-4-4L37.88,85.29,66.69,73.85Zm-2.22-6L70,73.4l1.43,1.43L33.17,90,48.28,51.41l7.82,7.92L56,60a5.67,5.67,0,0,0-.11.66c0,.24,0,.46,0,.66A6.23,6.23,0,0,0,62,67.56l.62,0a5.77,5.77,0,0,0,.62-.09l.7-.14.51.51ZM58.52,55.18l-6.3-6.39.42-.85.7-.64L89.71,32.85,74.61,71.47l-7.07-7.16.3-.79a5.85,5.85,0,0,0,.29-1.07,7.14,7.14,0,0,0,.1-1.1A6.23,6.23,0,0,0,62,55.14a6.56,6.56,0,0,0-1.08.09,5.45,5.45,0,0,0-1,.27l-.8.29-.6-.61ZM96.58,26.3a49.71,49.71,0,1,0,14.55,35.14A49.57,49.57,0,0,0,96.58,26.3Z"/>
+                </svg>
+              </span>
+              <span class="bb-startnow-modal__buy-pill">Buy Now • A$ 67.95</span>
+            </div>
+
+            <div class="bb-startnow-modal__ad">
+              <img class="bb-startnow-modal__ad-image" src="./Ad-block.png" alt="" />
+              <span class="bb-startnow-modal__ad-label">AD</span>
+            </div>
+            </div>
+          </a>
+          <div class="bb-startnow-modal-dots" aria-hidden="true">
+            <span class="is-active"></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <ul class="bb-startnow-features">
+          <li>
+            <h3>The Shopping Cart is Dead</h3>
+            <p>Redefine e-commerce with AI-driven product discovery and seamless sales.</p>
+          </li>
+          <li>
+            <h3>Global Brand Reach</h3>
+            <p>Get your products in front of customers anywhere, anytime, powered by intelligent placement.</p>
+          </li>
+          <li>
+            <h3>Multi-Brand Management</h3>
+            <p>Manage up to 12 brands from a single platform with ease.</p>
+          </li>
+          <li>
+            <h3>Expanded Product Capacity</h3>
+            <p>Upload up to 7 products per brand, optimizing your catalog for maximum impact.</p>
+          </li>
+          <li>
+            <h3>Revenue Sharing &amp; Growth</h3>
+            <p>Split ad revenue while boosting brand and product discovery worldwide.</p>
+          </li>
+          <li>
+            <h3>Stay Pro</h3>
+            <p>Upgrade to maintain your Premium access and keep unlocking advanced tools and insights.</p>
+          </li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+</body>
+</html>

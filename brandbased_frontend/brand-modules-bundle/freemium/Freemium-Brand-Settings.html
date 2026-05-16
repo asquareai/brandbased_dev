@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freemium Brand Settings — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet" />
+
+  <!-- Slider (required for popup modal) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      padding-bottom: 96px;
+      font-family: Roboto, system-ui, sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+      width: min(1200px, 92vw);
+      box-sizing: border-box;
+    }
+    .bb-module-head {
+      /* Align page title with the left settings column */
+      width: min(420px, 100%);
+      margin-bottom: 20px;
+    }
+    @media (max-width: 980px) {
+      .bb-module-head { width: 100%; }
+    }
+    .bb-module-head h1 {
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 -20px 0;
+      text-align: left;
+      font-size: 28px;
+    }
+    .bb-module-head p {
+      margin: 0 0 10px;
+      color: #444;
+      font-size: 14px;
+    }
+    .bb-module-nav a {
+      color: #1030f5;
+      margin-right: 14px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .bb-bs-layout {
+      --bb-col-gap: 240px;
+      display: grid;
+      grid-template-columns: minmax(340px, 420px) 1fr;
+      column-gap: var(--bb-col-gap);
+      row-gap: 22px;
+      align-items: start;
+    }
+    /* Tight two-column range: keep columns, reduce the huge gap */
+    @media (max-width: 1250px) {
+      .bb-bs-layout {
+        --bb-col-gap: 14px;
+      }
+    }
+    /* Vertical divider between left/right columns (only on wide layouts) */
+    @media (min-width: 1251px) {
+      .bb-bs-layout {
+        position: relative;
+      }
+      .bb-bs-layout::before {
+        content: "";
+        position: absolute;
+        top: 5%;
+        height: 90%;
+        left: calc(420px + (var(--bb-col-gap) / 2));
+        width: 3px;
+        border-radius: 30px;
+        background: rgba(200, 200, 210, 0.75);
+        box-shadow: 0 10px 26px rgba(0,0,0,0.10), 0 0 0 1px rgba(255,255,255,0.35) inset;
+        pointer-events: none;
+      }
+    }
+    @media (max-width: 980px) {
+      .bb-bs-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .bb-bs-card {
+      background: #f2f3f8;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.08);
+      padding: 14px;
+    }
+    body.dark-mode #bbGlyphCard,
+    body.dark-mode #bbPreviewCard + .bb-bs-card {
+      background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35) !important;
+      color: rgba(255, 255, 255, 0.96);
+    }
+    body.dark-mode #bbGlyphCard h2,
+    body.dark-mode #bbPreviewCard + .bb-bs-card h2,
+    body.dark-mode #bbGlyphCard .bb-bs-help,
+    body.dark-mode #bbPreviewCard + .bb-bs-card .bb-bs-help {
+      color: rgba(255, 255, 255, 0.92);
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not(.light-mode) #bbGlyphCard,
+      body:not(.light-mode) #bbPreviewCard + .bb-bs-card {
+        background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35) !important;
+        color: rgba(255, 255, 255, 0.96);
+      }
+      body:not(.light-mode) #bbGlyphCard h2,
+      body:not(.light-mode) #bbPreviewCard + .bb-bs-card h2,
+      body:not(.light-mode) #bbGlyphCard .bb-bs-help,
+      body:not(.light-mode) #bbPreviewCard + .bb-bs-card .bb-bs-help {
+        color: rgba(255, 255, 255, 0.92);
+      }
+    }
+    .bb-bs-card h2 {
+      margin: 0 0 8px 0;
+      font: 800 15px/1.2 Roboto, system-ui, sans-serif;
+    }
+    /* Match "Preview Simulated Content" heading to main page title size */
+    #bbPreviewCard > h2 {
+      font: 800 28px/1.15 Roboto, system-ui, sans-serif;
+      letter-spacing: -0.02em;
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+    .bb-bs-help {
+      margin: 0 0 10px 0;
+      font: 13px/1.45 Roboto, system-ui, sans-serif;
+      color: #3d3d3d;
+    }
+    /* tool-tip.svg — circular glass pill, 20×20; no left margin/padding on the icon chip */
+    .bb-help-tooltip {
+      margin: 0;
+      padding: 2px;
+    }
+    .bb-bs-help .bb-help-tooltip,
+    .bb-adaptive-sub .bb-help-tooltip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.42);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    .bb-help-tooltip img {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+    .bb-help-tooltip:focus-visible {
+      outline: 2px solid #1030f5;
+      outline-offset: 2px;
+    }
+    body.dark-mode .bb-bs-help .bb-help-tooltip,
+    body.dark-mode .bb-adaptive-sub .bb-help-tooltip {
+      background: rgb(255 255 255 / 0%) !important;
+      filter: none;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    body.dark-mode .bb-bs-help .bb-help-tooltip img,
+    body.dark-mode .bb-adaptive-sub .bb-help-tooltip img {
+      filter: brightness(0) invert(1);
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not(.light-mode) .bb-bs-help .bb-help-tooltip,
+      body:not(.light-mode) .bb-adaptive-sub .bb-help-tooltip {
+        background: rgb(255 255 255 / 0%) !important;
+        filter: none;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      body:not(.light-mode) .bb-bs-help .bb-help-tooltip img,
+      body:not(.light-mode) .bb-adaptive-sub .bb-help-tooltip img {
+        filter: brightness(0) invert(1);
+      }
+    }
+    .bb-bs-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+    /* Frosted "tube" around just the range input (not the label copy) */
+    #bbPlacePanel input[type="range"],
+    .bb-bs-row input[type="range"] {
+      box-sizing: border-box;
+      padding: 5px !important;
+      border-radius: 999px !important;
+      background: rgb(191 193 197 / 62%) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      backdrop-filter: blur(10px) saturate(1.15) !important;
+      -webkit-backdrop-filter: blur(10px) saturate(1.15) !important;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+    }
+    @media (prefers-color-scheme: dark) {
+      #bbPlacePanel input[type="range"],
+      .bb-bs-row input[type="range"] {
+        background: rgb(69 69 69 / 62%) !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.42) !important;
+      }
+    }
+    body.dark-mode #bbPlacePanel input[type="range"],
+    body.dark-mode .bb-bs-row input[type="range"] {
+      background: rgb(69 69 69 / 62%) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.42) !important;
+    }
+    .bb-bs-row label {
+      font: 800 12px/1.2 Roboto, system-ui, sans-serif;
+      color: #1a1a1a;
+    }
+    .bb-bs-row .bb-bs-val {
+      font: 800 12px/1 Roboto, system-ui, sans-serif;
+      color: #1a1a1a;
+      opacity: 0.85;
+    }
+    .bb-bs-row input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      accent-color: #06084e;
+    }
+
+    /* Slider track + thumb */
+    .bb-bs-row input[type="range"] {
+      min-height: 22px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    /* Default (light): navy track, white thumb */
+    .bb-bs-row input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      background: #06084e !important;
+      border-radius: 9999px;
+    }
+    .bb-bs-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      margin-top: -5px;
+    }
+    .bb-bs-row input[type="range"]::-moz-range-track {
+      height: 6px;
+      background: #06084e !important;
+      border-radius: 9999px;
+      border: 0;
+    }
+    .bb-bs-row input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+    }
+
+    /* Ensure ALL settings sliders share the same look (including Threshold) */
+    .bb-bs-row input[type="range"] {
+      accent-color: #06084e !important;
+    }
+
+    /* Placement sliders (same as settings sliders) */
+    #bbPlacePanel input[type="range"] {
+      min-height: 22px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    #bbPlacePanel input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      background: #06084e !important;
+      border-radius: 9999px;
+    }
+    #bbPlacePanel input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff !important;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      margin-top: -5px;
+    }
+    #bbPlacePanel input[type="range"]::-moz-range-track {
+      height: 6px;
+      background: #06084e !important;
+      border-radius: 9999px;
+      border: 0;
+    }
+    #bbPlacePanel input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff !important;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+    }
+
+    /* Dark theme track/thumb flip */
+    @media (prefers-color-scheme: dark) {
+      #bbPlacePanel input[type="range"],
+      .bb-bs-row input[type="range"] {
+        accent-color: #06084e !important;
+      }
+      #bbPlacePanel input[type="range"]::-webkit-slider-runnable-track,
+      .bb-bs-row input[type="range"]::-webkit-slider-runnable-track {
+        background: #ffffff !important;
+      }
+      #bbPlacePanel input[type="range"]::-webkit-slider-thumb,
+      .bb-bs-row input[type="range"]::-webkit-slider-thumb {
+        background: #fff !important;
+        border-color: rgba(255, 255, 255, 0.28) !important;
+      }
+      #bbPlacePanel input[type="range"]::-moz-range-track,
+      .bb-bs-row input[type="range"]::-moz-range-track {
+        background: #ffffff !important;
+      }
+      #bbPlacePanel input[type="range"]::-moz-range-thumb,
+      .bb-bs-row input[type="range"]::-moz-range-thumb {
+        background: #fff !important;
+        border-color: rgba(255, 255, 255, 0.28) !important;
+      }
+    }
+    body.dark-mode #bbPlacePanel input[type="range"],
+    body.dark-mode .bb-bs-row input[type="range"] {
+      accent-color: #06084e !important;
+    }
+    body.dark-mode #bbPlacePanel input[type="range"]::-webkit-slider-runnable-track,
+    body.dark-mode .bb-bs-row input[type="range"]::-webkit-slider-runnable-track {
+      background: #ffffff !important;
+    }
+    body.dark-mode #bbPlacePanel input[type="range"]::-webkit-slider-thumb,
+    body.dark-mode .bb-bs-row input[type="range"]::-webkit-slider-thumb {
+      background: #fff !important;
+      border-color: rgba(255, 255, 255, 0.28) !important;
+    }
+    body.dark-mode #bbPlacePanel input[type="range"]::-moz-range-track,
+    body.dark-mode .bb-bs-row input[type="range"]::-moz-range-track {
+      background: #ffffff !important;
+    }
+    body.dark-mode #bbPlacePanel input[type="range"]::-moz-range-thumb,
+    body.dark-mode .bb-bs-row input[type="range"]::-moz-range-thumb {
+      background: #fff !important;
+      border-color: rgba(255, 255, 255, 0.28) !important;
+    }
+
+    /* Safari/Chrome edge-case: hard-pin Threshold styling */
+    #bbReplaceThreshold {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      background: rgb(191 193 197 / 62%) !important;
+      border: 1px solid rgba(0, 0, 0, 0.08) !important;
+      backdrop-filter: blur(10px) saturate(1.15) !important;
+      -webkit-backdrop-filter: blur(10px) saturate(1.15) !important;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06) !important;
+      padding: 5px !important;
+      border-radius: 999px !important;
+      box-sizing: border-box !important;
+      accent-color: #06084e !important;
+    }
+    #bbReplaceThreshold::-webkit-slider-runnable-track {
+      height: 6px !important;
+      background: #06084e !important;
+      border-radius: 9999px !important;
+    }
+    #bbReplaceThreshold::-webkit-slider-thumb {
+      -webkit-appearance: none !important;
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 50% !important;
+      background: #fff !important;
+      border: 1px solid rgba(0, 0, 0, 0.18) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+      margin-top: -5px !important;
+    }
+    #bbReplaceThreshold::-moz-range-track {
+      height: 6px !important;
+      background: #06084e !important;
+      border-radius: 9999px !important;
+      border: 0 !important;
+    }
+    #bbReplaceThreshold::-moz-range-thumb {
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 50% !important;
+      background: #fff !important;
+      border: 1px solid rgba(0, 0, 0, 0.2) !important;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
+      cursor: pointer !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #bbReplaceThreshold {
+        background: rgb(69 69 69 / 62%) !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+        accent-color: #06084e !important;
+      }
+      #bbReplaceThreshold::-webkit-slider-runnable-track {
+        background: #ffffff !important;
+      }
+      #bbReplaceThreshold::-webkit-slider-thumb {
+        background: #fff !important;
+        border-color: rgba(255, 255, 255, 0.28) !important;
+      }
+      #bbReplaceThreshold::-moz-range-track {
+        background: #ffffff !important;
+      }
+      #bbReplaceThreshold::-moz-range-thumb {
+        background: #fff !important;
+        border-color: rgba(255, 255, 255, 0.28) !important;
+      }
+    }
+    body.dark-mode #bbReplaceThreshold {
+      background: rgb(69 69 69 / 62%) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      accent-color: #06084e !important;
+    }
+    body.dark-mode #bbReplaceThreshold::-webkit-slider-runnable-track {
+      background: #ffffff !important;
+    }
+    body.dark-mode #bbReplaceThreshold::-webkit-slider-thumb {
+      background: #fff !important;
+      border-color: rgba(255, 255, 255, 0.28) !important;
+    }
+    body.dark-mode #bbReplaceThreshold::-moz-range-track {
+      background: #ffffff !important;
+    }
+    body.dark-mode #bbReplaceThreshold::-moz-range-thumb {
+      background: #fff !important;
+      border-color: rgba(255, 255, 255, 0.28) !important;
+    }
+
+    /* Tighten vertical rhythm (roughly half as tall) */
+    .bb-bs-card { padding: 12px; }
+    .bb-bs-row { margin-top: 8px; }
+    .bb-bs-help { margin-bottom: 6px; }
+
+    /* Transparent Custom Size & Placement container */
+    #bbPlacePanel {
+      background: transparent !important;
+      box-shadow: none !important;
+      border: 0 !important;
+      padding: 0 !important;
+      margin: 10px 0 0 !important;
+      margin-left: 6px !important; /* nudge right to clear left edge */
+      overflow: visible !important;
+    }
+
+    /* Brand Settings: only show the On/Off toggle (no hint/status text) */
+    #bbPlaceManualHint,
+    #bbPlaceGoldenHint,
+    #bbPlaceAiStatus {
+      display: none !important;
+    }
+
+    /* Brand Settings: "Customise Your Brand Modal" card styling */
+    .bb-bs-card.bb-modal-theme {
+      background: #06084e;
+      color: #fff;
+      border-color: rgba(255,255,255,0.18);
+    }
+    .bb-bs-card.bb-modal-theme h2,
+    .bb-bs-card.bb-modal-theme .bb-bs-help {
+      color: #fff;
+    }
+    .bb-bs-card.bb-modal-theme .bb-bs-help {
+      opacity: 0.85;
+    }
+    .bb-bs-card.bb-modal-theme .bb-modal-theme-btn {
+      width: min(468px, 100%);
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      font: 800 14px/1 Roboto,system-ui,sans-serif;
+      color: #06084e;
+      background: #fff;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 180ms ease;
+    }
+    .bb-bs-card.bb-modal-theme .bb-modal-theme-btn:hover {
+      opacity: 0.9;
+      color: #06084e !important;
+    }
+
+    /* Preview container should NOT look like a panel card */
+    #bbPreviewCard {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      padding: 0 !important;
+      margin-top: -26px; /* pull up to align with left heading/panel */
+    }
+
+    /* Threshold mini “logo chip” */
+    .bb-threshold-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(0,0,0,0.12);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+      font: 700 12px/1 Roboto, system-ui, sans-serif;
+      color: #111;
+      user-select: none;
+      white-space: nowrap;
+      --bb-chip-logo: url(../brandbased-logo.svg);
+    }
+    .bb-threshold-chip::before {
+      content: "";
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--bb-chip-logo) center / contain no-repeat;
+      flex: 0 0 auto;
+    }
+    /* Brand Settings wants black text for all Custom Size & Placement controls */
+    #bbPlacePanel,
+    #bbPlacePanel * {
+      color: #111 !important;
+    }
+    /* Dark mode: placement slider labels/hints should be white */
+    body.dark-mode #bbPlacePanel,
+    body.dark-mode #bbPlacePanel * {
+      color: #fff !important;
+    }
+    @media (prefers-color-scheme: dark) {
+      #bbPlacePanel,
+      #bbPlacePanel * {
+        color: #fff !important;
+      }
+    }
+    #bbPlacePanel .bb-place-header,
+    #bbPlacePanel .bb-place-sliders,
+    #bbPlacePanel .bb-place-actions {
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+    }
+    #bbPlacePanel .bb-place-header { padding-top: 0 !important; }
+    #bbPlacePanel .bb-place-title { font-size: 14px; }
+    #bbPlacePanel label { gap: 4px; }
+    #bbPlacePanel .bb-place-hint { font-size: 11px; opacity: 0.8; }
+    #bbPlacePanel input[type="range"] { min-height: 22px; }
+    /* Compact, side-by-side sliders (less vertical space) */
+    #bbPlacePanel .bb-place-sliders {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      margin-top: 8px !important;
+      transform: translateY(20px);
+    }
+    #bbPlacePanel .bb-place-sliders > label:first-child {
+      grid-column: 1 / -1;
+    }
+    #bbPlacePanel .bb-place-sliders label {
+      gap: 2px !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+    }
+    #bbPlacePanel .bb-place-hint {
+      font-size: 10px !important;
+      opacity: 0.75 !important;
+    }
+    #bbPlacePanel .bb-place-actions button {
+      border-color: rgba(0,0,0,0.18) !important;
+      background: rgba(255,255,255,0.75) !important;
+      color: #111 !important;
+    }
+    /* Slider grid uses translateY(20px); gap underneath + extra breathing room */
+    #bbPlacePanel .bb-place-actions {
+      display: block !important;
+      width: 100% !important;
+      padding-bottom: 8px !important;
+      margin-top: calc(20px + 20px + 10px) !important;
+    }
+    /* Reset button should be a full-width pill */
+    #bbPlacePanel .bb-place-actions .bb-place-reset {
+      display: block !important;
+      width: 100% !important;
+      border-radius: 999px !important;
+      overflow: visible !important;
+      padding: 14px 18px !important;
+      font: 800 14px/1 Roboto,system-ui,sans-serif !important;
+    }
+    /* Keep Brand AI icon crisp + blue */
+    #bbPlacePanel .bb-place-logo {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      filter: none !important; /* don't invert to white on this page */
+      overflow: visible !important;
+    }
+
+    /* Adaptive Brand Sizing card */
+    /* Make Adaptive Brand Sizing card match compact screenshot */
+    .bb-adaptive-card {
+      padding: 18px 18px !important;
+      min-height: 70px !important;
+      height: auto !important;
+    }
+    .bb-adaptive-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 0 !important;
+    }
+    .bb-adaptive-copy { flex: 1; min-width: 0; }
+    .bb-adaptive-title { font: 900 15px/1.2 Roboto, system-ui, sans-serif !important; }
+    .bb-adaptive-sub { margin-top: 3px !important; font: 13px/1.25 Roboto,system-ui,sans-serif !important; opacity: 0.8; }
+    .bb-adaptive-card .bb-place-brand-ai-toggle {
+      margin-left: 10px;
+      min-width: 62px;
+      padding: 5px 12px !important;
+      font-size: 13px !important;
+      border-radius: 30px;
+      margin-top: 10px;
+    }
+    .bb-adaptive-card .bb-place-logo { width: 52px !important; height: 52px !important; }
+
+    /* Iridescent hologram shimmer when AI is ON
+       Note: pseudo-elements don’t render on <img>, so we shimmer a wrapper. */
+    .bb-adaptive-logo-wrap {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      flex: 0 0 auto;
+      border-radius: 18px;
+      overflow: visible;
+    }
+    .bb-adaptive-logo-wrap > img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      filter: brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25)) !important;
+    }
+    .bb-adaptive-card.bb-adaptive-on .bb-adaptive-logo-wrap > img {
+      filter: saturate(1.2) contrast(1.05) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.38)) !important;
+      animation: none !important; /* pulse the wrapper so it always applies */
+    }
+    .bb-adaptive-card.bb-adaptive-on .bb-adaptive-logo-wrap {
+      animation: bb-adaptive-logo-pulse 5.6s ease-in-out infinite;
+      will-change: transform;
+    }
+    .bb-adaptive-card.bb-adaptive-on .bb-adaptive-logo-wrap::after {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      border-radius: 18px;
+      background:
+        linear-gradient(
+          120deg,
+          rgba(0, 255, 240, 0.00) 0%,
+          rgba(0, 255, 240, 0.55) 18%,
+          rgba(190, 0, 255, 0.55) 38%,
+          rgba(255, 220, 0, 0.55) 58%,
+          rgba(0, 255, 120, 0.45) 78%,
+          rgba(0, 255, 240, 0.00) 100%
+        );
+      filter: blur(0.6px);
+      mix-blend-mode: screen;
+      opacity: 0.85;
+      pointer-events: none;
+      animation: bb-holo-shimmer 7.5s ease-in-out infinite;
+      mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0) 80%);
+      -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.85) 55%, rgba(0,0,0,0) 80%);
+    }
+    @keyframes bb-holo-shimmer {
+      0% { transform: translateX(-28%) rotate(0deg); opacity: 0.75; }
+      50% { transform: translateX(28%) rotate(180deg); opacity: 0.9; }
+      100% { transform: translateX(-28%) rotate(360deg); opacity: 0.75; }
+    }
+
+    @keyframes bb-adaptive-logo-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.015); }
+    }
+    /* Ensure header container doesn't crop the icon */
+    #bbPlacePanel .bb-place-header {
+      overflow: visible !important;
+      align-items: center;
+    }
+
+    /* Brand Settings page: popup title icon should be transparent + true logo color */
+    .popup .title-row .brand-icon {
+      background: transparent !important;
+      background-color: transparent !important;
+      border-color: rgba(0,0,0,0.14) !important;
+    }
+    .popup .title-row .brand-icon::after {
+      background-color: transparent !important;
+      -webkit-mask-image: none !important;
+      mask-image: none !important;
+      background-image: var(--bb-logo) !important;
+      background-repeat: no-repeat !important;
+      background-position: center !important;
+      background-size: contain !important;
+    }
+    #bbPreviewHost {
+      position: relative;
+      backdrop-filter: blur(50px) !important;
+      -webkit-backdrop-filter: blur(50px) !important;
+      background: #fdfdfde8 !important;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 12px;
+      padding: 12px;
+      padding-top: 28px; /* room for "Simulated Content" pill */
+      min-height: 190px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+    }
+    #bbSimulatedContent { color: #222; }
+
+    /* Preview: "Simulated Content" pill + glimmer sweep */
+    .bb-sim-pill {
+      position: absolute;
+      top: -12px;
+      left: 12px;
+      display: inline-flex;
+      align-items: center;
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(0,0,0,0.10);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+      font: 900 15px/1 Roboto, system-ui, sans-serif;
+      color: rgba(0,0,0,0.78);
+      overflow: hidden;
+      user-select: none;
+      pointer-events: none;
+    }
+    @media (prefers-color-scheme: dark) {
+      .bb-sim-pill {
+        background: rgb(69 69 69 / 62%) !important;
+        border-color: rgba(255, 255, 255, 0.14) !important;
+        color: rgba(255,255,255,0.92) !important;
+      }
+    }
+    body.dark-mode .bb-sim-pill {
+      background: rgb(69 69 69 / 62%) !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+      color: rgba(255,255,255,0.92) !important;
+    }
+    .bb-sim-pill::after {
+      content: "";
+      position: absolute;
+      inset: -8px -60px;
+      background: linear-gradient(
+        120deg,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.95) 45%,
+        rgba(255,255,255,0) 70%
+      );
+      opacity: 0.55;
+      transform: translateX(-65%);
+      animation: bb-sim-pill-glimmer 4.8s ease-in-out infinite;
+    }
+    @keyframes bb-sim-pill-glimmer {
+      0%, 62% { transform: translateX(-65%); opacity: 0; }
+      72% { opacity: 0.65; }
+      88% { transform: translateX(65%); opacity: 0.55; }
+      100% { transform: translateX(65%); opacity: 0; }
+    }
+
+    /* Inline logo click: glass hint instead of opening the premium modal */
+    .bb-bs-theme-hint-pill {
+      position: fixed;
+      z-index: 2147483600;
+      max-width: min(320px, calc(100vw - 24px));
+      box-sizing: border-box;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font: 600 13px/1.35 Roboto, system-ui, sans-serif;
+      color: rgba(22, 22, 30, 0.92);
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(16px) saturate(1.25);
+      -webkit-backdrop-filter: blur(16px) saturate(1.25);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.14);
+      text-align: center;
+      pointer-events: auto;
+    }
+    @media (prefers-color-scheme: dark) {
+      .bb-bs-theme-hint-pill {
+        color: rgba(255, 255, 255, 0.92);
+        background: rgba(55, 55, 58, 0.52);
+        border-color: rgba(255, 255, 255, 0.14);
+      }
+    }
+    body.dark-mode .bb-bs-theme-hint-pill {
+      color: rgba(255, 255, 255, 0.92);
+      background: rgba(55, 55, 58, 0.52);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    body.dark-mode #bbPreviewHost {
+      background: #222222 !important;
+      border-color: rgba(255,255,255,0.14) !important;
+    }
+    body.dark-mode #bbPreviewHost,
+    body.dark-mode #bbPreviewHost #bbSimulatedContent {
+      color: #fff !important;
+    }
+    /* Also support OS dark mode / pages without body.dark-mode class */
+    @media (prefers-color-scheme: dark) {
+      #bbPreviewHost { background: #222222 !important; border-color: rgba(255,255,255,0.14) !important; }
+      #bbPreviewHost, #bbPreviewHost #bbSimulatedContent { color: #fff !important; }
+    }
+
+    /* Center content more (less “deep” layout) */
+    body {
+      margin-left: auto;
+      margin-right: auto;
+      width: min(1400px, 94vw);
+    }
+
+    @media (max-width: 1250px) {
+      .bb-bs-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .bb-bs-row .bb-bs-val {
+        justify-self: start;
+      }
+      .bb-bs-row input[type="range"] {
+        max-width: 100%;
+      }
+      /* Mobile: sliders must use full width */
+      #bbPlacePanel { margin-left: 0 !important; }
+      #bbPlacePanel .bb-place-header,
+      #bbPlacePanel .bb-place-sliders,
+      #bbPlacePanel .bb-place-actions {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      #bbPlacePanel .bb-place-sliders {
+        grid-template-columns: 1fr;
+        width: 100% !important;
+        transform: none !important;
+      }
+      #bbPlacePanel .bb-place-sliders label,
+      #bbPlacePanel .bb-place-sliders input[type="range"] {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      /* Mobile/tablet: full-width sliders + left-aligned labels */
+      #bbPlacePanel .bb-place-sliders label {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        width: 100% !important;
+        justify-self: stretch !important;
+      }
+      #bbPlacePanel .bb-place-sliders input[type="range"] {
+        display: block !important;
+        width: 90% !important;
+        max-width: 90% !important;
+        box-sizing: border-box !important;
+        margin-left: 0 !important;
+        margin-right: auto !important;
+      }
+      /* Mobile: keep sliders + reset truly full width */
+      #bbPlacePanel .bb-place-actions,
+      #bbPlacePanel .bb-place-actions .bb-place-reset {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      /* Mobile: slider grid no longer translated; remove compensating gap */
+      #bbPlacePanel .bb-place-actions {
+        margin-top: 12px !important;
+      }
+
+      /* Mobile: match desired left card padding (glyph card only) */
+      #bbGlyphCard {
+        padding-left: 7% !important;
+        padding-bottom: 10% !important;
+      }
+
+      /* Mobile/tablet: add breathing room above Preview heading */
+      #bbPreviewCard > h2 {
+        margin-top: 30px !important;
+      }
+
+      /* Mobile/tablet: don't bottom-pin the Brand Modal card; keep it under Replacement Threshold */
+      .bb-bs-right-column-spacer {
+        display: none !important;
+      }
+      .bb-bs-layout > div > .bb-bs-card:last-child {
+        margin-top: 14px !important;
+      }
+
+      /* Mobile/tablet: reduce/remove padding inside the purple Brand Modal card */
+      #bbModalThemeCard {
+        padding: 0 !important;
+      }
+      #bbModalThemeCard > h2,
+      #bbModalThemeCard > p {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+      #bbModalThemeCard > h2 { padding-top: 14px; }
+      #bbModalThemeCard > p { padding-bottom: 0; }
+      #bbModalThemeCard .bb-modal-theme-btn {
+        margin-bottom: 14px;
+      }
+
+      /* Mobile/tablet: nudge Brand Glyph Aesthetics title + lede left slightly */
+      #bbGlyphCard > h2,
+      #bbGlyphCard > .bb-bs-help {
+        margin-left: -2.5% !important;
+      }
+    }
+
+    /* Custom placement now lives inside Brand Glyph Aesthetics card */
+    .bb-place-btn { display: none !important; }
+    #bbPlacePanel { position: relative !important; top: auto !important; }
+    #bbPlacePanel .bb-place-close,
+    #bbPlacePanel .bb-place-apply { display: none !important; }
+  </style>
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-brand-settings-page">
+  <!------------------------ Base Light More gradient light behind UI ---------------------->
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <header class="bb-module-head">
+    <p class="bb-module-nav">
+      <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+      <a href="../start-now/Start-Now.html">Start Now</a>
+      <a href="../logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+      <a href="./Freemium-Brand-Settings.html">Brand Settings</a>
+      <a href="./Freemium-Theme-Styles.html">Theme Styles</a>
+      <a href="./Freemium-Hotspots.html">Hotspots</a>
+      <a href="../products/Products.html">Products</a>
+      <a href="../payments/Payments.html">Payments</a>
+      <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+    </p>
+    <h1>Brand Settings</h1>
+  </header>
+
+  <div class="bb-bs-layout">
+    <div>
+      <div class="bb-bs-card" id="bbGlyphCard">
+        <h2>Brand Glyph Aesthetics</h2>
+        <p class="bb-bs-help">
+          Dial in how your brand renders in text.
+          <span
+            class="bb-help-tooltip"
+            tabindex="0"
+            role="img"
+            aria-label="About brand glyph sizing"
+            title="Use the sliders to change how your brand mark scales, padding, and fits next to text in the simulated preview."
+          >
+            <img src="../tool-tip.svg" alt="" width="20" height="20" decoding="async" />
+          </span>
+        </p>
+
+        <div class="bb-place-panel open" id="bbPlacePanel" role="region" aria-label="Custom size and placement" aria-hidden="false" style="margin-top:14px">
+          <div class="bb-place-sliders" id="bbPlaceSliders">
+            <label>
+              Size
+              <span class="bb-place-hint">Overall scale vs the line height</span>
+              <input type="range" class="bb-place-size" min="50" max="150" value="100" step="1" />
+            </label>
+            <label>
+              Width (W)
+              <span class="bb-place-hint">Horizontal slot size (along the line)</span>
+              <input type="range" class="bb-place-w" min="50" max="150" value="100" step="1" />
+            </label>
+            <label>
+              Height (H)
+              <span class="bb-place-hint">Vertical slot size</span>
+              <input type="range" class="bb-place-h" min="50" max="150" value="100" step="1" />
+            </label>
+            <label>
+              Left padding
+              <span class="bb-place-hint">Space before the mark (max 0.4em)</span>
+              <input type="range" class="bb-place-padl" min="0" max="40" value="0" step="1" />
+            </label>
+            <label>
+              Right padding
+              <span class="bb-place-hint">Space after the mark (max 0.4em)</span>
+              <input type="range" class="bb-place-padr" min="0" max="40" value="0" step="1" />
+            </label>
+            <label>
+              Top padding
+              <span class="bb-place-hint">Space above the mark (max 0.4em)</span>
+              <input type="range" class="bb-place-padt" min="0" max="40" value="0" step="1" />
+            </label>
+            <label>
+              Bottom padding
+              <span class="bb-place-hint">Space below the mark (max 0.4em)</span>
+              <input type="range" class="bb-place-padb" min="0" max="40" value="0" step="1" />
+            </label>
+          </div>
+          <div class="bb-place-actions">
+            <button type="button" class="bb-place-reset">Reset</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="bb-bs-card bb-adaptive-card" style="margin-top:28px">
+        <div class="bb-adaptive-row">
+          <span class="bb-adaptive-logo-wrap" aria-hidden="true">
+            <img class="bb-place-logo" src="../brandbased-logo.svg" alt="" width="40" height="40" />
+          </span>
+          <div class="bb-adaptive-copy">
+            <div class="bb-adaptive-title">Adaptive Brand Sizing</div>
+            <div class="bb-adaptive-sub">
+              AI fine-tunes your brand for best fit
+              <span
+                class="bb-help-tooltip"
+                tabindex="0"
+                role="img"
+                aria-label="About adaptive brand sizing"
+                title="When On, AI can tune your logo sizing for the best fit in each context. When Off, your manual placement settings apply."
+              >
+                <img src="../tool-tip.svg" alt="" width="20" height="20" decoding="async" />
+              </span>
+            </div>
+          </div>
+          <button type="button" class="bb-place-brand-ai-toggle" id="bbPlaceBrandAiToggle" aria-pressed="false">Off</button>
+        </div>
+        <!-- Keep these nodes for JS hooks, but hidden on this page -->
+        <p class="bb-place-manual-hint" id="bbPlaceManualHint" hidden></p>
+        <p class="bb-place-golden-hint" id="bbPlaceGoldenHint" hidden></p>
+        <p class="bb-place-ai-status" id="bbPlaceAiStatus" hidden aria-live="polite"></p>
+      </div>
+
+    </div>
+
+    <div>
+      <div class="bb-bs-card" id="bbPreviewCard">
+        <h2 style="text-align:center">Preview</h2>
+        <div id="bbPreviewHost">
+          <div class="bb-sim-pill" aria-hidden="true">Simulated Content</div>
+          <p id="bbSimulatedContent" style="margin:0;font-size:17px;line-height:var(--bb-preview-line-height,1.3)">
+            Get your Brand and products discovered like
+            <span class="brandbased brandbased-dynamic-logo-slot" data-brand="brandbased">brand</span>
+            right here within text content, allowing consumers to interact and shop directly in the text layer.
+            Your <span class="brandbased brandbased-dynamic-logo-slot" data-brand="brandbased">brand</span>
+            can appear seamlessly inside articles, pages, chats, search engines, reviews, and editorial content,
+            turning written context into Al-driven Shop-able moments.
+          </p>
+        </div>
+      </div>
+
+      <div class="bb-bs-card" style="margin-top:14px">
+        <h2>Replacement Threshold</h2>
+        <p class="bb-bs-help">
+          Limit your brand replacements per page (AI automatically caps after 7 replacements).
+          <span
+            class="bb-help-tooltip"
+            tabindex="0"
+            role="img"
+            aria-label="About replacement threshold"
+            title="Sets how many brand marks can appear on a single page. The AI pipeline may still enforce a hard cap (for example 7) for quality."
+          >
+            <img src="../tool-tip.svg" alt="" width="20" height="20" decoding="async" />
+          </span>
+        </p>
+        <div class="bb-bs-row">
+          <label for="bbReplaceThreshold">Replacements Per Page</label>
+          <span class="bb-bs-val">
+            <span class="bb-threshold-chip" aria-hidden="true">BrandBased</span>
+            <span id="bbReplaceThresholdValue">1</span>
+          </span>
+          <input id="bbReplaceThreshold" type="range" min="1" max="8" value="8" step="1" />
+        </div>
+      </div>
+
+      <!-- Spacer to bottom-align the Brand Modal card with left panel (hidden ≤840px via CSS) -->
+      <div class="bb-bs-right-column-spacer" style="flex:1 1 auto; min-height: 22px" aria-hidden="true"></div>
+
+      <div class="bb-bs-card bb-modal-theme" id="bbModalThemeCard" style="margin-top:14px">
+        <h2>Customise Your Brand Modal</h2>
+        <p class="bb-bs-help">Set overall theme of your brand popup</p>
+        <div style="margin-top:18px;display:flex;justify-content:center">
+          <a class="bb-modal-theme-btn" href="./Freemium-Theme-Styles.html">Theme Styles</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* Align bottom row cards across columns:
+       make the Brand Modal card bottom-align with the left big settings card. */
+    .bb-bs-layout { align-items: stretch; }
+    .bb-bs-layout > div { display: flex; flex-direction: column; }
+    .bb-bs-layout > div > .bb-bs-card:last-child { margin-top: auto; }
+    .bb-bs-layout > div:first-child > .bb-bs-card { height: 100%; }
+  </style>
+
+  <script src="../brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-3"></script>
+</body>
+</html>

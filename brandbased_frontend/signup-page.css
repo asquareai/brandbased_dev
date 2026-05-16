@@ -1,0 +1,990 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+
+
+
+/* Desktop Left Panel */
+.left-panel {
+    flex: 1;
+    background: #ffffffa6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 60px;
+    position: relative;
+}
+
+
+
+
+
+
+
+/* Top Left Logo - Desktop */
+/* Top Left Logo - Desktop */
+.logo-top {
+position: absolute;
+top: 30px;
+left: 25px;
+width: 48px;
+height: 48px;
+
+/* Initially hidden */
+opacity: 0;
+
+/* Combined slide + pulse animation */
+animation: slideAndPulse 4s ease-in-out 1s forwards;
+}
+
+/* Combined keyframes: slide in first, then pulse */
+@keyframes slideAndPulse {
+0% {
+transform: translateX(-100%);
+opacity: 0;
+}
+25% {
+transform: translateX(0);
+opacity: 1;
+}
+30% {
+transform: scale(1);
+opacity: 1;
+}
+50% {
+transform: scale(1.1);
+opacity: 1;
+}
+70% {
+transform: scale(1);
+opacity: 1;
+}
+100% {
+transform: scale(1);
+opacity: 1; /* Ensure it stays visible */
+}
+}
+
+
+
+
+/* Slide up and then infinite pulse keyframes */
+@keyframes slideUpThenPulse {
+0% {
+transform: translateY(20px) scale(1);
+opacity: 0;
+}
+16.6% { /* slide-up duration (0.5s) of 3s total for one loop */
+transform: translateY(0) scale(1);
+opacity: 1;
+}
+33% {
+transform: translateY(0) scale(1.03);
+opacity: 1;
+}
+50% {
+transform: translateY(0) scale(1);
+opacity: 1;
+}
+66% {
+transform: translateY(0) scale(1.03);
+opacity: 1;
+}
+83% {
+transform: translateY(0) scale(1);
+opacity: 1;
+}
+100% {
+transform: translateY(0) scale(1);
+opacity: 1;
+}
+}
+
+/* Slide up once on the wrapper */
+.brand-name {
+display: flex;
+justify-content: center;
+align-items: center;
+overflow: visible; /* allow inner scale */
+opacity: 0;
+animation: slideUp 0.8s ease-out 0.5s forwards; /* slide after 0.5s */
+ margin-top: -100px;
+}
+
+/* Pulse infinite on inner span */
+.brand-name-inner {
+max-width: 360px;
+display: inline-block;
+animation: pulseInfinite 3s ease-in-out 1.3s infinite; 
+/* 1.3s = 0.5s delay + 0.8s slide duration */
+}
+@media (max-width:840px){
+    .brand-name-inner {
+        max-width: 65%;
+    }   
+}
+/* Slide Up Keyframes */
+@keyframes slideUp {
+0% {
+transform: translateY(20px);
+opacity: 0;
+}
+100% {
+transform: translateY(0);
+opacity: 1;
+}
+}
+
+/* Infinite Pulse Keyframes */
+@keyframes pulseInfinite {
+0%, 100% {
+transform: scale(1);
+}
+50% {
+transform: scale(1.03); /* subtle pulse */
+}
+}
+
+
+@media (max-width: 1320px) {
+    .brand-name {
+        margin-top: -30%;
+    }
+}
+@media(max-width:1040px) {
+.brand-name {
+margin-top: 20%;
+}
+}
+@media(max-width:840px) {
+    .brand-name {
+    margin-top: 40%;
+    }
+    }
+
+.subtitle {
+    font-size: 18px;
+    color: silver;
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+
+
+
+
+
+
+
+.signup-btn,
+.mobile-signup-btn {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 12px;
+padding: 16px 32px;
+font-size: 16px;
+font-weight: 100;
+color: #000;
+width: 100%;
+max-width: 340px;
+margin: 0 auto 30px auto;
+border-radius: 9999px;
+position: relative;
+overflow: hidden;
+cursor: pointer;
+border-color: #d5d4d4b2!important;
+
+
+/* Base glass */
+background: rgba(255, 255, 255, 0.123);
+backdrop-filter: blur(50px);
+-webkit-backdrop-filter: blur(50px);
+box-shadow: 0 0 1rem 0 rgba(0, 0, 0, 0);
+border: 1px solid rgba(196, 193, 193, 0.267);
+transition: all 0.3s ease;
+}
+
+/* Moving “liquid blur” */
+.signup-btn::before,
+.mobile-signup-btn::before {
+content: '';
+position: absolute;
+top: -20%;
+left: -20%;
+width: 140%;
+height: 140%;
+border-radius: inherit;
+pointer-events: none;
+
+/* Only blur, no gradient */
+backdrop-filter: blur(0px);
+-webkit-backdrop-filter: blur(0px);
+
+/* subtle floating animation */
+animation: liquid-blur 6s ease-in-out infinite alternate;
+}
+
+@keyframes liquid-blur {
+0% {
+transform: translate(0%, 0%);
+}
+25% {
+transform: translate(3%, -2%);
+}
+50% {
+transform: translate(-3%, 2%);
+}
+75% {
+transform: translate(2%, -3%);
+}
+100% {
+transform: translate(0%, 0%);
+}
+}
+
+
+
+
+/* Inner shine for depth */
+.signup-btn::after,
+.mobile-signup-btn::after {
+content: '';
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+border-radius: inherit;
+box-shadow: inset 0 0 30px rgba(230, 230, 230, 0.39);
+pointer-events: none;
+
+}
+
+/* Hover effect */
+.signup-btn:hover,
+.mobile-signup-btn:hover {
+transform: translateY(0px);
+background: rgba(255, 255, 255, 0.247);
+box-shadow: 0 10px 28px rgba(0, 0, 0, 0.068);
+border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Disable hover effects entirely on mobile */
+@media (max-width: 840px) {
+.signup-btn,
+.mobile-signup-btn {
+transition: none;  /* remove hover transitions */
+box-shadow: 0 10px 28px rgba(194, 193, 193, 0.034);
+}
+
+.signup-btn:hover,
+.mobile-signup-btn:hover {
+transform: none;   /* don't move */
+background: inherit; /* keep base background */
+box-shadow: inherit; /* keep base shadow */
+border-color: inherit; /* keep base border */
+border: 1px solid rgba(196, 193, 193, 0.267);
+box-shadow: none;
+box-shadow: 0 10px 28px rgba(194, 193, 193, 0.034);
+}
+}
+
+.signin-link {
+    color: #666;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.signin-link:hover {
+    text-decoration: underline;
+}
+
+
+
+
+/* Footer container */
+.footer {
+position: absolute;
+bottom: 30px;
+font-size: 11px;
+color: silver;
+text-align: center;
+}
+
+
+.footer a {
+color: #1030f5;
+text-decoration: none;
+position: relative;
+display: inline-block;
+}
+
+.footer a::after {
+content: '';
+position: absolute;
+left: 0;
+bottom: -4px;    /* more space below text */
+height: 2px;      /* thicker line */
+width: 0;
+background-color: #1030f5;
+transition: width 0.3s ease;
+}
+
+.footer a:hover::after {
+width: 100%;
+}
+
+
+
+.signin a {
+color: #1030f5;
+font-weight: 600;
+text-decoration: none;
+position: relative;
+display: inline-block;
+}
+
+.signin a::after {
+content: '';
+position: absolute;
+left: 0;
+bottom: -4px; /* more space below text */
+height: 2px;   /* 1px thicker */
+width: 0;
+background-color: #1030f5;
+transition: width 0.3s ease;
+}
+
+.signin a:hover::after {
+width: 100%;
+}
+
+/* Right Panel - Video (Desktop only) */
+.right-panel {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #111;
+}
+
+.video-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.6) 70%);
+}
+
+/* Combined keyframes: scale in, then pulse */
+@keyframes scaleInThenPulse {
+0% {
+transform: scale(0);
+opacity: 0;
+}
+15% {
+transform: scale(1);
+opacity: 1;
+}
+30% {
+transform: scale(1);
+opacity: 1;
+}
+50% {
+transform: scale(1.1);
+opacity: 1;
+}
+70% {
+transform: scale(1);
+opacity: 1;
+}
+100% {
+transform: scale(1);
+opacity: 1;
+}
+}
+
+.center-logo {
+position: absolute;
+top: 50%;
+left: 47%;
+transform: translate(-50%, -50%);
+width: 120px;
+height: 120px;
+z-index: 3;
+opacity: 0;
+margin-top: -60px;
+
+/* Combined animation with 1s delay */
+animation: scaleInThenPulse 4s ease-in-out 1s forwards;
+}
+
+@media(max-width:1650px){
+    .center-logo {
+   margin-top: -80px;
+   left: 45%;
+ }
+}
+
+
+@media(max-width:1550px){
+    .center-logo {
+   margin-top: -80px;
+   left: 42%;
+ }
+}
+@media(max-width:1250px){
+    .center-logo {
+   margin-top: -80px;
+   left: 39%;
+ }
+}
+@media(max-width:1100px){
+    .center-logo {
+   margin-top: -80px;
+   left: 38%;
+ }
+}
+
+
+
+.bottom-brand {
+    position: absolute;
+    bottom: 25px;
+    right: 30px;
+    width: 180px;
+    z-index: 3;
+    /* Initially hidden */
+   opacity: 0;
+
+/* Entry animation */
+animation: slideInRight 1.2s ease-out 0.5s forwards, /* start after 0.5s delay */
+   pulse 3s ease-in-out 1.7s infinite; /* pulse starts after slideInRight finishes */
+}
+
+
+
+
+/* ==================== MOBILE VERSION ==================== */
+.mobile-container {
+    display: none;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+.mobile-logo {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 42px;
+    height: 42px;
+}
+
+.mobile-brand {
+    font-size: 48px;
+    font-weight: 700;
+    color: #1030f5;
+    margin-top: 120px;
+    margin-bottom: 12px;
+    letter-spacing: -1.5px;
+}
+
+.mobile-subtitle {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 20px;
+    padding-top: 20px;
+}
+
+
+
+
+
+
+.mobile-footer {
+    margin-top: auto;
+    padding-top: 40px;
+    font-size: 13px;
+    color: #888;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(60px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Show mobile version on small screens */
+@media (max-width: 1024px) {
+    .container {
+        display: none;
+    }
+    .mobile-container {
+        display: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile-brand {
+        font-size: 42px;
+    }
+}
+
+
+
+/* Fade in keyframes */
+@keyframes fadeIn {
+0% {
+opacity: 0;
+}
+100% {
+opacity: 1;
+}
+}
+
+
+.moving-subtitle {
+position: relative;
+height: 60px;
+display: flex;
+align-items: center;
+justify-content: center;
+margin: 20px 0 50px 0;
+overflow: hidden;
+font-size: 17px;
+font-weight: 100;
+opacity: 0; /* hidden initially */
+animation: fadeIn 1s ease-in-out 1s forwards; /* 1s delay before starting */
+}
+
+.text-slide {
+position: absolute;
+width: 100%;
+text-align: center;
+opacity: 0;
+transform: translateY(30px);
+transition: all 1s ease-in-out;
+color: rgba(192, 192, 192, 0.836);
+font-weight: 100!important;
+}
+
+
+
+.text-slide.active {
+opacity: 1;
+transform: translateY(0);
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+.moving-subtitle {
+font-size: 17.5px;
+height: 55px;
+margin: 15px 0 45px 0;
+}
+}
+
+
+
+
+.light-shard-ui-base {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+min-height: 100vh;
+overflow: hidden;
+z-index: -1;
+pointer-events: none;
+}
+
+.light-shard-ui-theme {
+--delay: 0s;
+--size: 0.4;
+--speed: 20s;
+
+aspect-ratio: 1;
+width: calc(150% * var(--size));
+background: linear-gradient(259.53deg, #0A3FFF 6.53%, #F55F0A 95.34%);
+filter: blur(10vw);
+border-radius: 50%;
+
+position: absolute;
+top: 0;
+left: 0;
+
+animation: loop var(--speed) infinite linear;
+animation-delay: var(--delay);
+transform-origin: 50% 50%;
+opacity: 0.3;
+}
+
+@keyframes loop {
+0% {
+transform: translate3D(0%, 51%, 0) rotate(0deg);
+}
+5% {
+transform: translate3D(8%, 31%, 0) rotate(18deg);
+}
+10% {
+transform: translate3D(22%, 13%, 0) rotate(36deg);
+}
+15% {
+transform: translate3D(40%, 2%, 0) rotate(54deg);
+}
+20% {
+transform: translate3D(46%, 21%, 0) rotate(72deg);
+}
+25% {
+transform: translate3D(50%, 47%, 0) rotate(90deg);
+}
+30% {
+transform: translate3D(53%, 80%, 0) rotate(108deg);
+}
+35% {
+transform: translate3D(59%, 98%, 0) rotate(125deg);
+}
+40% {
+transform: translate3D(84%, 89%, 0) rotate(144deg);
+}
+45% {
+transform: translate3D(92%, 68%, 0) rotate(162deg);
+}
+50% {
+transform: translate3D(99%, 47%, 0) rotate(180deg);
+}
+55% {
+transform: translate3D(97%, 21%, 0) rotate(198deg);
+}
+60% {
+transform: translate3D(80%, 7%, 0) rotate(216deg);
+}
+65% {
+transform: translate3D(68%, 25%, 0) rotate(234deg);
+}
+70% {
+transform: translate3D(59%, 41%, 0) rotate(251deg);
+}
+75% {
+transform: translate3D(50%, 63%, 0) rotate(270deg);
+}
+80% {
+transform: translate3D(38%, 78%, 0) rotate(288deg);
+}
+85% {
+transform: translate3D(21%, 92%, 0) rotate(306deg);
+}
+90% {
+transform: translate3D(3%, 79%, 0) rotate(324deg);
+}
+100% {
+transform: translate3D(0%, 51%, 0) rotate(360deg);
+}
+}
+
+
+body.light-mode {
+background: rgb(249, 249, 249);
+height: 150vh;
+overflow: hidden;
+}
+@media (max-width: 1220px)
+{
+.light-shard-ui-base  {
+opacity: 0.2;
+height: 150vh;
+overflow: hidden;
+}
+}
+
+
+@media (prefers-color-scheme: dark) {
+
+
+
+.signup-btn,
+.mobile-signup-btn {
+transform: translateY(0px);
+box-shadow: 0 10px 28px rgba(0, 0, 0, 0);
+border-color: rgb(255, 255, 255);
+color: #000!important;
+background: rgb(255, 255, 255);
+backdrop-filter: blur(0px);
+-webkit-backdrop-filter: blur(0px);
+box-shadow: 0 0 1rem 0 rgb(0 0 0 / 7%);
+}
+
+/* Hover effect */
+.signup-btn:hover{
+    transform: translateY(0px);
+background: rgba(255, 255, 255, 0.568);
+box-shadow: 0 10px 28px rgba(0, 0, 0, 0.034);
+border-color: rgba(255, 255, 255, 0.3);
+color: #000; /* text white */
+}
+
+.mobile-subtitle {
+color: white;
+}
+
+/* Disable hover effects entirely on mobile */
+@media (max-width: 840px) {
+.signup-btn,
+.mobile-signup-btn {
+transition: none;  /* remove hover transitions */
+box-shadow: 0 10px 28px rgba(255, 255, 255, 0);
+background: rgb(255, 255, 255); /* darker glass base */
+color: #000;
+}
+
+.signup-btn:hover,
+.mobile-signup-btn:hover {
+    transition: none;  /* remove hover transitions */
+    box-shadow: 0 10px 28px rgba(255, 255, 255, 0);
+    background: rgb(255, 255, 255); /* darker glass base */
+    color: #000;
+}
+}
+
+body {
+background: rgb(13, 13, 13);
+color: #ffffff; /* optional: default text white */
+}
+
+.left-panel {
+background: rgba(13, 13, 13, 0.664);
+}
+@media (max-width: 1220px)
+{
+.light-shard-ui-base  {
+opacity: 0;
+}
+}
+
+}
+
+.auth-inline-box {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.auth-step {
+    display: none;
+    width: 100%;
+    animation: authFadeUp 0.35s ease;
+    text-align: center;
+}
+
+.auth-step.active {
+    display: block;
+}
+
+.auth-step h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 8px;
+}
+
+.auth-subtitle {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 22px;
+}
+
+.auth-step input {
+    width: 100%;
+    height: 54px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    padding: 0 20px;
+    margin-bottom: 14px;
+    font-size: 15px;
+    outline: none;
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.auth-step input:focus {
+    border-color: #1030f5;
+    box-shadow: 0 0 0 4px rgba(16, 48, 245, 0.08);
+}
+
+.auth-step .signin,
+.auth-step .mobile-signin {
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+.auth-step .signin a,
+.auth-step .mobile-signin a {
+    color: #1030f5;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.secondary-inline-btn {
+    background: #f2f2f2 !important;
+    color: #111 !important;
+}
+
+@keyframes authFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mobile-auth-box {
+    margin-top: 0;
+}
+
+@media (max-width: 840px) {
+    .auth-inline-box {
+        max-width: 340px;
+    }
+
+    .auth-step h2 {
+        font-size: 22px;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .auth-step h2 {
+        color: #fff;
+    }
+
+    .auth-subtitle,
+    .auth-step .signin,
+    .auth-step .mobile-signin {
+        color: #aaa;
+    }
+
+    .auth-step input {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    .auth-step input::placeholder {
+        color: #aaa;
+    }
+
+    .secondary-inline-btn {
+        background: rgba(255, 255, 255, 0.12) !important;
+        color: #fff !important;
+    }
+}
+
+body.light-mode .auth-step h2 {
+    color: #fff;
+}
+
+body.light-mode .auth-subtitle,
+body.light-mode .auth-step .signin,
+body.light-mode .auth-step .mobile-signin {
+    color: #aaa;
+}
+
+body.light-mode .auth-step input {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+body.light-mode .auth-step input::placeholder {
+    color: #aaa;
+}
+
+body.light-mode .secondary-inline-btn {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #fff !important;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #1030f5;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    text-align: left;
+    display: block;
+}
+
+.back-btn:hover {
+    text-decoration: underline;
+}
+
+.auth-error {
+    display: none;
+    background: rgba(255, 70, 70, 0.1);
+    color: #d93025;
+    border: 1px solid rgba(217, 48, 37, 0.2);
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+    .auth-error {
+        background: rgba(255, 70, 70, 0.12);
+        color: #ff8a80;
+        border-color: rgba(255, 138, 128, 0.25);
+    }
+}
+
+body.light-mode .auth-error {
+    background: rgba(255, 70, 70, 0.12);
+    color: #ff8a80;
+    border-color: rgba(255, 138, 128, 0.25);
+}

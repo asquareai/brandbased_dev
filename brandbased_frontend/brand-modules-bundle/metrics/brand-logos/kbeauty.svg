@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="kb" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fb7185"/>
+      <stop offset="1" stop-color="#fda4af"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="22" fill="url(#kb)"/>
+  <text x="24" y="31" text-anchor="middle" font-size="20" font-weight="800" font-family="system-ui,Segoe UI,sans-serif" fill="#fff">K</text>
+</svg>

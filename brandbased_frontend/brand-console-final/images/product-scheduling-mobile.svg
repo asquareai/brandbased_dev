@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Layer_1"
+   data-name="Layer 1"
+   viewBox="0 0 122.88 122.88"
+   version="1.1"
+   sodipodi:docname="Product-Scheduling-mobile.svg"
+   inkscape:version="1.1.2 (b8e25be8, 2022-02-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview17910"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="6.0628257"
+     inkscape:cx="110.42706"
+     inkscape:cy="61.522468"
+     inkscape:window-width="1296"
+     inkscape:window-height="958"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Layer_1" />
+  <defs
+     id="defs17903">
+    <style
+       id="style17901">.cls-1{fill-rule:evenodd;}</style>
+  </defs>
+  <title
+     id="title17905">time-clock</title>
+  <path
+     class="cls-1"
+     d="M 61.44,15.360107 A 48.079893,48.079893 0 1 1 13.360107,63.44 48.079893,48.079893 0 0 1 61.44,15.360107 Z m -6.667329,23.883437 h 5.876953 A 1.9642013,1.9642013 0 0 1 62.606,41.19992 v 22.678308 h 20.667154 a 1.9642013,1.9642013 0 0 1 1.956376,1.956376 v 5.869128 a 1.9642013,1.9642013 0 0 1 -1.956376,1.956375 H 52.80847 V 41.184268 a 1.9642013,1.9642013 0 0 1 1.964201,-1.956375 z"
+     id="path17907"
+     style="fill:#ffffff;stroke-width:0.78255" />
+  <metadata
+     id="metadata17969">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>time-clock</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

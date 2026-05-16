@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32.741158mm"
+   height="11.783729mm"
+   viewBox="0 0 32.741158 11.783729"
+   version="1.1"
+   id="svg6631"
+   inkscape:version="1.1.2 (b8e25be8, 2022-02-05)"
+   sodipodi:docname="nike.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview6633"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="0.66368547"
+     inkscape:cx="-2.2601067"
+     inkscape:cy="17.327485"
+     inkscape:window-width="1312"
+     inkscape:window-height="959"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs6628" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-122.75489,-139.25486)">
+    <path
+       d="m 126.94885,139.77739 c -2.13054,2.50207 -4.17333,5.60483 -4.19379,7.92403 -0.008,0.87262 0.27059,1.6344 0.9388,2.2114 0.96166,0.83101 2.02122,1.12404 3.0756,1.12576 1.54082,0.002 3.07087,-0.61948 4.26884,-1.0988 2.01755,-0.80685 24.31979,-10.49186 24.31979,-10.49186 0.21518,-0.10785 0.17486,-0.24213 -0.0945,-0.17508 -0.10879,0.0272 -24.27946,6.57749 -24.27946,6.57749 a 5.341123,5.341123 0 0 1 -1.40671,0.20139 c -1.85757,0.0117 -3.51049,-1.02011 -3.49713,-3.19289 0.005,-0.85019 0.26543,-1.87547 0.86852,-3.08144 z"
+       id="path20848"
+       style="clip-rule:evenodd;fill:#cccccc;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.215622;stroke-opacity:1" />
+  </g>
+</svg>

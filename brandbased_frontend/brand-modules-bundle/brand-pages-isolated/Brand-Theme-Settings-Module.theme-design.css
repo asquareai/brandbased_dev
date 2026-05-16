@@ -1,0 +1,3647 @@
+/* Brand Theme Settings Module — independent stylesheet (no shared CSS dependency) */
+
+:root {
+  --bb-navy: #06084e;
+  --bb-ink: #0b0b10;
+  --bb-slab: rgba(242, 243, 248, 0.68);
+  --bb-slab-border: rgba(0, 0, 0, 0.12);
+  --bb-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+  --bb-theme-accent-hex: #1030f4;
+  --bb-theme-accent-solid: #9a9aa3;
+  --bb-theme-accent: rgba(16, 48, 244, 0);
+  /* Preview column modal: was capped at 520px (much narrower than the grid cell / index-demo feel) */
+  --bb-theme-preview-modal-max: min(1200px, 100%);
+  /* Zoom gallery open: match index-brandbased “really wide” close-up framing */
+  --bb-theme-closeup-popup-w: min(92vw, 1380px);
+  /* Page grid stacks at this width and below (popup sheet uses --bb-theme-popup-sheet-bp) */
+  --bb-theme-mobile-bp: 1350px;
+  /* Dock bottom-sheet replaces in-column popup at this width and below */
+  --bb-theme-popup-sheet-bp: 840px;
+  /* Docked desktop preview: inner scroll + wheel guard stops background page scroll */
+  --bb-theme-docked-popup-max-h: min(675px, 88vh);
+  /* Mobile sheet: cap height using dynamic viewport + safe areas (avoids 90vh underlap past iOS toolbars). */
+  --bb-theme-mobile-sheet-max-h: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 12px);
+  /* Docked popup preview typography — overridden from localStorage via inline :root + .popup */
+  --bb-theme-popup-font-stack: "Roboto", Roboto, system-ui, sans-serif;
+  --bb-theme-popup-font-weight: 400;
+  --bb-theme-popup-font-style: normal;
+}
+@supports (height: 100dvh) {
+  :root {
+    --bb-theme-mobile-sheet-max-h: calc(
+      100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 12px
+    );
+  }
+}
+
+* { box-sizing: border-box; }
+
+/*
+  bb-shared-ui.css applies global demo `body { width: 90%; padding: 4%; }` plus very strong link hovers.
+  On this standalone module page that squeezes/shifts the whole grid (controls feel like they “drift”).
+*/
+html:has(body.bb-brand-theme-settings) {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+body.bb-brand-theme-settings {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: clip;
+  /* Inline SVG mask so explore icon recolour works (external file masks are unreliable in some browsers) */
+  --bb-explore-compass-mask: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20122.88%20122.88%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M61.44%2C0A61.46%2C61.46%2C0%2C1%2C1%2C18%2C18%2C61.23%2C61.23%2C0%2C0%2C1%2C61.44%2C0Zm5.25%2C73.85-3.64-3.69-.15%2C0a8.38%2C8.38%2C0%2C0%2C1-.88%2C0%2C8.86%2C8.86%2C0%2C0%2C1-8.88-8.87%2C9.2%2C9.2%2C0%2C0%2C1%2C0-.94l0-.2-4-4L37.88%2C85.29%2C66.69%2C73.85Zm-2.22-6L70%2C73.4l1.43%2C1.43L33.17%2C90%2C48.28%2C51.41l7.82%2C7.92L56%2C60a5.67%2C5.67%2C0%2C0%2C0-.11.66c0%2C.24%2C0%2C.46%2C0%2C.66A6.23%2C6.23%2C0%2C0%2C0%2C62%2C67.56l.62%2C0a5.77%2C5.77%2C0%2C0%2C0%2C.62-.09l.7-.14.51.51ZM58.52%2C55.18l-6.3-6.39.42-.85.7-.64L89.71%2C32.85%2C74.61%2C71.47l-7.07-7.16.3-.79a5.85%2C5.85%2C0%2C0%2C0%2C.29-1.07%2C7.14%2C7.14%2C0%2C0%2C0%2C.1-1.1A6.23%2C6.23%2C0%2C0%2C0%2C62%2C55.14a6.56%2C6.56%2C0%2C0%2C0-1.08.09%2C5.45%2C5.45%2C0%2C0%2C0-1%2C.27l-.8.29-.6-.61ZM96.58%2C26.3a49.71%2C49.71%2C0%2C1%2C0%2C14.55%2C35.14A49.57%2C49.57%2C0%2C0%2C0%2C96.58%2C26.3Z%22%2F%3E%3C%2Fsvg%3E");
+}
+
+body.bb-brand-theme-settings .bb-module-nav a:hover {
+  color: #1030f5 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-module-nav a:hover {
+    color: #9fb1ff !important;
+  }
+}
+body.dark-mode.bb-brand-theme-settings .bb-module-nav a:hover {
+  color: #9fb1ff !important;
+}
+
+/* Minimal brand token for the real popup icon mask */
+.bb-brandbased {
+  --bb-logo: url(brandbased-logo.svg);
+  --bb-ratio: 0.6976744186;
+}
+
+/* Keep bb-shared-ui.css body behavior intact; apply layout to a wrapper instead. */
+.bb-theme-shell {
+  margin: 0 auto;
+  /* Match other pages: slightly tighter top spacing */
+  padding: 14px 24px 96px;
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  width: min(1400px, 100%);
+  max-width: 100%;
+  color: var(--bb-ink);
+}
+
+/* LIGHT SHARD UI BACKGROUND (copied + scoped) */
+.light-shard-ui-base {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+}
+.light-shard-ui-theme {
+  --delay: 0s;
+  --size: 0.4;
+  --speed: 20s;
+
+  aspect-ratio: 1;
+  width: calc(150% * var(--size));
+  background: linear-gradient(259.53deg, #0A3FFF 6.53%, #F55F0A 95.34%);
+  filter: blur(10vw);
+  border-radius: 50%;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  animation: bb-light-shard-loop var(--speed) infinite linear;
+  animation-delay: var(--delay);
+  transform-origin: 50% 50%;
+  opacity: 0.6;
+}
+@keyframes bb-light-shard-loop {
+  0% { transform: translate3D(0%, 51%, 0) rotate(0deg); }
+  5% { transform: translate3D(8%, 31%, 0) rotate(18deg); }
+  10% { transform: translate3D(22%, 13%, 0) rotate(36deg); }
+  15% { transform: translate3D(40%, 2%, 0) rotate(54deg); }
+  20% { transform: translate3D(46%, 21%, 0) rotate(72deg); }
+  25% { transform: translate3D(50%, 47%, 0) rotate(90deg); }
+  30% { transform: translate3D(53%, 80%, 0) rotate(108deg); }
+  35% { transform: translate3D(59%, 98%, 0) rotate(125deg); }
+  40% { transform: translate3D(84%, 89%, 0) rotate(144deg); }
+  45% { transform: translate3D(92%, 68%, 0) rotate(162deg); }
+  50% { transform: translate3D(99%, 47%, 0) rotate(180deg); }
+  55% { transform: translate3D(97%, 21%, 0) rotate(198deg); }
+  60% { transform: translate3D(80%, 7%, 0) rotate(216deg); }
+  65% { transform: translate3D(68%, 25%, 0) rotate(234deg); }
+  70% { transform: translate3D(59%, 41%, 0) rotate(251deg); }
+  75% { transform: translate3D(50%, 63%, 0) rotate(270deg); }
+  80% { transform: translate3D(38%, 78%, 0) rotate(288deg); }
+  85% { transform: translate3D(21%, 92%, 0) rotate(306deg); }
+  90% { transform: translate3D(3%, 79%, 0) rotate(324deg); }
+  100% { transform: translate3D(0%, 51%, 0) rotate(360deg); }
+}
+
+.bb-module-head {
+  width: min(572px, 100%);
+  margin-bottom: 14px;
+}
+.bb-module-head h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+  text-align: left;
+  font-size: 28px;
+}
+.bb-module-nav a {
+  color: #1030f5;
+  margin-right: 14px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+/* ========================================================= */
+/* Dark mode — mirror Brand Settings vibe + tokens            */
+/* Supports both OS dark mode and explicit `body.dark-mode`   */
+/* ========================================================= */
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings {
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .bb-module-nav a { color: #9fb1ff; }
+
+  .bb-bts-card {
+    /* Match Platforms / Hotspots / AI Logic / Ad Campaigns dark-mode card colour
+       (--bb-plat-dash-bg) so all dashboards share the same surface in dark mode. */
+    background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  }
+  body.bb-brand-theme-settings .bb-bts-card.bb-bts-cta {
+    background: #06084e !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+  }
+  .bb-bts-help { color: rgba(255, 255, 255, 0.82); }
+
+  .bb-bts-panel {
+    background: #00000054 !important;
+    border: 1px solid;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+  }
+  body.bb-brand-theme-settings .bb-bts-panel.bb-bts-panel--theme-colour {
+    position: relative;
+    z-index: 2;
+    background: #00000054 !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+  }
+  body.bb-theme-accent-on.bb-brand-theme-settings .bb-bts-panel.bb-bts-panel--theme-colour {
+    background: color-mix(in srgb, var(--bb-theme-accent-hex, #1030f4) 16%, rgba(0, 0, 0, 0.42)) !important;
+    border-color: color-mix(in srgb, var(--bb-theme-accent-hex, #1030f4) 32%, rgba(255, 255, 255, 0.14)) !important;
+  }
+  .bb-switch { color: rgba(255,255,255,0.82); }
+  .bb-switch-ui {
+    background: rgb(69 69 69 / 62%);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.38) inset, 0 1px 0 rgba(255,255,255,0.10);
+  }
+  .bb-brand-theme-settings .bb-switch input:checked + .bb-switch-ui {
+    background: rgba(110, 112, 120, 0.95);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35) inset, 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .bb-theme-hex {
+    background: rgb(69 69 69 / 62%) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    color: rgba(255,255,255,0.92) !important;
+  }
+  .bb-theme-hex-input { color: rgba(255,255,255,0.92) !important; }
+
+  .bb-bts-subcopy { border-top-color: rgba(255,255,255,0.14); }
+  .bb-subcopy-body { color: rgba(255,255,255,0.78); }
+
+  body.bb-brand-theme-settings .bb-theme-font-ad-card {
+    background: rgb(69 69 69 / 42%);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+  }
+  body.bb-brand-theme-settings .bb-theme-font-panel {
+    border-right-color: rgba(255, 255, 255, 0.14);
+  }
+  body.bb-brand-theme-settings .bb-theme-font-panel__hint,
+  body.bb-brand-theme-settings .bb-theme-ad-panel__hint {
+    color: rgba(255, 255, 255, 0.72);
+  }
+  body.bb-brand-theme-settings .bb-theme-font-field__label {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  body.bb-brand-theme-settings .bb-theme-font-select {
+    background: rgb(45 46 52 / 85%);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  body.bb-brand-theme-settings .bb-help-tooltip {
+    background: rgb(255 255 255 / 0%) !important;
+    filter: none;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  body.bb-brand-theme-settings .bb-help-tooltip img {
+    filter: brightness(0) invert(1);
+  }
+
+  /* Theme Select chips + Frosted row controls — match other dark inputs */
+  body.bb-brand-theme-settings .bb-theme-video-chip {
+    background: rgb(69 69 69 / 62%) !important;
+    border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 38%, rgba(255, 255, 255, 0.14));
+    color: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+  }
+  body.bb-brand-theme-settings .bb-theme-video-chip__name {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  body.bb-brand-theme-settings .bb-theme-video-chip__thumb {
+    background: rgba(0, 0, 0, 0.25);
+  }
+  body.bb-brand-theme-settings .bb-theme-video-chip[aria-pressed="true"] {
+    background: rgb(69 69 69 / 62%) !important;
+    border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 45%, rgba(255, 255, 255, 0.2));
+  }
+  body.bb-brand-theme-settings .bb-theme-custom-bg-preview-chip {
+    background: rgb(69 69 69 / 62%) !important;
+    border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 38%, rgba(255, 255, 255, 0.14));
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+  }
+  body.bb-brand-theme-settings .bb-theme-custom-bg-preview-chip .bb-theme-video-chip__thumb {
+    background: rgba(0, 0, 0, 0.25);
+  }
+  body.bb-brand-theme-settings .bb-theme-custom-bg-tile--add {
+    background: transparent !important;
+    border: 0;
+    box-shadow: none;
+  }
+  body.bb-brand-theme-settings .bb-theme-custom-bg-tile--add .bb-theme-custom-bg-tile__thumb {
+    background: rgb(69 69 69 / 62%) !important;
+    border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 38%, rgba(255, 255, 255, 0.14));
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+  }
+  body.bb-brand-theme-settings .bb-theme-custom-bg-tile__plus {
+    color: rgba(255, 255, 255, 0.38);
+  }
+  body.bb-brand-theme-settings .bb-theme-custom-bg-tile__cta {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  body.bb-brand-theme-settings .bb-theme-upload-btn {
+    background: rgb(69 69 69 / 62%) !important;
+    border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 32%, rgba(255, 255, 255, 0.14));
+    color: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+  }
+  body.bb-brand-theme-settings .bb-theme-buy-label {
+    background: rgb(69 69 69 / 62%) !important;
+    border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 32%, rgba(255, 255, 255, 0.14));
+    color: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  .bb-theme-select-tint {
+    border-top-color: rgba(255, 255, 255, 0.14);
+  }
+  body.bb-brand-theme-settings .bb-theme-select-tint__aux-slot {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+  .bb-colour-field__label {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .bb-theme-tint-slot__label {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .bb-theme-alpha-field__label {
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .bb-theme-colour-swatch::-webkit-color-swatch {
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+  .bb-theme-colour-swatch::-moz-color-swatch {
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  .bb-theme-loader-bar { background: rgba(16, 48, 244, 0.22); }
+
+  #bbThemeSimulatedHost {
+    background: #222222 !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+  }
+
+  /* Keep CTA button text navy in dark mode */
+  .bb-bts-cta-btn { color: rgba(6, 8, 78, 0.95) !important; }
+}
+
+body.dark-mode.bb-brand-theme-settings {
+  color: rgba(255, 255, 255, 0.92);
+}
+body.dark-mode.bb-brand-theme-settings .bb-module-nav a { color: #9fb1ff; }
+body.dark-mode.bb-brand-theme-settings .bb-bts-card {
+  /* Match Platforms / Hotspots / AI Logic / Ad Campaigns dark-mode card colour
+     (--bb-plat-dash-bg) so all dashboards share the same surface in dark mode. */
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-card.bb-bts-cta {
+  background: #06084e !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-help { color: rgba(255, 255, 255, 0.82); }
+body.dark-mode.bb-brand-theme-settings .bb-bts-panel {
+  background: #00000054 !important;
+  border: 1px solid;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-panel.bb-bts-panel--theme-colour {
+  position: relative;
+  z-index: 2;
+  background: #00000054 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+body.dark-mode.bb-brand-theme-settings.bb-theme-accent-on .bb-bts-panel.bb-bts-panel--theme-colour {
+  background: color-mix(in srgb, var(--bb-theme-accent-hex, #1030f4) 16%, rgba(0, 0, 0, 0.42)) !important;
+  border-color: color-mix(in srgb, var(--bb-theme-accent-hex, #1030f4) 32%, rgba(255, 255, 255, 0.14)) !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-switch { color: rgba(255,255,255,0.82); }
+body.dark-mode.bb-brand-theme-settings .bb-switch-ui {
+  background: rgb(69 69 69 / 62%);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.38) inset, 0 1px 0 rgba(255,255,255,0.10);
+}
+body.dark-mode.bb-brand-theme-settings .bb-switch input:checked + .bb-switch-ui {
+  background: rgba(110, 112, 120, 0.95);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35) inset, 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-hex {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: rgba(255,255,255,0.92) !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-hex-input { color: rgba(255,255,255,0.92) !important; }
+body.dark-mode.bb-brand-theme-settings .bb-bts-subcopy { border-top-color: rgba(255,255,255,0.14); }
+body.dark-mode.bb-brand-theme-settings .bb-theme-font-ad-card {
+  background: rgb(69 69 69 / 42%);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-font-panel {
+  border-right-color: rgba(255, 255, 255, 0.14);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-font-panel__hint,
+body.dark-mode.bb-brand-theme-settings .bb-theme-ad-panel__hint {
+  color: rgba(255, 255, 255, 0.72);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-font-field__label {
+  color: rgba(255, 255, 255, 0.82);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-font-select {
+  background: rgb(45 46 52 / 85%);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+body.dark-mode.bb-brand-theme-settings .bb-help-tooltip {
+  background: rgb(255 255 255 / 0%) !important;
+  filter: none;
+  border: none !important;
+  box-shadow: none !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-help-tooltip img {
+  filter: brightness(0) invert(1);
+}
+body.dark-mode.bb-brand-theme-settings .bb-subcopy-body { color: rgba(255,255,255,0.78); }
+body.dark-mode.bb-brand-theme-settings .bb-theme-video-chip {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 38%, rgba(255, 255, 255, 0.14));
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-video-chip__name {
+  color: rgba(255, 255, 255, 0.9);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-video-chip__thumb {
+  background: rgba(0, 0, 0, 0.25);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-video-chip[aria-pressed="true"] {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 45%, rgba(255, 255, 255, 0.2));
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-custom-bg-preview-chip {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 38%, rgba(255, 255, 255, 0.14));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-custom-bg-preview-chip .bb-theme-video-chip__thumb {
+  background: rgba(0, 0, 0, 0.25);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-custom-bg-tile--add {
+  background: transparent !important;
+  border: 0;
+  box-shadow: none;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-custom-bg-tile--add .bb-theme-custom-bg-tile__thumb {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 38%, rgba(255, 255, 255, 0.14));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-custom-bg-tile__plus {
+  color: rgba(255, 255, 255, 0.38);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-custom-bg-tile__cta {
+  color: rgba(255, 255, 255, 0.82);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-upload-btn {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 32%, rgba(255, 255, 255, 0.14));
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-buy-label {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 32%, rgba(255, 255, 255, 0.14));
+  color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-select-tint {
+  border-top-color: rgba(255, 255, 255, 0.14);
+}
+body.dark-mode.bb-brand-theme-settings .bb-colour-field__label {
+  color: rgba(255, 255, 255, 0.82);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-tint-slot__label {
+  color: rgba(255, 255, 255, 0.82);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-alpha-field__label {
+  color: rgba(255, 255, 255, 0.82);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-colour-swatch::-webkit-color-swatch {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-colour-swatch::-moz-color-swatch {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-loader-bar { background: rgba(16, 48, 244, 0.22); }
+body.dark-mode.bb-brand-theme-settings #bbThemeSimulatedHost {
+  background: #222222 !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-cta-btn { color: rgba(6, 8, 78, 0.95) !important; }
+
+.bb-bts-layout {
+  --bb-col-gap: 240px;
+  /* Left column +10% vs prior minmax(360px, 520px) */
+  /* +10% wider to keep Theme Styles row on one line */
+  --bb-bts-left-col-max: 631px;
+  --bb-bts-left-col-min: 437px;
+  display: grid;
+  grid-template-columns: minmax(var(--bb-bts-left-col-min), var(--bb-bts-left-col-max)) 1fr;
+  column-gap: var(--bb-col-gap);
+  row-gap: 22px;
+  align-items: start;
+}
+@media (min-width: 1351px) {
+  .bb-bts-layout { position: relative; }
+  .bb-bts-layout::before {
+    content: "";
+    position: absolute;
+    top: 5%;
+    height: 90%;
+    left: calc(var(--bb-bts-left-col-max) + (var(--bb-col-gap) / 2));
+    width: 3px;
+    border-radius: 30px;
+    background: rgba(200, 200, 210, 0.75);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.10), 0 0 0 1px rgba(255,255,255,0.35) inset;
+    pointer-events: none;
+  }
+}
+@media (max-width: 1350px) {
+  .bb-bts-layout {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  body.bb-brand-theme-settings {
+    width: 100% !important;
+    max-width: 100%;
+  }
+  .bb-theme-shell {
+    width: 100%;
+    max-width: 100%;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .bb-bts-left,
+  .bb-bts-right,
+  .bb-bts-card,
+  .bb-bts-panel {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .bb-bts-right--preview,
+  .bb-preview-stage,
+  .bb-preview-modal-stack {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .bb-theme-shell img,
+  .bb-theme-shell video,
+  .bb-theme-shell svg,
+  #bbThemePopupMount img,
+  #bbThemePopupMount video {
+    max-width: 100%;
+    height: 100%;
+  }
+}
+
+/*
+  Single-column layout (≤1350px): cap docked popup to 500px (centered). Wide desktop (≥1351px)
+  keeps --bb-theme-preview-modal-max; ≤840px uses full-width bottom sheet (handled later).
+*/
+@media (min-width: 841px) and (max-width: 1350px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount {
+    max-width: min(500px, 100%);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+    max-width: min(500px, 100%) !important;
+  }
+}
+
+.bb-bts-left,
+.bb-bts-right {
+  display: flex;
+  flex-direction: column;
+}
+.bb-bts-left {
+  gap: 10px;
+}
+.bb-bts-right {
+  gap: 14px;
+}
+.bb-bts-left > .bb-bts-card {
+  padding: 12px;
+}
+.bb-bts-left > .bb-bts-card > h2 {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+}
+.bb-bts-right--preview {
+  position: relative;
+  isolation: isolate;
+  min-width: 0; /* allow grid column to shrink; avoids wide modal clipped off-screen */
+}
+
+.bb-bts-card {
+  background: var(--bb-slab);
+  border: 1px solid rgba(211, 211, 211, 0.78);
+  border-radius: 14px;
+  box-shadow: var(--bb-shadow);
+  padding: 16px;
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+}
+
+.bb-bts-card h2 {
+  margin: 0 0 10px 0;
+  font: 900 16px/1.1 Roboto, system-ui, sans-serif;
+}
+
+.bb-bts-help {
+  margin: 0 0 10px 0;
+  font: 13px/1.45 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.72);
+}
+
+.bb-bts-panel {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.06);
+}
+.bb-bts-panel + .bb-bts-panel { margin-top: 8px; }
+
+/* Top “Theme colour” card: neutral until “Use theme colour” is on */
+.bb-bts-panel--theme-colour {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+body.bb-theme-accent-on .bb-bts-panel--theme-colour {
+  background: color-mix(in srgb, var(--bb-theme-accent-hex, #1030f4) 11%, rgba(255, 255, 255, 0.52));
+  border-color: color-mix(in srgb, var(--bb-theme-accent-hex, #1030f4) 22%, rgba(0, 0, 0, 0.08));
+}
+
+.bb-bts-panel--compact-theme {
+  padding: 9px 11px;
+}
+.bb-bts-panel--compact-theme > h3 {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+}
+.bb-bts-panel--compact-theme .bb-theme-colour-row {
+  grid-template-columns: 32px 1fr;
+  gap: 8px 10px;
+}
+.bb-bts-panel--compact-theme .bb-theme-colour-picker-wrap--hero,
+.bb-bts-panel--compact-theme .bb-theme-colour-swatch {
+  width: 32px;
+  height: 32px;
+}
+.bb-bts-panel--compact-theme .bb-theme-colour-picker-ring {
+  width: 14px;
+  height: 14px;
+  border-width: 1.5px;
+}
+.bb-bts-panel--compact-theme .bb-theme-colour-stack {
+  gap: 6px;
+}
+.bb-bts-panel--compact-theme .bb-theme-colour-stack__row {
+  gap: 8px 10px;
+}
+.bb-bts-panel--compact-theme .bb-theme-hex {
+  padding: 6px 9px;
+  font-size: 12px;
+}
+.bb-bts-panel--compact-theme .bb-theme-hex-input {
+  width: 80px;
+}
+.bb-bts-panel--compact-theme .bb-theme-recent-dot {
+  width: 14px;
+  height: 14px;
+}
+
+.bb-bts-panel--dense {
+  padding: 10px 12px;
+}
+.bb-bts-panel--dense > .bb-panel-topline {
+  gap: 8px;
+}
+.bb-bts-panel--dense > .bb-panel-topline h3 {
+  margin: 0 0 4px 0;
+  font-size: 13px;
+}
+.bb-bts-panel--dense .bb-toggle-pair {
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+/* Theme Styles row: visual separators between items (matches reference) */
+.bb-bts-panel--dense .bb-toggle-pair > * {
+  flex: 0 0 auto;
+}
+.bb-bts-panel--dense .bb-toggle-pair > *:not(:first-child) {
+  border-left: 1px solid rgba(0, 0, 0, 0.14);
+  padding-left: 12px;
+  margin-left: 4px;
+}
+/* No divider between "Overlay" and "Overlay Colour" block */
+.bb-bts-panel--dense .bb-toggle-pair > :nth-child(3) {
+  border-left: 0;
+  padding-left: 0;
+  margin-left: 0;
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > *:not(:first-child) {
+  border-left-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Theme Styles: one card, two equal columns + vertical rule (matches reference layout) */
+.bb-theme-font-ad-card {
+  margin-top: 10px;
+  padding: 12px 14px 14px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.06);
+}
+.bb-theme-font-ad-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: start;
+}
+.bb-theme-font-panel {
+  min-width: 0;
+  padding-right: 16px;
+  margin-right: 0;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+.bb-theme-ad-panel-inner {
+  min-width: 0;
+  padding-left: 16px;
+}
+.bb-theme-font-panel .bb-subcopy-title {
+  margin-bottom: 4px;
+  padding-bottom: 5px;
+}
+.bb-theme-ad-panel-inner .bb-subcopy-title {
+  margin-bottom: 4px;
+}
+.bb-theme-font-panel__hint,
+.bb-theme-ad-panel__hint {
+  font: 12px/1.35 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.65);
+  margin: 0 0 10px 0;
+}
+.bb-theme-font-field__label {
+  display: block;
+  font: 700 11px/1.2 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.78);
+  margin: 8px 0 4px;
+}
+.bb-theme-font-field__label:first-of-type {
+  margin-top: 0;
+}
+.bb-theme-font-select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 7px 9px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  font: 500 13px/1.2 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.92);
+}
+.bb-theme-font-italic-switch {
+  margin-top: 10px;
+}
+.bb-theme-ad-enable-switch {
+  margin-top: 8px;
+}
+
+.bb-theme-ad-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.bb-theme-ad-heading-row .bb-subcopy-title {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 0;
+}
+/* tool-tip.svg — same glass pill treatment as Brand Settings; no left margin on chip */
+.bb-brand-theme-settings .bb-help-tooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  vertical-align: middle;
+  margin: 0;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.bb-brand-theme-settings .bb-help-tooltip img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.bb-brand-theme-settings .bb-help-tooltip:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 70%, #000);
+  outline-offset: 2px;
+}
+@media (max-width: 560px) {
+  .bb-theme-font-ad-grid {
+    grid-template-columns: 1fr;
+  }
+  .bb-theme-font-panel {
+    padding-right: 0;
+    margin-right: 0;
+    border-right: none;
+    padding-bottom: 14px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .bb-theme-ad-panel-inner {
+    padding-left: 0;
+  }
+  body.dark-mode.bb-brand-theme-settings .bb-theme-font-panel {
+    border-bottom-color: rgba(255, 255, 255, 0.14);
+  }
+}
+@media (max-width: 560px) and (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-theme-font-panel {
+    border-bottom-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.bb-theme-select-panel.bb-bts-subcopy {
+  margin-top: 6px;
+  padding-top: 6px;
+}
+.bb-theme-select-panel > .bb-subcopy-body--hide-sm {
+  display: none;
+}
+.bb-theme-select-panel .bb-subcopy-title {
+  font-size: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 0;
+}
+
+/* Buy Now label row — under theme chips */
+.bb-theme-select-panel__buy-label-row {
+  margin-top: 8px;
+}
+.bb-theme-select-panel__buy-label-row.bb-theme-upload-row--button-label {
+  align-items: center;
+  gap: 10px 12px;
+}
+.bb-theme-buy-label__title {
+  flex: 0 0 auto;
+  margin: 0;
+  font: 800 11px/1.2 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.72);
+  white-space: nowrap;
+}
+.bb-theme-select-panel__buy-label-row .bb-theme-buy-label--compact {
+  flex: 0 0 90px;
+  width: 90px;
+  min-width: 0;
+  max-width: 90px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  font-size: 11px;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-buy-label__title {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.bb-bts-panel h3 {
+  margin: 0 0 10px 0;
+  font: 900 14px/1.15 Roboto, system-ui, sans-serif;
+}
+
+.bb-theme-colour-row {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.bb-theme-colour-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.bb-theme-colour-stack__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+}
+
+.bb-theme-colour-use {
+  margin: 0;
+  align-items: flex-start;
+}
+.bb-theme-colour-use .bb-switch-ui {
+  margin-top: 2px;
+}
+.bb-theme-colour-use .bb-switch-label--theme-colour-hint {
+  white-space: normal;
+  max-width: min(100%, 300px);
+  line-height: 1.32;
+  font-weight: 700;
+  font-size: 11px;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-colour-use .bb-switch-label--theme-colour-hint {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.bb-theme-alpha-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 140px;
+  min-width: 120px;
+}
+.bb-theme-alpha-field__label {
+  font: 800 10px/1.2 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.72);
+  letter-spacing: 0.02em;
+}
+.bb-theme-alpha-field__range {
+  width: 100%;
+  /* Fixed UI chrome — do not follow live theme accent */
+  accent-color: #6a6a72;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-alpha-field__range {
+  accent-color: #a3a3ad;
+}
+
+.bb-theme-colour-picker-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.bb-theme-colour-picker-wrap--hero {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.bb-theme-colour-picker-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+}
+
+/* Shared round colour swatch (theme row + popup colour fields) */
+.bb-theme-colour-swatch {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+}
+/* [hidden] alone loses to `display:block` above — keep off-screen helpers invisible */
+.bb-theme-colour-swatch[hidden] {
+  display: none !important;
+}
+.bb-theme-colour-swatch::-webkit-color-swatch-wrapper {
+  padding: 3px;
+  border-radius: 999px;
+}
+.bb-theme-colour-swatch::-webkit-color-swatch {
+  border-radius: 999px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+}
+.bb-theme-colour-swatch::-moz-color-swatch {
+  border-radius: 999px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+}
+
+.bb-theme-hex {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(0,0,0,0.10);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+  color: rgba(10, 10, 14, 0.9);
+}
+.bb-theme-hex-hash { opacity: 0.6; }
+.bb-theme-hex-input {
+  width: 92px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  outline: none;
+  letter-spacing: 0.02em;
+}
+.bb-theme-recent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 0;
+  margin-right: 2px;
+  flex: 0 0 auto;
+}
+
+.bb-theme-recent-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.16);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  cursor: pointer;
+  padding: 0;
+  background: rgba(0,0,0,0.08);
+}
+
+.bb-theme-recent-dot:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.bb-theme-recent-dot:focus-visible {
+  outline: 3px solid rgba(0, 112, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.bb-panel-topline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.bb-panel-topline h3 {
+  margin: 0;
+  width: 100%;
+}
+
+.bb-toggle-pair {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bb-toggle-pair .bb-switch-label {
+  white-space: nowrap;
+}
+
+/* Theme Styles: Backdrop colour + opacity live inline beside Backdrop Tint toggle */
+.bb-backdrop-tint-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  /* Optical alignment with neighbouring toggles */
+  margin-top: -2px;
+  padding-top: 2px;
+}
+.bb-backdrop-tint-inline__label {
+  font: 800 10.5px/1.1 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.64);
+  white-space: nowrap;
+  text-align: center;
+}
+body.dark-mode.bb-brand-theme-settings .bb-backdrop-tint-inline__label {
+  color: rgba(255, 255, 255, 0.78);
+}
+.bb-backdrop-tint-inline__controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+.bb-backdrop-tint-inline__range {
+  width: 74px;
+  min-width: 56px;
+  margin: 0;
+  padding: 0;
+  /* Match Brand bg opacity slider chrome */
+  accent-color: #6a6a72;
+}
+body.dark-mode.bb-brand-theme-settings .bb-backdrop-tint-inline__range {
+  accent-color: #a3a3ad;
+}
+.bb-backdrop-tint-inline input:disabled {
+  opacity: 0.55;
+}
+
+/* Theme Select: chip row drawn at full spec then scaled (tighter to save vertical space) */
+.bb-theme-select-panel__chips {
+  --bb-theme-chips-zoom: 0.285;
+  zoom: var(--bb-theme-chips-zoom);
+  margin-top: 4px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+@supports not (zoom: 1) {
+  .bb-theme-select-panel__chips {
+    transform: scale(var(--bb-theme-chips-zoom, 0.285));
+    transform-origin: top left;
+    width: 351%;
+    max-width: none;
+    margin-bottom: -62%;
+  }
+}
+
+.bb-theme-video-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0;
+}
+
+/* Large rounded-square previews + label (image / video sample per theme) */
+.bb-theme-video-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 108px;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 30%, rgba(0, 0, 0, 0.14));
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+  font: 800 10px/1.15 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.bb-theme-video-chip__thumb {
+  display: block;
+  aspect-ratio: 1;
+  width: 100%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.bb-theme-video-chip__thumb img,
+.bb-theme-video-chip__thumb video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bb-theme-video-chip__name {
+  padding: 7px 6px 8px;
+  text-align: center;
+  color: rgba(15, 15, 18, 0.82);
+}
+
+.bb-theme-select-panel .bb-theme-video-chip__name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.bb-theme-video-chip[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 16%, rgba(255, 255, 255, 0.85));
+  border-color: color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 42%, rgba(0, 0, 0, 0.14));
+}
+
+.bb-theme-video-chip:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 58%, rgba(0, 112, 255, 0.35));
+  outline-offset: 2px;
+}
+
+/* Custom BG: preview chip (like theme thumbs) + always-visible Add tile */
+.bb-theme-custom-bg-preview-wrap[hidden] {
+  display: none !important;
+}
+.bb-theme-custom-bg-preview-wrap:not([hidden]) {
+  cursor: pointer;
+  border-radius: 14px;
+  outline: none;
+}
+.bb-theme-custom-bg-preview-wrap:not([hidden]):focus-visible {
+  outline: 2px solid var(--bb-theme-accent-solid, #1030f4);
+  outline-offset: 3px;
+}
+.bb-theme-custom-bg-preview-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 108px;
+  padding: 0;
+  margin: 0;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 30%, rgba(0, 0, 0, 0.14));
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.bb-theme-custom-bg-preview__img,
+.bb-theme-custom-bg-preview__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bb-theme-custom-bg-preview__img[hidden],
+.bb-theme-custom-bg-preview__video[hidden] {
+  display: none !important;
+}
+
+.bb-theme-custom-bg-tile--add {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  overflow: visible;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  position: relative;
+}
+.bb-theme-custom-bg-tile--add:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 58%, rgba(0, 112, 255, 0.35));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.bb-theme-custom-bg-tile__add-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: calc(10px / var(--bb-theme-chips-zoom, 0.285));
+  padding: 0;
+  box-sizing: border-box;
+}
+/* Pre-zoom sizes: row uses Theme Select chip zoom so on-screen cube ≈ strip swatch (28px) and title ≈ panel subcopy (12px). */
+.bb-theme-select-panel__chips .bb-theme-custom-bg-tile--add .bb-theme-custom-bg-tile__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 calc(28px / var(--bb-theme-chips-zoom, 0.285));
+  width: calc(28px / var(--bb-theme-chips-zoom, 0.285));
+  height: calc(28px / var(--bb-theme-chips-zoom, 0.285));
+  border-radius: calc(8px / var(--bb-theme-chips-zoom, 0.285));
+  overflow: hidden;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.06);
+  border: calc(2px / var(--bb-theme-chips-zoom, 0.285)) solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 30%, rgba(0, 0, 0, 0.14));
+  box-shadow: 0 calc(4px / var(--bb-theme-chips-zoom, 0.285)) calc(12px / var(--bb-theme-chips-zoom, 0.285)) rgba(0, 0, 0, 0.05);
+}
+.bb-theme-select-panel__chips .bb-theme-custom-bg-tile__plus {
+  font: 300 calc(17px / var(--bb-theme-chips-zoom, 0.285)) / 1 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.3);
+  user-select: none;
+  pointer-events: none;
+}
+.bb-theme-select-panel__chips .bb-theme-custom-bg-tile__cta {
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  font: 900 calc(12px / var(--bb-theme-chips-zoom, 0.285)) / 1.15 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.88);
+  white-space: nowrap;
+}
+
+.bb-theme-select-tint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.bb-theme-select-tint__colour-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 14px 20px;
+  width: 100%;
+}
+
+.bb-colour-field {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px 12px;
+  align-items: center;
+  flex: 1 1 200px;
+  min-width: min(220px, 100%);
+}
+
+.bb-colour-field__label {
+  font: 800 11px/1.25 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.72);
+  margin: 0;
+  cursor: pointer;
+}
+
+.bb-theme-select-tint--compact {
+  margin-top: 8px;
+  padding-top: 8px;
+  gap: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+/* Row 1 (7 cols): Product title … Brand bg opacity + Brandbased icon. Row 2: button colours + Buy Now label. */
+.bb-theme-select-tint__quick-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+}
+.bb-theme-select-tint__quick-strip-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 18px;
+  width: 100%;
+}
+.bb-theme-select-tint__quick-strip-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 18px;
+  width: 100%;
+}
+/* Align row 2 under row 1 (Explore icon ↔ Button label text start at col 3). */
+.bb-theme-select-tint__quick-strip--col-align {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, max-content));
+  column-gap: 18px;
+  row-gap: 12px;
+  align-items: end;
+  justify-content: start;
+}
+.bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-swatches,
+.bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-bottom {
+  display: contents;
+}
+.bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--text {
+  grid-column: 3 / span 4;
+  min-width: 0;
+  width: 100%;
+  max-width: min(280px, 100%);
+}
+@media (max-width: 720px) {
+  .bb-theme-select-tint__quick-strip--col-align {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-swatches,
+  .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px 18px;
+    width: 100%;
+  }
+  .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--text {
+    grid-column: unset;
+    flex: 1 1 120px;
+    max-width: min(280px, 100%);
+  }
+}
+.bb-theme-tint-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.bb-theme-tint-slot--text {
+  flex: 1 1 120px;
+  min-width: 80px;
+  max-width: min(280px, 100%);
+}
+.bb-theme-tint-slot--swatch {
+  flex: 0 0 auto;
+}
+.bb-theme-tint-slot--opacity-compact {
+  flex: 0 0 auto;
+  max-width: 88px;
+  min-width: 0;
+}
+.bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range,
+.bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range--compact {
+  width: 100%;
+  max-width: 80px;
+  min-width: 56px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  accent-color: #6a6a72;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range,
+body.dark-mode.bb-brand-theme-settings .bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range--compact {
+  accent-color: #a3a3ad;
+}
+.bb-theme-tint-slot__label {
+  font: 800 9.5px/1.15 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: rgba(15, 15, 18, 0.72);
+  margin: 0;
+  cursor: default;
+  white-space: nowrap;
+  max-width: 118px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+label.bb-theme-tint-slot__label {
+  cursor: pointer;
+}
+.bb-theme-buy-label.bb-theme-buy-label--tint-strip {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: min(280px, 100%);
+  height: 28px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  font: 800 11px/1 Roboto, system-ui, sans-serif;
+  border-radius: 10px;
+}
+.bb-theme-colour-picker-wrap--tint-inline {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.bb-theme-colour-picker-wrap--tint-inline .bb-theme-colour-swatch {
+  width: 26px;
+  height: 26px;
+}
+.bb-theme-colour-picker-wrap--tint-inline .bb-theme-colour-picker-ring {
+  width: 10px;
+  height: 10px;
+  border-width: 1.5px;
+}
+.bb-theme-colour-picker-wrap--tint-inline .bb-theme-colour-swatch::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.bb-theme-select-tint__layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px 14px;
+  width: 100%;
+}
+.bb-theme-select-tint__main-col {
+  flex: 1 1 min(320px, 100%);
+  min-width: 0;
+}
+.bb-theme-select-tint__right-cluster {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  gap: 0;
+  flex: 1 1 min(260px, 100%);
+  min-width: 0;
+}
+
+/* ≤1350px: popup font + ad panels stack under tint swatches (matches page single-column bp) */
+@media (max-width: 1350px) {
+  body.bb-brand-theme-settings .bb-theme-select-tint__layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  body.bb-brand-theme-settings .bb-theme-select-tint__main-col {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: none;
+  }
+  body.bb-brand-theme-settings .bb-theme-select-tint__right-cluster {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+}
+
+/* Host for popup font + ads card — bottom-aligned beside tint strip on wide layouts */
+.bb-theme-select-tint__aux-slot {
+  min-width: 0;
+  width: 100%;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  box-sizing: border-box;
+  background: transparent;
+  box-shadow: none;
+}
+.bb-theme-select-tint__aux-slot > .bb-theme-font-ad-card {
+  margin-top: 0;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-select-tint__aux-slot {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+.bb-colour-field--strip {
+  grid-template-columns: 28px;
+  gap: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+.bb-colour-field--strip.bb-colour-field--brand-tight {
+  grid-template-columns: 26px;
+}
+.bb-colour-field--strip .bb-theme-colour-picker-wrap--hero {
+  width: 28px;
+  height: 28px;
+}
+.bb-colour-field--strip .bb-theme-colour-swatch {
+  width: 28px;
+  height: 28px;
+}
+.bb-colour-field--strip .bb-theme-colour-picker-ring {
+  width: 11px;
+  height: 11px;
+  border-width: 1.5px;
+}
+.bb-colour-field--strip .bb-theme-colour-swatch::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.bb-theme-upload-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bb-theme-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 28%, rgba(0, 0, 0, 0.14));
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.06);
+  font: 900 12px/1 Roboto, system-ui, sans-serif;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bb-theme-upload-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bb-theme-buy-label {
+  flex: 1 1 180px;
+  min-width: 180px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--bb-theme-accent-solid, #1030f4) 28%, rgba(0, 0, 0, 0.14));
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.06);
+  font: 900 12px/1 Roboto, system-ui, sans-serif;
+  outline: none;
+}
+
+.bb-switch {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  user-select: none;
+  font: 800 11px/1.1 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.72);
+}
+.bb-switch input { position: absolute; opacity: 0; pointer-events: none; }
+.bb-switch-ui {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid #fff;
+  background: rgba(0,0,0,0.14);
+  position: relative;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.08) inset, 0 1px 0 rgba(255,255,255,0.6);
+  flex: 0 0 auto;
+  box-sizing: border-box;
+}
+.bb-switch-ui::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+  transform: translateY(-50%);
+  transition: transform 180ms ease, background 180ms ease;
+}
+.bb-switch input:checked + .bb-switch-ui {
+  background: rgba(6, 8, 78, 0.95);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12) inset, 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.bb-switch input:checked + .bb-switch-ui::after {
+  transform: translate(18px, -50%);
+  background: #fff;
+}
+
+.bb-bts-subcopy {
+  border-top: 1px solid rgba(0,0,0,0.08);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+.bb-subcopy-title {
+  font: 900 13px/1.15 Roboto, system-ui, sans-serif;
+  margin-bottom: 2px;
+}
+.bb-subcopy-body {
+  font: 13px/1.35 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.70);
+}
+
+.bb-pill-btn {
+  margin-top: 12px;
+  width: 100%;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 18px;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+  color: #fff;
+  background: rgba(6, 8, 78, 0.95);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.14);
+  cursor: pointer;
+}
+
+/* Bottom-left purple CTA card */
+.bb-bts-cta {
+  background: var(--bb-navy);
+  color: #fff;
+  border-color: rgba(255,255,255,0.18);
+}
+.bb-bts-cta .bb-bts-help { color: rgba(255,255,255,0.86); }
+.bb-bts-cta-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+.bb-bts-cta-btn {
+  width: min(572px, 100%);
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 18px;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+  color: var(--bb-navy);
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Right: preview stage + modal + simulated text */
+.bb-preview-title {
+  text-align: center;
+  font: 900 28px/1.15 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
+}
+
+/* Matches ui-demo-backup/Premium-BB-Modal.html article shell (scoped to preview column). */
+.bb-preview-stage .bb-premium-wrap {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto 16px;
+  background: #f7f6f2;
+  border: 1px solid silver;
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.18);
+  padding: 24px;
+  border-radius: 24px;
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+}
+.bb-preview-stage .bb-premium-wrap p {
+  margin: 0;
+}
+
+.bb-preview-stage {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  position: relative;
+  z-index: 5;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+@media (min-width: 841px) {
+  body.bb-brand-theme-settings .bb-preview-stage {
+    width: 500px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+/* Mid-width single column (matches Products): center 500px stage in full preview column. */
+@media (min-width: 841px) and (max-width: 1350px) {
+  body.bb-brand-theme-settings .bb-preview-stage {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+@media (max-width: 640px) {
+  .bb-preview-stage {
+    /* Short phones: avoid forcing ~full-screen empty chrome above the fold */
+    min-height: clamp(240px, 46vh, 520px);
+  }
+}
+@supports (height: 100svh) {
+  @media (max-width: 640px) {
+    .bb-preview-stage {
+      min-height: clamp(240px, 46svh, 520px);
+    }
+  }
+}
+
+.bb-theme-loader {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--bb-theme-preview-modal-max);
+  max-width: min(var(--bb-theme-preview-modal-max), 100%);
+  margin: 0;
+  padding: 0 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  pointer-events: none;
+  z-index: 14;
+  transition: opacity 280ms ease, transform 280ms ease;
+}
+.bb-theme-loader-text {
+  display: inline-block;
+  font: 900 13px/1.25 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  /* Shine sweep across copy (fast; ~0.85s lap) */
+  background: linear-gradient(
+    100deg,
+    #1030f4 0%,
+    #1030f4 36%,
+    #f0f4ff 50%,
+    #1030f4 64%,
+    #1030f4 100%
+  );
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: bb-theme-loader-text-shine 0.85s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@keyframes bb-theme-loader-text-shine {
+  0% {
+    background-position: 118% center;
+  }
+  100% {
+    background-position: -118% center;
+  }
+}
+
+.bb-theme-loader--done .bb-theme-loader-text {
+  animation: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-theme-loader-text {
+    background: linear-gradient(
+      100deg,
+      #a5adb8 0%,
+      #a5adb8 36%,
+      #f0f2f5 50%,
+      #a5adb8 64%,
+      #a5adb8 100%
+    );
+    background-size: 220% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+body.dark-mode.bb-brand-theme-settings .bb-theme-loader-text {
+  background: linear-gradient(
+    100deg,
+    #a5adb8 0%,
+    #a5adb8 36%,
+    #f0f2f5 50%,
+    #a5adb8 64%,
+    #a5adb8 100%
+  );
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-theme-loader-text {
+    animation: none !important;
+    color: #1030f4 !important;
+    -webkit-text-fill-color: currentColor !important;
+    background: none !important;
+    background-size: initial !important;
+    background-clip: border-box !important;
+    -webkit-background-clip: border-box !important;
+  }
+
+  body.dark-mode.bb-brand-theme-settings .bb-theme-loader-text {
+    color: #c8ced6 !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body.bb-brand-theme-settings .bb-theme-loader-text {
+      color: #c8ced6 !important;
+    }
+  }
+}
+.bb-theme-loader-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  animation: bb-theme-loader-logo-pulse 1.6s ease-in-out infinite;
+}
+@keyframes bb-theme-loader-logo-pulse {
+  0%,
+  100% {
+    opacity: 0.88;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+.bb-theme-loader--done .bb-theme-loader-logo {
+  animation: none;
+}
+.bb-theme-loader-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(16, 48, 244, 0.12);
+}
+.bb-theme-loader-bar::before {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 42%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1030f4, #4d6cff);
+  transform: translateX(-100%);
+  animation: bb-theme-bar-move 1.25s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+@keyframes bb-theme-bar-move {
+  0% {
+    transform: translateX(-105%);
+    opacity: 0.35;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(260%);
+    opacity: 0.55;
+  }
+}
+.bb-theme-loader--done {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+
+/* Stack: modal mount paints above; sim is the underlayer (z-index 1 vs 10). */
+.bb-preview-modal-stack {
+  position: relative;
+  width: 100%;
+  max-width: var(--bb-theme-preview-modal-max);
+  align-self: center;
+  min-height: 0;
+}
+
+.bb-bts-right--preview .bb-bts-simulated.bb-theme-sim-underlayer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 16px 18px;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 8px 28px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: default;
+  pointer-events: none;
+  text-align: left;
+}
+
+/* Only the inline logo slot opens the preview (matches Brand Settings upload mark behavior). */
+#bbThemeSimulatedHost .brandbased-dynamic-logo-slot {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+#bbThemeSimulatedHost .brandbased-dynamic-logo-slot:focus-visible {
+  outline: 2px solid var(--bb-theme-accent-solid, #1030f4);
+  outline-offset: 3px;
+}
+
+/* When only the CTA is shown, take normal flow so the stack has height and the closed popup doesn’t cover it. */
+body.bb-brand-theme-settings.bb-theme-sim-active .bb-theme-sim-underlayer {
+  position: relative !important;
+  z-index: 1;
+}
+
+body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup {
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  box-shadow: none !important;
+}
+
+body.bb-brand-theme-settings.bb-theme-hide-sim .bb-bts-right--preview .bb-bts-simulated {
+  display: none !important;
+}
+
+.bb-bts-sim-pill {
+  position: absolute;
+  top: -14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  font: 900 15px/1 Roboto, system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.78);
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+}
+.bb-bts-sim-pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: bb-bts-sim-pill-glimmer 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bb-bts-sim-pill-glimmer {
+  0%,
+  100% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+/* Same rhythm as Brand-Settings-Module #bbSimulatedContent; --bb-preview-* from bbApplyPreviewVars (localStorage) */
+.bb-bts-sim-text {
+  margin: 0;
+  font-size: 17px;
+  line-height: var(--bb-preview-line-height, 1.3);
+  color: #1a1a1a;
+  position: relative;
+  z-index: 1;
+}
+@media (prefers-color-scheme: dark) {
+  .bb-bts-right--preview .bb-bts-simulated,
+  .bb-bts-right--preview .bb-theme-sim-underlayer {
+    background: rgb(34 34 34 / 94%);
+    border-color: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
+  #bbThemeSimulatedHost .bb-bts-sim-text {
+    color: #fff !important;
+  }
+  .bb-bts-sim-pill {
+    background: rgb(69 69 69 / 62%);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .bb-bts-sim-pill::after {
+    background: linear-gradient(
+      105deg,
+      transparent 0%,
+      transparent 38%,
+      rgba(255, 255, 255, 0.12) 50%,
+      transparent 62%,
+      transparent 100%
+    );
+  }
+  .bb-bts-sim-text {
+    color: #fff;
+  }
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-right--preview .bb-bts-simulated,
+body.dark-mode.bb-brand-theme-settings .bb-theme-sim-underlayer {
+  background: rgb(34 34 34 / 94%) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-sim-pill {
+  background: rgb(69 69 69 / 62%) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-bts-sim-text {
+  color: #fff !important;
+}
+
+/* Visually hide popup seed; programmatic open uses window.bbOpenModalForBrandMark(seed). */
+#bbThemePopupSeed {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* Modal mount — clips docked popup to rounded frame (matches requested preview chrome) */
+#bbThemePopupMount {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-width: 0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+@media (min-width: 841px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount {
+    min-height: 390px;
+    perspective: 1400px;
+  }
+}
+
+#bbThemePopupMount.bb-products-popup-flip-active {
+  /* #bbThemePopupMount clips the docked popup normally; temporarily unclip so the flip can “swing” */
+  overflow: visible !important;
+}
+#bbThemePopupMount.bb-products-popup-flip-active .popup {
+  overflow: visible !important;
+}
+
+@keyframes bb-products-popup-flip {
+  0% {
+    transform: rotateY(0deg);
+    filter: brightness(1);
+  }
+  46% {
+    transform: rotateY(88deg);
+    filter: brightness(0.93);
+  }
+  49.8% {
+    transform: rotateY(90deg);
+    filter: brightness(0.92);
+  }
+  50% {
+    transform: rotateY(-90deg);
+    filter: brightness(0.92);
+  }
+  53% {
+    transform: rotateY(-88deg);
+    filter: brightness(0.93);
+  }
+  100% {
+    transform: rotateY(0deg);
+    filter: brightness(1);
+  }
+}
+.bb-products-popup-flip-wrap {
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, filter;
+  min-width: 100% !important;
+}
+.bb-products-popup-flip-wrap.bb-products-popup-flip {
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, filter;
+  animation: bb-products-popup-flip 0.35s cubic-bezier(0.42, 0, 0.22, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-products-popup-flip-wrap.bb-products-popup-flip {
+    animation-duration: 0.01ms;
+  }
+}
+
+/* Theme page: close icon size tweaks to match Premium feel */
+body.bb-brand-theme-settings .close-icon-desktop {
+  width: 24px !important;
+  height: 24px !important;
+  margin-right: 10px;
+}
+body.bb-brand-theme-settings .close-x-icon {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+/* ============================= */
+/* Real BrandBased popup (exact styling lives in bb-shared-ui.css) */
+/* Here we only "dock" it into the right column and prevent body-overlay flash. */
+/* ============================= */
+
+/* Only hide the body-mounted popup when we are docking (desktop). */
+body.bb-brand-theme-settings.bb-theme-dock-enabled > .popup {
+  display: none !important;
+}
+
+/* Once mounted into the preview, override the overlay positioning. */
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-width: var(--bb-theme-preview-modal-max) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  margin: 0 !important;
+  /* Corners align with #bbThemePopupMount clip; avoid double-radius mismatch */
+  border-radius: 16px !important;
+  /* Must stay above simulated glass + below shared-ui layers */
+  z-index: 2147483646 !important;
+  /* Inner scroll; overscroll-behavior + JS wheel guard prevent the document scrolling underneath */
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* ========================================================= */
+/* Products pager + pill (Theme Design preview)               */
+/* ========================================================= */
+.bb-products-preview-controls.bb-products-preview-controls--theme {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: var(--bb-theme-preview-modal-max);
+  align-self: center;
+  box-sizing: border-box;
+  margin-top: 14px;
+}
+
+/* Hidden for 2s, then whole block (dots + pill) slides up — matches Products page */
+.bb-products-preview-controls--intro {
+  opacity: 0;
+  transform: translateY(28px);
+  pointer-events: none;
+  animation: bb-products-preview-controls-slide-up 0.66s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: 2s;
+}
+
+@keyframes bb-products-preview-controls-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+.bb-products-modal-pager.bb-products-modal-pager--below-stack {
+  position: relative;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: var(--bb-theme-preview-modal-max);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 4px;
+}
+
+.bb-products-modal-dot {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 3px solid #0b0b10;
+  background: transparent;
+  color: #0b0b10;
+  font: 900 12px/1 Roboto, system-ui, sans-serif;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.bb-products-modal-dot--active {
+  background: #0b0b10;
+  border-color: #0b0b10;
+  color: #ffffff;
+}
+
+.bb-products-preview-pill {
+  margin: 10px 0 0;
+  width: fit-content;
+  max-width: 100%;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 3px solid #0b0b10;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  font: 800 13px/1.25 Roboto, system-ui, sans-serif;
+  color: #0b0b10;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+@media (min-width: 1651px) {
+  .bb-products-preview-controls.bb-products-preview-controls--theme {
+    gap: 30px;
+  }
+
+  .bb-products-preview-pill {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 840px) {
+  .bb-products-preview-pill {
+    margin-top: 40px;
+  }
+}
+
+/* One-shot when the selected theme number changes (class toggled in JS) */
+.bb-products-preview-pill.bb-products-preview-pill--tick {
+  animation: bb-products-preview-pill-change-pulse 0.62s cubic-bezier(0.33, 1, 0.68, 1) 1 both;
+}
+
+@keyframes bb-products-preview-pill-change-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  }
+  40% {
+    transform: scale(1.07);
+    box-shadow: 0 10px 32px rgba(11, 11, 16, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  }
+}
+
+@keyframes bb-products-preview-pill-change-pulse-dark {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+  40% {
+    transform: scale(1.07);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+}
+
+body.dark-mode.bb-brand-theme-settings .bb-products-modal-dot,
+body.dark-mode.bb-brand-theme-settings .bb-products-preview-pill {
+  border-color: #ffffff;
+  color: rgba(255, 255, 255, 0.94);
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-modal-dot--active {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #0b0b10 !important;
+}
+body.dark-mode.bb-brand-theme-settings .bb-products-preview-pill {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode.bb-brand-theme-settings .bb-products-preview-pill.bb-products-preview-pill--tick {
+  animation-name: bb-products-preview-pill-change-pulse-dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-products-modal-dot,
+  body.bb-brand-theme-settings .bb-products-preview-pill {
+    border-color: #ffffff;
+    color: rgba(255, 255, 255, 0.94);
+  }
+  body.bb-brand-theme-settings .bb-products-modal-dot--active {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: #0b0b10 !important;
+  }
+  body.bb-brand-theme-settings .bb-products-preview-pill {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+  body.bb-brand-theme-settings .bb-products-preview-pill.bb-products-preview-pill--tick {
+    animation-name: bb-products-preview-pill-change-pulse-dark;
+  }
+}
+
+/* Left panel pill (Theme Design) */
+.bb-theme-slot-pill {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  margin-top: -15px;
+  margin-right: -13px;
+  margin-bottom: 0;
+  margin-left: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 3px solid #0b0b10;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 4px 18px rgba(11, 11, 16, 0.08);
+  font: 800 12px/1.2 Roboto, system-ui, sans-serif;
+  color: #0b0b10;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-slot-pill {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-theme-slot-pill {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Desktop docked column: cap height so the popup is a scrollport (required for scroll chaining fixes). */
+@media (min-width: 841px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled:not(.bb-theme-closeup-open) #bbThemePopupMount {
+    overflow: hidden;
+    max-height: var(--bb-theme-docked-popup-max-h);
+  }
+  body.bb-brand-theme-settings.bb-theme-dock-enabled:not(.bb-theme-closeup-open) #bbThemePopupMount .popup {
+    max-height: var(--bb-theme-docked-popup-max-h) !important;
+  }
+  body.bb-brand-theme-settings.bb-theme-dock-enabled.bb-theme-closeup-open #bbThemePopupMount {
+    overflow: visible;
+    max-height: none;
+  }
+}
+
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .text-section {
+  overflow: visible !important;
+}
+
+/* Description: bb-shared-ui clipped scroll — stays inside scrollport above; wheel guard handles chaining. */
+
+/* Remove scroll chrome on the whole docked panel (WebKit / Firefox) */
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .text-section,
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .product-top-section {
+  scrollbar-width: none;
+}
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .text-section::-webkit-scrollbar,
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .product-top-section::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Docked desktop: slide up + fade — match index-brandbased motion; zoom stays inside this modal (JS grows height like index). */
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.32s ease,
+    width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    max-width 0.42s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.popup-visible) {
+  transform: translateY(36px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup.popup-visible {
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* After close affordance is shown (~2s): lock touch/Gesture scrolling on the glass shell */
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup.popup-visible.close-visible {
+  touch-action: none;
+  overflow: hidden !important;
+}
+
+body.bb-brand-theme-settings.bb-theme-dock-enabled .slider-close-up-swiper {
+  position: relative !important;
+}
+
+/* Popup markup places `.close` before the swiper (index-style); pinned X when it is moved into the swiper applies too. */
+body.bb-brand-theme-settings.bb-theme-dock-enabled .slider-close-up > .close,
+body.bb-brand-theme-settings.bb-theme-dock-enabled .slider-close-up-swiper > .close {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  margin: 0 !important;
+  z-index: 2147483647 !important;
+}
+
+/*
+  Narrow view (≤840px): match bb-shared-ui / index-brandbased bottom sheet — full viewport width,
+  fixed to the bottom. Wider than this keeps the in-column desktop dock card.
+*/
+@media (max-width: 840px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    width: auto !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    /* Let the sheet shrink-to-content so the Ad sits at the bottom (no dead gap). */
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: var(--bb-theme-mobile-sheet-max-h) !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    /* Keep the ad snug to the sheet bottom; only reserve the safe-area. */
+    padding-bottom: max(0px, env(safe-area-inset-bottom, 0px)) !important;
+    box-sizing: border-box !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    background: rgb(199 197 197 / 85%) !important;
+    backdrop-filter: blur(90px) !important;
+    -webkit-backdrop-filter: blur(90px) !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15) !important;
+    z-index: 2147483646 !important;
+    transition: transform 0.3s ease, opacity 0.3s ease !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    overscroll-behavior-y: contain;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup.bb-theme-bg-on:not(.bb-theme-custom-upload) {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+      background: rgb(199 197 197 / 0%) !important;
+    }
+  }
+  body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+    background: rgb(199 197 197 / 0%) !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.popup-visible) {
+    transform: translateY(100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup.popup-visible {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* bb-shared-ui fixes .add-element to the viewport on narrow screens; keep it in the sheet here */
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .add-element {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 8px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    z-index: auto !important;
+  }
+
+  /* Don’t use the desktop “collapse to 0×0” trick on mobile — it clips the sheet */
+  body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: var(--bb-theme-mobile-sheet-max-h) !important;
+    overflow: visible !important;
+    padding: 20px !important;
+    visibility: visible !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(100%) !important;
+    border: 1px solid rgba(97, 97, 97, 0.139) !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup.popup-visible {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateY(0) !important;
+  }
+}
+
+/* Popup preview: Google font + weight (overrides bb-shared-ui .product-title / .buy-now-button weights). */
+body.bb-brand-theme-settings #bbThemePopupMount .popup {
+  font-family: var(--bb-theme-popup-font-stack);
+  font-weight: var(--bb-theme-popup-font-weight);
+  font-style: var(--bb-theme-popup-font-style);
+}
+body.bb-brand-theme-settings #bbThemePopupMount .popup *:not(img):not(video):not(iframe):not(canvas):not(svg):not(source):not(track) {
+  font-family: var(--bb-theme-popup-font-stack) !important;
+  font-weight: var(--bb-theme-popup-font-weight) !important;
+  font-style: var(--bb-theme-popup-font-style) !important;
+}
+/* Buy Now label: always bold regardless of popup Typeface weight */
+body.bb-brand-theme-settings #bbThemePopupMount .popup .buy-now-button {
+  font-weight: 700 !important;
+}
+
+body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup .add-element {
+  display: none !important;
+}
+
+/*
+  Mobile + ads hidden: taller description than the ad-on default, but don’t flex-grow the whole
+  top block to the sheet bottom — keeps qty/size/colour + Buy in a mid position (not as low as
+  full flex-fill, not as tight as when the ad strip is visible).
+*/
+@media (max-width: 840px) {
+  body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup {
+    display: flex !important;
+    flex-direction: column !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup .product-top-section {
+    flex: 0 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup .text-section {
+    flex: 0 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-bottom: none !important;
+    padding-bottom: 4px !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup .product-description-holder {
+    flex: 0 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    mask-image: linear-gradient(to bottom, black 92%, transparent 100%) !important;
+    -webkit-mask-image: linear-gradient(to bottom, black 92%, transparent 100%) !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup .product-description {
+    flex: 0 1 auto !important;
+    min-height: clamp(130px, 28vh, 260px) !important;
+    max-height: min(52vh, 300px) !important;
+    overflow-y: auto !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup .selectors-row {
+    flex: 0 0 auto !important;
+    padding-top: 8px !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-ads-off #bbThemePopupMount .popup .buy-now-row {
+    flex: 0 0 auto !important;
+    margin-top: 10px !important;
+    margin-bottom: 6px !important;
+  }
+}
+
+/* Mobile: sheet close — glass circle like zoom "+" (soft translucent pill + blur) */
+@media (max-width: 840px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .popup-sheet-close {
+    width: 34px !important;
+    height: 34px !important;
+    padding: 3px !important;
+    border-radius: 50% !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(0, 0, 0, 0.28) !important;
+    backdrop-filter: blur(14px) saturate(1.35) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow:
+      0 2px 14px rgba(0, 0, 0, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .popup-sheet-close svg line {
+    stroke: rgba(255, 255, 255, 0.95) !important;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  body.bb-brand-theme-settings.bb-theme-closeup-open .slider-close-up .swiper {
+    background: rgb(228 228 228) !important;
+  }
+}
+
+@media (min-width: 841px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled.bb-theme-closeup-open #bbThemePopupMount .popup {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    top: 110px !important;
+    bottom: auto !important;
+    z-index: 2147483000 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .bb-bts-layout { --bb-col-gap: 20px; }
+  .bb-toggle-pair { justify-content: flex-start; }
+}
+
+/* Anchor for pill over thumbnail swiper (JS appends toast into .product-element) */
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .product-element {
+  position: relative;
+  overflow: visible;
+}
+
+/* Glass pill: thumbnail zoom disabled — sits over the image gallery column */
+.bb-theme-preview-zoom-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translate3d(calc(-50% + 50px), 18px, 0);
+  z-index: 30;
+  margin: 0;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font: 600 13px/1 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.92);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px) saturate(1.35);
+  -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.28s ease;
+  white-space: nowrap;
+  max-width: none;
+  width: max-content;
+  text-align: center;
+  box-sizing: border-box;
+}
+.bb-theme-preview-zoom-toast.bb-theme-preview-zoom-toast--show {
+  transform: translate3d(calc(-50% + 50px), 0, 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (prefers-color-scheme: dark) {
+  .bb-theme-preview-zoom-toast {
+    color: rgba(255, 255, 255, 0.94);
+    background: rgba(28, 28, 32, 0.5);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow:
+      0 6px 28px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+  }
+}
+body.dark-mode.bb-brand-theme-settings .bb-theme-preview-zoom-toast {
+  color: rgba(255, 255, 255, 0.94);
+  background: rgba(28, 28, 32, 0.5);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Dark mode: keep Buy Now readable (fill + label from popup colour pickers) */
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .buy-now-button {
+    background-color: var(
+      --bb-theme-popup-buy-button-bg,
+      var(--bb-theme-popup-button-accent, var(--bb-theme-accent-hex, #1030f4))
+    ) !important;
+    color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+    -webkit-text-fill-color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+  }
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .buy-now-row {
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .buy-now-button {
+  background-color: var(
+    --bb-theme-popup-buy-button-bg,
+    var(--bb-theme-popup-button-accent, var(--bb-theme-accent-hex, #1030f4))
+  ) !important;
+  color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+  -webkit-text-fill-color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+}
+body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .buy-now-row {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Upload mark in title: true-color logo on Brand-coloured circle (same var as non-upload ring). */
+body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
+  background-color: var(
+    --bb-theme-popup-brand-icon-bg,
+    var(--bb-theme-popup-brand-icon, var(--bb-theme-popup-button-accent, var(--bb-theme-accent-hex, #1030f4)))
+  ) !important;
+  background-image: none !important;
+  /* Ring follows Brand outline colour (same var as non-upload .brand-icon). */
+  border: 1px solid var(--bb-theme-popup-brand-icon-border, #000000) !important;
+  border-radius: 50%;
+  box-shadow: none !important;
+  /* Gap is on ::after inset; keep shell padding at 0 so the ring stays crisp. */
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload::after {
+  /* Inset gap: brand fill shows between logo and ring (matches non-upload mark). */
+  inset: var(--bb-theme-popup-brand-icon-logo-inset, 3px) !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  background-color: transparent !important;
+  background-image: var(--bb-logo) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  filter: none !important;
+}
+
+/* Popup colour pickers: brand dot vs Buy Now fill/label (--bb-theme-popup-button-accent = legacy only) */
+body.bb-brand-theme-settings .popup .buy-now-button {
+  background-color: var(
+    --bb-theme-popup-buy-button-bg,
+    var(--bb-theme-popup-button-accent, var(--bb-theme-accent-hex, #1030f4))
+  ) !important;
+  color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+  -webkit-text-fill-color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+}
+body.bb-brand-theme-settings .popup .buy-now-button:hover {
+  color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+  -webkit-text-fill-color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+}
+body.bb-brand-theme-settings .popup .title-row .brand-icon:not(.bb-upload) {
+  background-color: var(
+    --bb-theme-popup-brand-icon-bg,
+    var(--bb-theme-popup-brand-icon, var(--bb-theme-popup-button-accent, var(--bb-theme-accent-hex, #1030f4)))
+  ) !important;
+  /* Full border beats bb-shared-ui `border: … solid #1030f5`; ring = Brand outline (1px on upload mark for crisp logo edge). */
+  border: 1px solid var(--bb-theme-popup-brand-icon-border, #000000) !important;
+}
+/* Preview popup uploaded-brand mark: ~31% larger than shared-ui 24px
+   (24 × 1.08 × 1.10 × 1.10 ≈ 31.46px). Scoped to the Theme/Products preview only
+   and limited to `.brand-icon.bb-upload` so the non-upload mark keeps
+   its original size. */
+body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
+  width: 31.46px !important;
+  height: 31.46px !important;
+}
+@media (min-width: 840px) {
+  body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
+    margin-left: -4px !important;
+  }
+}
+/* Mask fill stays light so the glyph reads on the circle (circle + ring use Brand above). */
+body.bb-brand-theme-settings .popup .title-row .brand-icon:not(.bb-upload)::after {
+  background-color: #fff !important;
+  /* Pseudo doesn’t use these; `initial` clears inherited inspector noise (ring is on .brand-icon + .popup). */
+  --bb-theme-popup-brand-icon-border: initial;
+  --bb-theme-popup-brand-icon-bg: initial;
+  --bb-theme-popup-brand-icon: initial;
+}
+/*
+  Explore: mask-filled compass for Theme / Products preview (all widths).
+  ≤840px used to rely on `<img src="explore icon.svg">` from bb-smart-ui; that path breaks when the
+  hosting HTML lives in e.g. `brand-modules-bundle/products/`. Inline mask matches desktop.
+*/
+body.bb-brand-theme-settings .popup .explore-icon-when-buy-now-is-used {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin-top: 2px;
+  margin-right: 5px;
+  margin-left: -7px;
+  background: none !important;
+  background-color: transparent !important;
+  border-radius: 0;
+  overflow: visible;
+  flex-shrink: 0;
+}
+body.bb-brand-theme-settings .popup .explore-icon-when-buy-now-is-used img {
+  opacity: 0;
+  pointer-events: none;
+  display: block;
+}
+body.bb-brand-theme-settings .popup .explore-icon-when-buy-now-is-used::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 88%;
+  height: 88%;
+  max-width: 100%;
+  max-height: 100%;
+  z-index: 1;
+  background-color: var(--bb-theme-popup-explore-icon-color, var(--bb-theme-accent-hex, #1030f4));
+  -webkit-mask-image: var(--bb-explore-compass-mask);
+  mask-image: var(--bb-explore-compass-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Theme background / frosted / blend / video — preview popup layers          */
+/* (Markup: bb-smart-ui createPopup: .blur-bg + .bb-theme-video-bg — Theme colour uses this video layer when Default.) */
+/* -------------------------------------------------------------------------- */
+/* Preview popup: blur sheet fills and covers (theme / custom image bgs on .blur-bg) */
+body.bb-brand-theme-settings .popup .blur-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(30px);
+  width: 110%;
+  height: 110%;
+  z-index: -1;
+  padding: 0;
+  margin: 0;
+  margin-left: -5%;
+  margin-top: -5%;
+  opacity: 1;
+  box-sizing: border-box;
+  border-radius: inherit;
+  /* Decorative layer must not sit above content in hit-testing */
+  pointer-events: none;
+}
+
+body.bb-brand-theme-settings .popup .bb-theme-video-bg {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease, filter 0.28s ease;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-video-on .bb-theme-video-bg,
+body.bb-brand-theme-settings .popup.bb-theme-accent-fill-on .bb-theme-video-bg {
+  opacity: 1;
+  visibility: visible;
+}
+
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .blur-bg,
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .bb-theme-video-bg {
+  border-radius: 16px;
+}
+
+/* Theme on: sharp bg layer unless Frosted (or Logo blend, which sets its own blur) */
+body.bb-brand-theme-settings .popup.bb-theme-bg-on:not(.bb-theme-frosted):not(.bb-theme-blend-logo) .blur-bg {
+  filter: none !important;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-bg-on.bb-theme-frosted:not(.bb-theme-blend-logo) .blur-bg {
+  filter: blur(28px) !important;
+}
+
+/* Built-in videos + solid Theme colour: hide duplicate blur sheet (paint is on .bb-theme-video-bg). */
+body.bb-brand-theme-settings .popup.bb-theme-bg-on.bb-theme-video-on:not(.bb-theme-blend-logo) .blur-bg,
+body.bb-brand-theme-settings .popup.bb-theme-bg-on.bb-theme-accent-fill-on:not(.bb-theme-blend-logo) .blur-bg {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-bg-on.bb-theme-frosted.bb-theme-video-on:not(.bb-theme-blend-logo) .bb-theme-video-bg,
+body.bb-brand-theme-settings .popup.bb-theme-bg-on.bb-theme-frosted.bb-theme-accent-fill-on:not(.bb-theme-blend-logo) .bb-theme-video-bg {
+  filter: blur(22px);
+  transform: scale(1.07);
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-bg-on:not(.bb-theme-frosted).bb-theme-video-on:not(.bb-theme-blend-logo) .bb-theme-video-bg,
+body.bb-brand-theme-settings .popup.bb-theme-bg-on:not(.bb-theme-frosted).bb-theme-accent-fill-on:not(.bb-theme-blend-logo) .bb-theme-video-bg {
+  filter: none;
+  transform: none;
+}
+
+/* Default Theme colour: paint on .bb-theme-video-bg (same layer as theme videos). */
+body.bb-brand-theme-settings
+  .popup.bb-theme-bg-on.bb-theme-accent-fill-on:not(.bb-theme-blend-logo):not(.bb-theme-custom-upload)
+  .bb-theme-video-bg {
+  background-color: var(--bb-theme-accent) !important;
+}
+body.bb-brand-theme-settings
+  .popup.bb-theme-bg-on.bb-theme-accent-fill-on:not(.bb-theme-frosted):not(.bb-theme-blend-logo):not(.bb-theme-custom-upload)
+  .bb-theme-video-bg {
+  background-color: var(--bb-theme-accent-hex, #1030f4) !important;
+}
+
+/*
+  Theme background on (preview): clear modal shell; paint on .blur-bg (custom image / logo blend) or
+  .bb-theme-video-bg (built-in videos + default Theme colour).
+*/
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup.bb-theme-bg-on:not(.bb-theme-custom-upload) {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Theme background off: glass still picks up Theme colour (lighter wash) */
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload) {
+  background: color-mix(in srgb, var(--bb-theme-accent) 26%, rgb(199 197 197 / 51%)) !important;
+  min-height: 100% !important;
+}
+
+/*
+  Dark preview shell: same :not(...) as 2321; use accent-aware color-mix so Theme colour affects the glass
+  (flat #37363666 removed — it overrode the light wash and ignored --bb-theme-accent).
+*/
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload),
+  body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload),
+  body.bb-brand-theme-settings > .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload) {
+    /* Same idea as light (2321): wash includes --bb-theme-accent so Theme colour affects the shell. */
+    background: color-mix(in srgb, var(--bb-theme-accent) 26%, rgba(55, 54, 54, 0.72)) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    box-shadow: 0 0 2rem 0 rgba(34, 34, 34, 0.4) !important;
+    border: 1px solid #6d6d6d6b !important;
+  }
+}
+
+body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload),
+body.dark-mode.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload),
+body.dark-mode.bb-brand-theme-settings > .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload) {
+  background: color-mix(in srgb, var(--bb-theme-accent) 26%, rgba(55, 54, 54, 0.72)) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: 0 0 2rem 0 rgba(34, 34, 34, 0.4) !important;
+  border: 1px solid #6d6d6d6b !important;
+}
+
+/* Logo blend: blurred brand mark as bg (independent of Theme background toggle) */
+body.bb-brand-theme-settings .popup.bb-theme-blend-logo .bb-theme-video-bg {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-blend-logo .blur-bg {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: var(--bb-theme-accent) !important;
+  /* Set on .popup from Brand-Theme-Settings-Module.html apply(): uploaded Asset Lab / .bb-upload --bb-logo */
+  background-image: var(
+    --bb-theme-blend-bg-image,
+    url("BB-Full-Logo-Blue.svg")
+  ) !important;
+  background-size: min(92%, 480px) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  filter: blur(72px) saturate(1.15) !important;
+}
+body.bb-brand-theme-settings .popup.bb-theme-blend-logo:not(.bb-theme-frosted):not(.bb-theme-custom-upload) .blur-bg {
+  background-color: var(--bb-theme-accent-hex, #1030f4) !important;
+}
+
+/* Backdrop Tint: full-bleed veil (inset: 0) above theme / video / blur-bg, below popup chrome. Colour + opacity from JS: --bb-theme-backdrop-layer */
+body.bb-brand-theme-settings #bbThemePopupMount .popup.bb-theme-backdrop-tint-on::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--bb-theme-backdrop-layer, rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  z-index: 0;
+}
+/* Do not set position:relative on absolutely-positioned chrome — it overrides bb-shared-ui and moves the X. */
+body.bb-brand-theme-settings
+  #bbThemePopupMount
+  .popup.bb-theme-backdrop-tint-on
+  > *:not(.blur-bg):not(.bb-theme-video-bg):not(.close-icon-desktop):not(.popup-sheet-close):not(
+    .lock-icon-bb-logo
+  ) {
+  position: relative;
+  z-index: 1;
+}
+body.bb-brand-theme-settings #bbThemePopupMount .popup.bb-theme-backdrop-tint-on > .close-icon-desktop,
+body.bb-brand-theme-settings #bbThemePopupMount .popup.bb-theme-backdrop-tint-on > .popup-sheet-close,
+body.bb-brand-theme-settings #bbThemePopupMount .popup.bb-theme-backdrop-tint-on > .lock-icon-bb-logo {
+  z-index: 2;
+}
+
+/* Popup preview: optional content colour on text + icons (title / Buy Now / brand use separate popup vars). */
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .product-title {
+  color: var(--bb-theme-popup-product-title-color, #000) !important;
+}
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .product-description,
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .product-description p,
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .product-description-holder,
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .selectors-row,
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .selectors-row select,
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .explore-link {
+  color: var(--bb-theme-popup-content-color, #14141a) !important;
+}
+
+body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .product-description {
+  min-width: 100% !important;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .close-x-icon svg line,
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .popup-sheet-close svg line {
+  stroke: var(--bb-theme-popup-content-color, #14141a) !important;
+  stroke-width: 2.4;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .swiper-button-next,
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .swiper-button-prev {
+  color: var(--bb-theme-popup-content-color, #14141a) !important;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .buy-now-button {
+  background-color: var(
+    --bb-theme-popup-buy-button-bg,
+    var(--bb-theme-popup-button-accent, var(--bb-theme-accent-hex, #1030f4))
+  ) !important;
+  color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+  -webkit-text-fill-color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+}
+
+body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .buy-now-button:hover {
+  color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+  -webkit-text-fill-color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+}
+
+/* Lock logo tint: JS inlines the SVG and colors it via `currentColor`. */
+body.bb-brand-theme-settings #bbThemePopupMount .popup .lock-icon-bb-logo {
+  color: var(--bb-theme-lock-logo-color, var(--bb-theme-accent-hex, #1030f4));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+/* Hide shared-ui pseudo logo so inline SVG tint is visible */
+body.bb-brand-theme-settings #bbThemePopupMount .popup .lock-icon-bb-logo::after {
+  content: none !important;
+  background-image: none !important;
+}
+body.bb-brand-theme-settings #bbThemePopupMount .popup .lock-icon-bb-logo svg.bb-lock-logo-inline {
+  width: 65%;
+  height: 65%;
+  display: block;
+  overflow: visible;
+  margin: 0;
+  margin-top: -21px;
+  margin-left: -36px;
+}
+/* When the close X slides in, nudge the B 4px further left */
+body.bb-brand-theme-settings #bbThemePopupMount .popup.close-visible .lock-icon-bb-logo svg.bb-lock-logo-inline {
+  margin-left: -40px;
+}
+/* Do not force currentColor here; JS sets fill/stroke to the picker hex. */
+
+/* Product placeholder SVG: angled infinite glimmer sweep (~4s) */
+body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img.bb-product-placeholder-img),
+body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]),
+body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img.bb-product-placeholder-img),
+body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]) {
+  position: relative;
+  overflow: hidden;
+}
+
+body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img.bb-product-placeholder-img)::after,
+body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after,
+body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img.bb-product-placeholder-img)::after,
+body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after {
+  content: "";
+  position: absolute;
+  top: -25%;
+  left: -70%;
+  width: 55%;
+  height: 150%;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 35%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.06) 65%,
+    transparent 100%
+  );
+  transform: rotate(22deg);
+  opacity: 0.92;
+  animation: bb-product-placeholder-glimmer 4s ease-in-out infinite;
+}
+
+@keyframes bb-product-placeholder-glimmer {
+  0% {
+    transform: translate3d(-10%, 0, 0) rotate(22deg);
+    opacity: 0.35;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(320%, 0, 0) rotate(22deg);
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img.bb-product-placeholder-img)::after,
+  body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after,
+  body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img.bb-product-placeholder-img)::after,
+  body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Product placeholder — dark mode: dark tile + silver line art (black SVG → silver via filter) */
+body.dark-mode.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img.bb-product-placeholder-img),
+body.dark-mode.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]),
+body.dark-mode.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img.bb-product-placeholder-img),
+body.dark-mode.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]) {
+  background: #222222;
+}
+
+body.dark-mode.bb-brand-theme-settings .popup img.bb-product-placeholder-img,
+body.dark-mode.bb-brand-theme-settings .popup .swiper-slide img[src*="BB-Product-Image-Placeholder"] {
+  background-color: #222222 !important;
+  filter: invert(1) brightness(0.72);
+}
+
+body.dark-mode.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img.bb-product-placeholder-img)::after,
+body.dark-mode.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after,
+body.dark-mode.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img.bb-product-placeholder-img)::after,
+body.dark-mode.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after {
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(200, 210, 230, 0.06) 35%,
+    rgba(230, 236, 248, 0.42) 50%,
+    rgba(200, 210, 230, 0.06) 65%,
+    transparent 100%
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img.bb-product-placeholder-img),
+  body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]),
+  body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img.bb-product-placeholder-img),
+  body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]) {
+    background: #222222;
+  }
+
+  body.bb-brand-theme-settings .popup img.bb-product-placeholder-img,
+  body.bb-brand-theme-settings .popup .swiper-slide img[src*="BB-Product-Image-Placeholder"] {
+    background-color: #222222 !important;
+    filter: invert(1) brightness(0.72);
+  }
+
+  body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img.bb-product-placeholder-img)::after,
+  body.bb-brand-theme-settings .popup .swiper-thumb .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after,
+  body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img.bb-product-placeholder-img)::after,
+  body.bb-brand-theme-settings .popup .slider-close-up-swiper .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"])::after {
+    background: linear-gradient(
+      105deg,
+      transparent 0%,
+      rgba(200, 210, 230, 0.06) 35%,
+      rgba(230, 236, 248, 0.42) 50%,
+      rgba(200, 210, 230, 0.06) 65%,
+      transparent 100%
+    );
+  }
+}
+
+/*
+  Dark OS mode: vendor-bb-shared-ui sets `.slider-close-up` / `.swiper` to rgb(0,0,0).
+  Light-mode rule still leaves backdrop-filter blur on `.slider-close-up`; without clearing it,
+  the blur samples the sheet behind → reads as black in the UI while DevTools “background”
+  disagrees with what you see. Docked preview: `#bbThemePopupMount` raises specificity.
+*/
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings #bbThemePopupMount .popup .slider-close-up,
+  body.bb-brand-theme-settings #bbThemePopupMount .popup .slider-close-up .swiper {
+    background-color: #222222 !important;
+  }
+  /* Placeholder zoom: solid charcoal (no backdrop composite) */
+  body.bb-brand-theme-settings #bbThemePopupMount .popup .slider-close-up:has(img.bb-product-placeholder-img),
+  body.bb-brand-theme-settings
+    #bbThemePopupMount
+    .popup
+    .slider-close-up:has(img[src*="BB-Product-Image-Placeholder"]) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+body.dark-mode.bb-brand-theme-settings #bbThemePopupMount .popup .slider-close-up,
+body.dark-mode.bb-brand-theme-settings #bbThemePopupMount .popup .slider-close-up .swiper {
+  background-color: #222222 !important;
+}
+
+body.dark-mode.bb-brand-theme-settings #bbThemePopupMount .popup .slider-close-up:has(img.bb-product-placeholder-img),
+body.dark-mode.bb-brand-theme-settings
+  #bbThemePopupMount
+  .popup
+  .slider-close-up:has(img[src*="BB-Product-Image-Placeholder"]) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Slides / thumb gutter: `#bbThemePopupMount` so DevTools cascade shows this rule winning */
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings #bbThemePopupMount .popup .swiper-thumb:has(img.bb-product-placeholder-img),
+  body.bb-brand-theme-settings #bbThemePopupMount .popup .swiper-thumb:has(img[src*="BB-Product-Image-Placeholder"]),
+  body.bb-brand-theme-settings
+    #bbThemePopupMount
+    .popup
+    .swiper-thumb
+    .swiper-slide:has(img.bb-product-placeholder-img),
+  body.bb-brand-theme-settings
+    #bbThemePopupMount
+    .popup
+    .swiper-thumb
+    .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]),
+  body.bb-brand-theme-settings
+    #bbThemePopupMount
+    .popup
+    .slider-close-up-swiper
+    .swiper-slide:has(img.bb-product-placeholder-img),
+  body.bb-brand-theme-settings
+    #bbThemePopupMount
+    .popup
+    .slider-close-up-swiper
+    .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]) {
+    background-color: #222222 !important;
+  }
+
+  body.bb-brand-theme-settings #bbThemePopupMount .popup img.bb-product-placeholder-img,
+  body.bb-brand-theme-settings #bbThemePopupMount .popup .swiper-slide img[src*="BB-Product-Image-Placeholder"] {
+    background-color: #222222 !important;
+  }
+}
+
+body.dark-mode.bb-brand-theme-settings #bbThemePopupMount .popup .swiper-thumb:has(img.bb-product-placeholder-img),
+body.dark-mode.bb-brand-theme-settings #bbThemePopupMount .popup .swiper-thumb:has(img[src*="BB-Product-Image-Placeholder"]),
+body.dark-mode.bb-brand-theme-settings
+  #bbThemePopupMount
+  .popup
+  .swiper-thumb
+  .swiper-slide:has(img.bb-product-placeholder-img),
+body.dark-mode.bb-brand-theme-settings
+  #bbThemePopupMount
+  .popup
+  .swiper-thumb
+  .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]),
+body.dark-mode.bb-brand-theme-settings
+  #bbThemePopupMount
+  .popup
+  .slider-close-up-swiper
+  .swiper-slide:has(img.bb-product-placeholder-img),
+body.dark-mode.bb-brand-theme-settings
+  #bbThemePopupMount
+  .popup
+  .slider-close-up-swiper
+  .swiper-slide:has(img[src*="BB-Product-Image-Placeholder"]) {
+  background-color: #222222 !important;
+}
+
+body.dark-mode.bb-brand-theme-settings #bbThemePopupMount .popup img.bb-product-placeholder-img,
+body.dark-mode.bb-brand-theme-settings #bbThemePopupMount .popup .swiper-slide img[src*="BB-Product-Image-Placeholder"] {
+  background-color: #222222 !important;
+}
+
+/* Variant row always visible (fixed QTY last). Legacy hidden class is a no-op for layout. */
+body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors--hidden {
+  display: flex !important;
+}
+body.bb-brand-theme-settings #bbThemePopupMount .popup .selectors-row select.bb-products-variant-select--hidden,
+body.bb-brand-theme-settings .popup .selectors-row select.bb-products-variant-select--hidden {
+  display: none !important;
+}
+body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors--cols-1 > select:not(.bb-products-variant-select--hidden) {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors--cols-2 > select:not(.bb-products-variant-select--hidden) {
+  flex: 1 1 calc(50% - 5px);
+  min-width: 0;
+}
+body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors--cols-3 > select:not(.bb-products-variant-select--hidden) {
+  flex: 1 1 calc(33.333% - 7px);
+  min-width: 0;
+}
+body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors--cols-4 > select:not(.bb-products-variant-select--hidden) {
+  flex: 1 1 calc(25% - 8px);
+  min-width: 0;
+}
+
+body.bb-brand-theme-settings .popup .bb-products-fixed-qty-select.bb-products-fixed-qty-select--hidden {
+  display: none !important;
+}
+body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors-row--empty {
+  display: none !important;
+}
+
+.bb-bts-right.bb-bts-right--preview {
+  transform: scale(0.9);
+}
+
+/* ------------------------------------------------------------------
+   Theme Settings page — match the Products page layout:
+     – Title (.bb-module-head) and left form (.bb-bts-left) both
+       offset 20px lower than the natural top.
+     – Desktop: iframe body is locked at 100vh, the bts-layout grid
+       fills the remaining height, ONLY the left form panel scrolls,
+       the right preview column stays anchored in view.
+     – Mobile (≤840px): natural document scroll, with a 140px
+       cushion at the bottom of the shell.
+   Scoped to `body.bb-brand-theme-settings` for safety.
+   ------------------------------------------------------------------ */
+body.bb-brand-theme-settings .bb-module-head {
+  width: min(572px, 100%);
+  margin-top: 20px;
+  margin-bottom: -20px;
+}
+body.bb-brand-theme-settings .bb-bts-left {
+  margin-top: 20px;
+}
+body.bb-brand-theme-settings .bb-bts-card {
+  margin-top: 3px;
+}
+
+/* Desktop (≥1351px) — fixed page, internal left-panel scroll.
+   Smaller widths (≤1350px) fall through to the mobile block below
+   so the page behaves like the mobile layout (natural document
+   scroll, single column). Matches Products' desktop/mobile split. */
+@media (min-width: 1351px) {
+  body.bb-brand-theme-settings,
+  html:has(body.bb-brand-theme-settings) {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  body.bb-brand-theme-settings .bb-theme-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin-top: -20px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  body.bb-brand-theme-settings .bb-module-head {
+    flex: 0 0 auto;
+    /* Desktop-only override: pull the layout up tighter under the
+       title (mobile / smaller-laptop block keeps the global -20px). */
+    margin-bottom: -30px;
+    /* Desktop only: nudge the "Theme Styles" title right so it sits
+       over the left-panel content rather than the grid column edge.
+       Mirrors the matching nudge in products.css. */
+    margin-left: 10px;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-left {
+    overflow-y: auto;
+    max-height: 100%;
+    padding-bottom: 140px;
+    /* Hide the scrollbar in every modern browser while preserving
+       scroll. Firefox: scrollbar-width none. WebKit: hide the
+       ::-webkit-scrollbar pseudo. Legacy Edge / IE: -ms-overflow-style.
+       This replaces the earlier `direction: rtl` workaround now that
+       the bar is invisible everywhere. */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  body.bb-brand-theme-settings .bb-bts-left::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-right {
+    align-self: start;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-right.bb-bts-right--preview {
+    transform: scale(0.8);
+    transform-origin: top center;
+  }
+}
+
+/* Mobile fallback (≤1350px): natural document scroll with a 140px
+   bottom cushion, and force the bts-layout to single column so it
+   really matches the mobile layout. (The existing 1350px
+   single-column rules elsewhere in this file are kept — they
+   handle inner spacing/widths at narrower widths.) */
+@media (max-width: 1350px) {
+  body.bb-brand-theme-settings .bb-theme-shell {
+    padding-bottom: 140px;
+  }
+  body.bb-brand-theme-settings .bb-bts-layout {
+    grid-template-columns: 1fr !important;
+    column-gap: 0;
+  }
+  body.bb-brand-theme-settings .bb-bts-right.bb-bts-right--preview {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Mobile (≤840px): Products + Theme Styles preview modal fills the
+   full iframe height.
+
+   The docked popup normally appears as a bottom sheet (rounded top
+   corners, capped at --bb-theme-mobile-sheet-max-h). On these two
+   pages we want the modal to occupy the full iframe height so the
+   preview reads as a full-screen modal on phones.
+   ------------------------------------------------------------------ */
+@media (max-width: 840px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup,
+  body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup {
+    top: 0 !important;
+    bottom: 0 !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Flatten cards — remove the drop shadow from every `.bb-bts-card`
+   on the Brand Theme Settings page and on Freemium-Theme-Styles
+   (both link this stylesheet). Covers light mode, manual dark
+   (`body.dark-mode`) and OS dark (@prefers-color-scheme: dark) since
+   each of those paths re-applies its own shadow earlier in the file.
+   ------------------------------------------------------------------ */
+.bb-bts-card,
+body.bb-brand-theme-settings .bb-bts-card,
+body.dark-mode.bb-brand-theme-settings .bb-bts-card {
+  box-shadow: none !important;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-brand-theme-settings .bb-bts-card,
+  .bb-bts-card {
+    box-shadow: none !important;
+  }
+}

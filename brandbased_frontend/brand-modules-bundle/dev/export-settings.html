@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BrandBased — Export settings for backend</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a22;
+    --panel-2: #1c2230;
+    --line: #262d3b;
+    --text: #e8ecf3;
+    --muted: #9aa4b6;
+    --accent: #6c8cff;
+    --accent-2: #4a6df0;
+    --good: #29c46f;
+    --warn: #f5a623;
+    --code: #0b0e14;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; background: #2a3144; color: var(--muted); border: 1px solid var(--line); }
+  p.lead { color: var(--muted); margin: 6px 0 22px; max-width: 820px; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 0 0 20px; }
+  button, .btn {
+    appearance: none; border: 1px solid var(--line); background: var(--panel-2);
+    color: var(--text); padding: 9px 14px; border-radius: 8px; font-size: 13px;
+    cursor: pointer; transition: background .15s, border-color .15s, transform .05s;
+  }
+  button:hover, .btn:hover { background: #232a3a; border-color: #38415a; }
+  button:active { transform: translateY(1px); }
+  button.primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); border-color: var(--accent-2); }
+  button.primary:hover { background: linear-gradient(180deg, #7d9bff, #587bff); }
+  button.ghost { background: transparent; }
+  .devbar {
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin: 0 0 18px;
+  }
+  .devbar h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0; }
+  .devbar p { margin: 4px 0 0; color: var(--muted); font-size: 12px; max-width: 560px; }
+  .devbar .seg {
+    display: inline-flex; padding: 3px; gap: 3px;
+    background: #0e131c; border: 1px solid var(--line); border-radius: 999px;
+  }
+  .devbar .seg button {
+    background: transparent; border: 0; padding: 7px 14px; border-radius: 999px;
+    color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
+    cursor: pointer;
+  }
+  .devbar .seg button:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .devbar .seg button[aria-pressed="true"] {
+    color: #fff;
+    background: linear-gradient(180deg, var(--accent), var(--accent-2));
+    box-shadow: 0 4px 14px rgba(72,108,255,0.35);
+  }
+  .devbar .seg.fail button[aria-pressed="true"] {
+    background: linear-gradient(180deg, #e74c3c, #c0392b);
+    box-shadow: 0 4px 14px rgba(231,76,60,0.35);
+  }
+  .devbar .seg.freemium button[aria-pressed="true"] {
+    background: linear-gradient(180deg, #f5a623, #d68910);
+    box-shadow: 0 4px 14px rgba(245,166,35,0.38);
+  }
+  .devbar .stack { display: flex; flex-direction: column; gap: 2px; margin-right: auto; }
+  .summary {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 10px;
+    margin: 0 0 18px;
+  }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .stat .v { font-size: 18px; margin-top: 4px; font-weight: 600; }
+  details.section {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    margin-bottom: 12px; overflow: hidden;
+  }
+  details.section[open] { background: var(--panel); }
+  details.section > summary {
+    list-style: none; cursor: pointer; padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px; user-select: none;
+  }
+  details.section > summary::-webkit-details-marker { display: none; }
+  details.section > summary::before {
+    content: "▶"; font-size: 10px; color: var(--muted); transition: transform .15s;
+  }
+  details.section[open] > summary::before { transform: rotate(90deg); }
+  .section-title { font-weight: 600; }
+  .section-meta { color: var(--muted); font-size: 12px; margin-left: auto; }
+  .section-body { padding: 0 16px 14px; }
+  .kv-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    table-layout: fixed;
+  }
+  .kv-table th, .kv-table td {
+    text-align: left; padding: 8px 10px; vertical-align: top;
+    border-top: 1px solid var(--line); word-break: break-word;
+  }
+  .kv-table th { color: var(--muted); font-weight: 500; font-size: 12px; }
+  .kv-table td.key { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: #c5cee0; font-size: 12px; width: 32%; }
+  .kv-table td.val { white-space: pre-wrap; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #d6dceb; }
+  .kv-table td.val.empty { color: var(--muted); font-style: italic; }
+  pre.preview {
+    background: var(--code); border: 1px solid var(--line); border-radius: 8px;
+    padding: 14px 16px; margin: 0; overflow: auto; max-height: 380px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; line-height: 1.5;
+    color: #cad3e6;
+  }
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--good); color: #fff; padding: 9px 16px; border-radius: 8px;
+    opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none;
+    font-size: 13px; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.warn { background: var(--warn); }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+  /* Per-account brand-limit reminder shown above the per-brand
+     sections (Brand assets / Theme Styles / Products). Sits at the
+     same visual weight as the .devbar callouts but is read-only. */
+  .brand-limits-callout {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin: 0 0 14px;
+    color: #d6dceb;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .brand-limits-callout h3 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .brand-limits-callout ul { margin: 6px 0 0; padding-left: 18px; }
+  .brand-limits-callout li { margin: 2px 0; }
+  .brand-limits-callout strong { color: #fff; }
+  .img-thumb { max-width: 56px; max-height: 56px; background: #fff; border-radius: 6px; padding: 4px; vertical-align: middle; }
+  .img-thumb.dark { background: #111; }
+  code.k { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>BrandBased — Settings export</h1>
+    <span class="tag" id="originTag">file://</span>
+  </header>
+  <p class="lead">
+    Reads everything that the Brand Console (Theme Styles, Theme Settings, Products, Upload Logo)
+    has persisted to <code class="k">localStorage</code> for this brand, on this browser, then bundles
+    it into <strong>one JSON file</strong> and <strong>one PHP file</strong> your backend can ingest.
+    Open this page in the same browser session as the dashboard so it can see the same data.
+  </p>
+
+  <div class="toolbar">
+    <button class="primary" id="btnDownloadJson">Download brandbased-settings.json</button>
+    <button id="btnDownloadPhp">Download brandbased-settings.php</button>
+    <button id="btnCopyJson">Copy JSON</button>
+    <button id="btnCopyPhp">Copy PHP</button>
+    <button class="ghost" id="btnReload">Reload from localStorage</button>
+    <button class="ghost" id="btnApplyStandalone">Apply to browser storage</button>
+    <button id="btnOpenPremiumStandalone">Open Premium standalone</button>
+    <button id="btnOpenFreemiumStandalone">Open Freemium standalone</button>
+  </div>
+
+  <!-- Dev-only override: flips Brand Verification (Meta-Verification.html
+       and Freemium-Meta-Verification.html) into the "Not Verified" failure
+       state so the backend/UI team can preview what users see when brand
+       verification fails. Persists via localStorage["bbDevVerifyState"]. -->
+  <div class="devbar" role="group" aria-labelledby="devVerifyLabel">
+    <div class="stack">
+      <h3 id="devVerifyLabel">Brand Verification — preview state</h3>
+      <p>Flips both Premium and Freemium Brand Verification pages between the
+        normal "Verified" state and the red "Brand Not Verified" failure
+        state. Useful for showing the design team / backend dev what users
+        see when verification can't be completed.</p>
+    </div>
+    <div class="seg" id="verifySeg" role="tablist" aria-label="Verify state">
+      <button type="button" id="btnVerifyPass" data-state="pass" aria-pressed="true" role="tab">Pass Verify</button>
+      <button type="button" id="btnVerifyFail" data-state="fail" aria-pressed="false" role="tab" class="fail-btn">Not Verified</button>
+    </div>
+  </div>
+
+  <!-- Dev-only: Brands page plan-tier visibility preview. When ON,
+       every brand card on the Brands page shows a small purple
+       "Premium" pill on the top-left of its orb. Persists via
+       localStorage["bbDevShowPlanTier"]. The Brands page reads the
+       flag live via a `storage` listener. -->
+  <div class="devbar" role="group" aria-labelledby="devPlanTierLabel">
+    <div class="stack">
+      <h3 id="devPlanTierLabel">Brands page — Plan tier preview</h3>
+      <p>View whether this brand is using a Free or Premium plan.
+        When <strong>Show</strong> is on, each brand card on the
+        Brands page displays a small <em>Premium</em> pill on the
+        top-left of its orb. Useful for previewing how the page
+        will read once plan-tier data is wired up.</p>
+    </div>
+    <div class="seg" id="planTierSeg" role="tablist" aria-label="Plan tier preview">
+      <button type="button" id="btnPlanHide" data-state="hide" aria-pressed="true" role="tab">Hide</button>
+      <button type="button" id="btnPlanShow" data-state="show" aria-pressed="false" role="tab">Show Premium</button>
+    </div>
+  </div>
+
+  <!-- Dev-only: Brand Console dashboard simulates a Freemium account by
+       covering every non-`/freemium/` iframe route with a Premium upgrade
+       glass panel (same styling family as Account → Preferences). -->
+  <div class="devbar" role="group" aria-labelledby="devDashTierLabel">
+    <div class="stack">
+      <h3 id="devDashTierLabel">Brand Console — dashboard tier preview</h3>
+      <p><strong>Premium</strong> (default): the dashboard iframe behaves normally.
+        <strong>Freemium mode</strong>: while <code class="k">brand-console-dashboard.html</code> is open
+        in another tab, every module <em>except</em> URLs under <code class="k">…/freemium/</code> is covered
+        by the upgrade message so you can preview the paywall in-context.</p>
+    </div>
+    <div class="seg freemium" id="dashTierSeg" role="tablist" aria-label="Dashboard tier simulation">
+      <button type="button" id="btnDashPremium" data-tier="premium" aria-pressed="true" role="tab">Premium</button>
+      <button type="button" id="btnDashFreemium" data-tier="freemium" aria-pressed="false" role="tab">Freemium mode</button>
+    </div>
+  </div>
+
+  <!-- Dev-only: open the Stripe purchase-verify modal on the dashboard.
+       Flips `localStorage["bbDevStripeVerifyOpen"]` so the dashboard's
+       storage listener pops the modal up in another tab. -->
+  <div class="devbar" role="group" aria-labelledby="devStripeLabel">
+    <div class="stack">
+      <h3 id="devStripeLabel">Stripe purchase verify — preview modal</h3>
+      <p>Opens the BrandBased "Stripe purchase verify" modal on the dashboard
+        (asks for email + confirm email before handing off to Stripe).
+        Same glass styling family as Account → Preferences.</p>
+    </div>
+    <div class="seg" id="stripeVerifySeg" role="tablist" aria-label="Stripe verify modal">
+      <button type="button" id="btnStripeHide" data-state="hide" aria-pressed="true" role="tab">Hide</button>
+      <button type="button" id="btnStripeShow" data-state="show" aria-pressed="false" role="tab">Show modal</button>
+    </div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <details class="section" open>
+    <summary><span class="section-title">Bundled JSON preview</span><span class="section-meta" id="metaJsonSize"></span></summary>
+    <div class="section-body">
+      <pre class="preview" id="jsonPreview"></pre>
+    </div>
+  </details>
+
+  <!-- Per-account brand-limit reminder. Sits above the per-brand
+       sections so backend devs know how many brand records to expect
+       per account when reading the bundled JSON. -->
+  <aside class="brand-limits-callout" aria-label="Per-account brand limits">
+    <h3>Per-account brand limits</h3>
+    <ul>
+      <li><strong>Premium account</strong> — up to <strong>12 Premium brands</strong> and up to <strong>12 Freemium brands</strong> (24 total).</li>
+      <li><strong>Freemium account</strong> — up to <strong>12 Freemium brands</strong> only.</li>
+    </ul>
+  </aside>
+
+  <details class="section">
+    <summary><span class="section-title">Brand assets (logo + uploads — 2 per brand)</span><span class="section-meta" id="metaBrand"></span></summary>
+    <div class="section-body" id="brandBody"></div>
+  </details>
+
+  <details class="section">
+    <summary><span class="section-title">Theme Styles &amp; Theme Settings (Premium: 7 slots · Freemium: 1 per brand)</span><span class="section-meta" id="metaThemes"></span></summary>
+    <div class="section-body" id="themesBody"></div>
+  </details>
+
+  <details class="section">
+    <summary><span class="section-title">Products (Premium only — 7 slots)</span><span class="section-meta" id="metaProducts"></span></summary>
+    <div class="section-body" id="productsBody"></div>
+  </details>
+
+  <details class="section">
+    <summary><span class="section-title">Other persisted keys (sync, UI prefs, etc.)</span><span class="section-meta" id="metaOther"></span></summary>
+    <div class="section-body" id="otherBody"></div>
+  </details>
+
+  <p class="hint">
+  <strong>Export (for backend):</strong> configure Theme Styles / Products in the Brand Console, then
+  <strong>Reload from localStorage</strong> and download JSON or PHP.<br />
+  <strong>Preview on standalone:</strong> use <strong>Apply to browser storage</strong> (writes the
+  same keys the console uses) then <strong>Open Premium / Freemium standalone</strong> — or refresh
+  standalone tabs already open on this origin. Standalone modals read that storage via
+  <code class="k">bb-theme-console-sync.js</code> (same data as this export; advanced theme layers
+  like logo blend and gallery image slots are still catching up in standalone).
+  </p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ------- Storage layout the Brand Console writes ----------------------
+   * Theme Styles (per slot 0..6, the same data drives both Premium and
+   *   Freemium popups — the only difference is render):
+   *     bbTheme:accent:v1
+   *     bbTheme:background:v1
+   *     bbTheme:video:v1
+   *     bbTheme:customBgPersist:v1
+   *     bbTheme:buyNowLabel:v1
+   *     bbTheme:typography:v1
+   *     bbTheme:adsPreview:v1
+   *     bbTheme:adminGallery:v1
+   *     bbTheme:recentColours:v1
+   *   all scoped per slot: <baseKey>:themeSlot:<n>:v1
+   *
+   * Products (Premium-only — 7 slots):
+   *     bbProducts:slot:<n>:v1
+   *     bbProducts:activeSlot:v1
+   *
+   * Brand logo / asset lab:
+   *     bbAssetLab:svg:v1, bbAssetLab:filename:v1, bbAssetLab:cropSaved:v1
+   *     bbLuLightLogoData, bbLuDarkLogoData, bbLuMode
+   * --------------------------------------------------------------------- */
+
+  const PRODUCT_SLOTS = 7;
+  const THEME_SLOTS = 7;
+  const ACTIVE_SLOT_KEY = "bbProducts:activeSlot:v1";
+  const THEME_BASE_KEYS = [
+    "bbTheme:accent:v1",
+    "bbTheme:background:v1",
+    "bbTheme:video:v1",
+    "bbTheme:customBgPersist:v1",
+    "bbTheme:buyNowLabel:v1",
+    "bbTheme:typography:v1",
+    "bbTheme:adsPreview:v1",
+    "bbTheme:adminGallery:v1",
+    "bbTheme:recentColours:v1",
+  ];
+  const BRAND_KEYS = [
+    "bbAssetLab:svg:v1",
+    "bbAssetLab:filename:v1",
+    "bbAssetLab:cropSaved:v1",
+    "bbLuLightLogoData",
+    "bbLuDarkLogoData",
+    "bbLuMode",
+  ];
+  /* Strip these — they're transient cross-tab heartbeats / dev knobs that
+     shouldn't end up in the production DB. Easy to extend over time. */
+  const TRANSIENT_PREFIXES = [
+    "bbSmartSize:",
+    "bbSync:",
+    "bbReplaceThreshold:",
+    "bbPreview:",
+    "bbPlacement:",
+  ];
+  /* Local-only dev toggles from this page — never ship to production DB. */
+  const DEV_ONLY_KEYS = new Set([
+    "bbDevVerifyState",
+    "bbDevDashSimulateFreemium",
+    "bbDevStripeVerifyOpen",
+    "bbDevShowPlanTier",
+  ]);
+
+  const scopedThemeKey = (base, slot) => `${base}:themeSlot:${slot}:v1`;
+  const productSlotKey = (slot) => `bbProducts:slot:${slot}:v1`;
+  const KEY_CUSTOM_SESSION = "bbTheme:customBgSession:v1";
+  const STANDALONE_PREMIUM_URL = new URL(
+    "../../premium-and-freemium-bb-modals-standalone/Premium-BB-Modal.html",
+    window.location.href
+  ).href;
+  const STANDALONE_FREEMIUM_URL = new URL(
+    "../../premium-and-freemium-bb-modals-standalone/Freemium-BB-Modal.html",
+    window.location.href
+  ).href;
+
+  function themeFieldName(base) {
+    return base.replace(/^bbTheme:/, "").replace(/:v1$/, "");
+  }
+
+  function writeStorageValue(store, key, value) {
+    if (value == null) {
+      try {
+        store.removeItem(key);
+      } catch (_e) {}
+      return false;
+    }
+    try {
+      const serialized = typeof value === "string" ? value : JSON.stringify(value);
+      store.setItem(key, serialized);
+      return true;
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  /** Push export bundle → localStorage/sessionStorage so standalone modals can render it. */
+  function hydrateBundleToLocalStorage(bundle) {
+    if (!bundle || typeof bundle !== "object") return { ok: false, wrote: 0 };
+
+    let wrote = 0;
+    const brand = bundle.brand || {};
+    BRAND_KEYS.forEach((k) => {
+      if (k in brand && writeStorageValue(localStorage, k, brand[k])) wrote++;
+    });
+
+    const activeSlot = Number(bundle.themes?.activeSlot);
+    const slotIndex = Number.isFinite(activeSlot)
+      ? Math.max(0, Math.min(THEME_SLOTS - 1, activeSlot))
+      : 0;
+    if (writeStorageValue(localStorage, ACTIVE_SLOT_KEY, String(slotIndex))) wrote++;
+
+    (bundle.themes?.slots || []).forEach((slot) => {
+      const s = Number(slot?.slot);
+      if (!Number.isFinite(s)) return;
+      THEME_BASE_KEYS.forEach((base) => {
+        const field = themeFieldName(base);
+        if (slot[field] == null) return;
+        if (writeStorageValue(localStorage, scopedThemeKey(base, s), slot[field])) wrote++;
+      });
+      const persist = slot.customBgPersist;
+      if (persist && typeof persist === "object" && persist.dataUrl && persist.kind) {
+        const payload = { kind: persist.kind, dataUrl: persist.dataUrl };
+        if (writeStorageValue(localStorage, scopedThemeKey(KEY_CUSTOM_BG_PERSIST, s), persist)) {
+          wrote++;
+        }
+        if (writeStorageValue(sessionStorage, scopedThemeKey(KEY_CUSTOM_SESSION, s), payload)) {
+          wrote++;
+        }
+      }
+    });
+
+    const prodActive = Number(bundle.premium?.products?.activeSlot);
+    const prodSlot = Number.isFinite(prodActive) ? prodActive : slotIndex;
+    (bundle.premium?.products?.slots || []).forEach((slot) => {
+      if (!slot?._populated || slot.data == null) return;
+      const s = Number(slot.slot);
+      if (!Number.isFinite(s)) return;
+      if (writeStorageValue(localStorage, productSlotKey(s), slot.data)) wrote++;
+    });
+
+    try {
+      const cur = Number(localStorage.getItem("bbSync:version:v1") || "0") || 0;
+      localStorage.setItem("bbSync:version:v1", String(cur + 1));
+      wrote++;
+    } catch (_e) {}
+
+    try {
+      const ch = new BroadcastChannel("bb-theme-products-sync");
+      ch.postMessage({ type: "bb-export-hydrate", t: Date.now() });
+      ch.close();
+    } catch (_e) {}
+
+    try {
+      window.dispatchEvent(new CustomEvent("bb-theme-console-sync"));
+    } catch (_e) {}
+
+    return { ok: wrote > 0, wrote };
+  }
+
+  function readKey(k) {
+    try {
+      const raw = localStorage.getItem(k);
+      if (raw == null) return { raw: null, parsed: null, present: false };
+      let parsed = raw;
+      try { parsed = JSON.parse(raw); } catch { /* keep as string */ }
+      return { raw, parsed, present: true };
+    } catch (_e) {
+      return { raw: null, parsed: null, present: false };
+    }
+  }
+
+  function readAllKeys() {
+    const out = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k) continue;
+        out[k] = readKey(k).raw;
+      }
+    } catch (_e) {}
+    return out;
+  }
+
+  function isTransient(k) {
+    return TRANSIENT_PREFIXES.some((p) => k.startsWith(p));
+  }
+
+  function buildBundle() {
+    const exportedAt = new Date().toISOString();
+
+    /* Brand block (logo light/dark + asset lab) */
+    const brand = {};
+    BRAND_KEYS.forEach((k) => {
+      const { parsed, present } = readKey(k);
+      if (present) brand[k] = parsed;
+    });
+
+    /* Theme slots — index 0..6, each carries every bbTheme:* base */
+    const activeThemeSlot = (() => {
+      const { parsed } = readKey(ACTIVE_SLOT_KEY);
+      const n = Number(parsed);
+      return Number.isFinite(n) ? Math.max(0, Math.min(THEME_SLOTS - 1, n)) : 0;
+    })();
+
+    const themeSlots = [];
+    for (let s = 0; s < THEME_SLOTS; s++) {
+      const slot = { slot: s };
+      let touched = false;
+      THEME_BASE_KEYS.forEach((base) => {
+        const k = scopedThemeKey(base, s);
+        const { parsed, present } = readKey(k);
+        if (present) {
+          touched = true;
+          /* Strip the "bbTheme:" prefix and ":v1" suffix for a clean key. */
+          const fieldName = base.replace(/^bbTheme:/, "").replace(/:v1$/, "");
+          slot[fieldName] = parsed;
+        }
+      });
+      /* If a slot has nothing set, also fall back to the unscoped key —
+         this catches setups where only the active slot's data lives in
+         the un-scoped key (the Theme Design page virtualises both). */
+      if (!touched && s === activeThemeSlot) {
+        THEME_BASE_KEYS.forEach((base) => {
+          const { parsed, present } = readKey(base);
+          if (present) {
+            touched = true;
+            const fieldName = base.replace(/^bbTheme:/, "").replace(/:v1$/, "");
+            slot[fieldName] = parsed;
+          }
+        });
+      }
+      slot._populated = touched;
+      themeSlots.push(slot);
+    }
+
+    /* Products — premium-only, 7 slots */
+    const products = [];
+    for (let s = 0; s < PRODUCT_SLOTS; s++) {
+      const k = productSlotKey(s);
+      const { parsed, present } = readKey(k);
+      products.push({ slot: s, _populated: present, data: present ? parsed : null });
+    }
+
+    /* Everything else — anything else that looks app-owned (bb*), so the
+       backend dev can audit & decide what to keep. */
+    const known = new Set([
+      ACTIVE_SLOT_KEY,
+      ...BRAND_KEYS,
+      ...THEME_BASE_KEYS,
+    ]);
+    for (let s = 0; s < THEME_SLOTS; s++) {
+      THEME_BASE_KEYS.forEach((b) => known.add(scopedThemeKey(b, s)));
+    }
+    for (let s = 0; s < PRODUCT_SLOTS; s++) known.add(productSlotKey(s));
+
+    const other = {};
+    const all = readAllKeys();
+    Object.keys(all).sort().forEach((k) => {
+      if (known.has(k)) return;
+      if (isTransient(k)) return;
+      if (DEV_ONLY_KEYS.has(k)) return;
+      if (!/^bb/i.test(k)) return; /* skip non-app keys */
+      const { parsed } = readKey(k);
+      other[k] = parsed;
+    });
+
+    return {
+      exportedAt,
+      exportVersion: 1,
+      origin: window.location.origin || "file://",
+      brand,
+      themes: {
+        activeSlot: activeThemeSlot,
+        slots: themeSlots,
+      },
+      premium: {
+        products: {
+          activeSlot: activeThemeSlot,
+          slots: products,
+        },
+      },
+      freemium: {
+        /* Freemium reads the same brand + themes block — products are
+           premium-only. Repeated here so a backend can fetch a single
+           tier-scoped subset without conditional logic. */
+        notes: "Freemium popup renders themes[activeSlot] + brand. Products N/A.",
+      },
+      other,
+    };
+  }
+
+  function toPhpArray(value, indent) {
+    indent = indent || 0;
+    const pad = "  ".repeat(indent);
+    const padIn = "  ".repeat(indent + 1);
+
+    if (value === null || value === undefined) return "null";
+    if (typeof value === "boolean") return value ? "true" : "false";
+    if (typeof value === "number") return Number.isFinite(value) ? String(value) : "null";
+    if (typeof value === "string") {
+      return "'" + value.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + "'";
+    }
+    if (Array.isArray(value)) {
+      if (value.length === 0) return "[]";
+      const items = value.map((v) => padIn + toPhpArray(v, indent + 1));
+      return "[\n" + items.join(",\n") + ",\n" + pad + "]";
+    }
+    if (typeof value === "object") {
+      const keys = Object.keys(value);
+      if (keys.length === 0) return "[]";
+      const items = keys.map((k) => {
+        return padIn + "'" + k.replace(/'/g, "\\'") + "' => " + toPhpArray(value[k], indent + 1);
+      });
+      return "[\n" + items.join(",\n") + ",\n" + pad + "]";
+    }
+    return "null";
+  }
+
+  function toPhpFile(bundle) {
+    return "<?php\n"
+      + "/**\n"
+      + " * BrandBased — exported brand / theme / products settings.\n"
+      + " * Generated: " + bundle.exportedAt + "\n"
+      + " * Source: localStorage on " + bundle.origin + "\n"
+      + " *\n"
+      + " * Drop in: $settings = require __DIR__ . '/brandbased-settings.php';\n"
+      + " */\n\n"
+      + "return " + toPhpArray(bundle, 0) + ";\n";
+  }
+
+  function download(filename, content, mime) {
+    const blob = new Blob([content], { type: mime || "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch {}
+      a.remove();
+    }, 1000);
+  }
+
+  function toast(msg, kind) {
+    const t = document.getElementById("toast");
+    t.className = "toast" + (kind ? " " + kind : "");
+    t.textContent = msg;
+    requestAnimationFrame(() => t.classList.add("show"));
+    clearTimeout(toast._tid);
+    toast._tid = setTimeout(() => t.classList.remove("show"), 1600);
+  }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+  }
+
+  function renderValueCell(td, val) {
+    if (val == null || val === "") {
+      td.classList.add("empty");
+      td.textContent = "—";
+      return;
+    }
+    if (typeof val === "string" && /^data:image\//i.test(val)) {
+      const img = document.createElement("img");
+      img.src = val;
+      img.className = "img-thumb";
+      const sizeNote = document.createElement("div");
+      sizeNote.style.color = "var(--muted)";
+      sizeNote.style.fontSize = "11px";
+      sizeNote.textContent = "data: URL · " + formatSize(val.length);
+      td.appendChild(img);
+      td.appendChild(sizeNote);
+      return;
+    }
+    const text = typeof val === "string" ? val : JSON.stringify(val, null, 2);
+    if (text.length > 600) {
+      td.textContent = text.slice(0, 600) + "…  (" + formatSize(text.length) + " total)";
+    } else {
+      td.textContent = text;
+    }
+  }
+
+  function renderKvTable(host, rows) {
+    host.innerHTML = "";
+    if (!rows.length) {
+      const p = document.createElement("p");
+      p.style.color = "var(--muted)";
+      p.style.margin = "8px 0";
+      p.textContent = "Nothing saved yet for this section.";
+      host.appendChild(p);
+      return;
+    }
+    const table = document.createElement("table");
+    table.className = "kv-table";
+    const thead = document.createElement("thead");
+    thead.innerHTML = "<tr><th>Key</th><th>Value</th></tr>";
+    const tbody = document.createElement("tbody");
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      const keyTd = document.createElement("td");
+      keyTd.className = "key";
+      keyTd.textContent = r.key;
+      const valTd = document.createElement("td");
+      valTd.className = "val";
+      renderValueCell(valTd, r.value);
+      tr.appendChild(keyTd);
+      tr.appendChild(valTd);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    host.appendChild(table);
+  }
+
+  function rebuildUI() {
+    const bundle = buildBundle();
+    const json = JSON.stringify(bundle, null, 2);
+    const php = toPhpFile(bundle);
+
+    /* Preview */
+    document.getElementById("jsonPreview").textContent = json;
+    document.getElementById("metaJsonSize").textContent = formatSize(json.length) + " JSON · " + formatSize(php.length) + " PHP";
+
+    /* Summary stats */
+    const populatedThemes = bundle.themes.slots.filter((s) => s._populated).length;
+    const populatedProducts = bundle.premium.products.slots.filter((s) => s._populated).length;
+    const hasLight = !!bundle.brand["bbLuLightLogoData"];
+    const hasDark = !!bundle.brand["bbLuDarkLogoData"];
+
+    const summary = document.getElementById("summary");
+    summary.innerHTML = "";
+    const cards = [
+      { k: "Origin", v: bundle.origin },
+      { k: "Exported at", v: new Date(bundle.exportedAt).toLocaleString() },
+      { k: "Logo (light / dark)", v: (hasLight ? "✓" : "—") + " / " + (hasDark ? "✓" : "—") },
+      { k: "Theme slots saved", v: populatedThemes + " / " + THEME_SLOTS + " · active " + bundle.themes.activeSlot },
+      { k: "Product slots saved", v: populatedProducts + " / " + PRODUCT_SLOTS + " · active " + bundle.premium.products.activeSlot },
+    ];
+    cards.forEach((c) => {
+      const el = document.createElement("div");
+      el.className = "stat";
+      el.innerHTML = "<div class=\"k\"></div><div class=\"v\"></div>";
+      el.children[0].textContent = c.k;
+      el.children[1].textContent = c.v;
+      summary.appendChild(el);
+    });
+
+    /* Brand body */
+    const brandRows = Object.keys(bundle.brand).map((k) => ({ key: k, value: bundle.brand[k] }));
+    renderKvTable(document.getElementById("brandBody"), brandRows);
+    document.getElementById("metaBrand").textContent = brandRows.length + " keys";
+
+    /* Themes body — one mini-table per slot */
+    const themesHost = document.getElementById("themesBody");
+    themesHost.innerHTML = "";
+    bundle.themes.slots.forEach((slot) => {
+      const wrap = document.createElement("div");
+      wrap.style.margin = "10px 0 4px";
+      const head = document.createElement("div");
+      head.style.fontWeight = "600";
+      head.style.fontSize = "13px";
+      head.style.color = slot._populated ? "var(--text)" : "var(--muted)";
+      head.textContent = "Slot " + slot.slot + (slot.slot === bundle.themes.activeSlot ? "  · active" : "")
+                       + (slot._populated ? "" : "  · empty");
+      wrap.appendChild(head);
+      const rows = Object.keys(slot)
+        .filter((k) => k !== "slot" && k !== "_populated")
+        .map((k) => ({ key: k, value: slot[k] }));
+      const body = document.createElement("div");
+      wrap.appendChild(body);
+      renderKvTable(body, rows);
+      themesHost.appendChild(wrap);
+    });
+    document.getElementById("metaThemes").textContent = populatedThemes + " populated";
+
+    /* Products body */
+    const productsHost = document.getElementById("productsBody");
+    productsHost.innerHTML = "";
+    bundle.premium.products.slots.forEach((slot) => {
+      const wrap = document.createElement("div");
+      wrap.style.margin = "10px 0 4px";
+      const head = document.createElement("div");
+      head.style.fontWeight = "600";
+      head.style.fontSize = "13px";
+      head.style.color = slot._populated ? "var(--text)" : "var(--muted)";
+      head.textContent = "Slot " + slot.slot + (slot.slot === bundle.premium.products.activeSlot ? "  · active" : "")
+                       + (slot._populated ? "" : "  · empty");
+      wrap.appendChild(head);
+      const body = document.createElement("div");
+      wrap.appendChild(body);
+      renderKvTable(body, slot._populated ? [{ key: productSlotKey(slot.slot), value: slot.data }] : []);
+      productsHost.appendChild(wrap);
+    });
+    document.getElementById("metaProducts").textContent = populatedProducts + " populated";
+
+    /* Other */
+    const otherRows = Object.keys(bundle.other).map((k) => ({ key: k, value: bundle.other[k] }));
+    renderKvTable(document.getElementById("otherBody"), otherRows);
+    document.getElementById("metaOther").textContent = otherRows.length + " keys";
+
+    document.getElementById("originTag").textContent = bundle.origin;
+
+    /* Stash for download/copy handlers. */
+    rebuildUI._latest = { bundle, json, php };
+  }
+
+  /* Wire up toolbar */
+  document.getElementById("btnDownloadJson").addEventListener("click", () => {
+    const { json } = rebuildUI._latest || {};
+    if (!json) return;
+    download("brandbased-settings.json", json, "application/json");
+    toast("Downloaded brandbased-settings.json");
+  });
+  document.getElementById("btnDownloadPhp").addEventListener("click", () => {
+    const { php } = rebuildUI._latest || {};
+    if (!php) return;
+    download("brandbased-settings.php", php, "application/x-httpd-php");
+    toast("Downloaded brandbased-settings.php");
+  });
+  document.getElementById("btnCopyJson").addEventListener("click", async () => {
+    const { json } = rebuildUI._latest || {};
+    if (!json) return;
+    try {
+      await navigator.clipboard.writeText(json);
+      toast("Copied JSON to clipboard");
+    } catch {
+      toast("Copy failed — use Download", "warn");
+    }
+  });
+  document.getElementById("btnCopyPhp").addEventListener("click", async () => {
+    const { php } = rebuildUI._latest || {};
+    if (!php) return;
+    try {
+      await navigator.clipboard.writeText(php);
+      toast("Copied PHP to clipboard");
+    } catch {
+      toast("Copy failed — use Download", "warn");
+    }
+  });
+  document.getElementById("btnReload").addEventListener("click", () => {
+    rebuildUI();
+    toast("Reloaded from localStorage");
+  });
+  document.getElementById("btnApplyStandalone").addEventListener("click", () => {
+    const { bundle } = rebuildUI._latest || {};
+    const r = hydrateBundleToLocalStorage(bundle);
+    if (!r.ok) {
+      toast("Nothing to apply — reload from localStorage first", "warn");
+      return;
+    }
+    toast("Applied " + r.wrote + " storage writes — refresh or open standalone modals");
+  });
+  document.getElementById("btnOpenPremiumStandalone").addEventListener("click", () => {
+    const { bundle } = rebuildUI._latest || {};
+    hydrateBundleToLocalStorage(bundle);
+    window.open(STANDALONE_PREMIUM_URL, "bbStandalonePremium");
+    toast("Opened Premium standalone (storage hydrated)");
+  });
+  document.getElementById("btnOpenFreemiumStandalone").addEventListener("click", () => {
+    const { bundle } = rebuildUI._latest || {};
+    hydrateBundleToLocalStorage(bundle);
+    window.open(STANDALONE_FREEMIUM_URL, "bbStandaloneFreemium");
+    toast("Opened Freemium standalone (storage hydrated)");
+  });
+
+  /* Live-refresh when another tab on the same origin writes to localStorage. */
+  window.addEventListener("storage", () => rebuildUI());
+
+  rebuildUI();
+
+  /* ---------------- Brand Verification dev override ----------------
+     Toggle between "pass" and "fail" — persisted in localStorage so the
+     open Meta-Verification iframes react via their `storage` event
+     listener. We mirror the seg-control aria-pressed state so the
+     toolbar matches whatever's in storage right now (incl. across
+     reloads). */
+  const LS_DEV_VERIFY = "bbDevVerifyState";
+
+  function currentVerifyState() {
+    try {
+      return localStorage.getItem(LS_DEV_VERIFY) === "fail" ? "fail" : "pass";
+    } catch {
+      return "pass";
+    }
+  }
+
+  function applyVerifySegUI(state) {
+    const isPass = state !== "fail";
+    document.getElementById("btnVerifyPass").setAttribute("aria-pressed", String(isPass));
+    document.getElementById("btnVerifyFail").setAttribute("aria-pressed", String(!isPass));
+    const seg = document.getElementById("verifySeg");
+    if (seg) seg.classList.toggle("fail", !isPass);
+  }
+
+  function setVerifyState(next) {
+    const cleaned = next === "fail" ? "fail" : "pass";
+    try {
+      if (cleaned === "pass") localStorage.removeItem(LS_DEV_VERIFY);
+      else localStorage.setItem(LS_DEV_VERIFY, "fail");
+    } catch {}
+    applyVerifySegUI(cleaned);
+    toast(
+      cleaned === "fail"
+        ? "Brand Verification → Not Verified (preview)"
+        : "Brand Verification → Pass (default)",
+      cleaned === "fail" ? "warn" : null
+    );
+    /* Same-tab listeners won't get a `storage` event because the
+       storage event only fires in *other* documents on this origin.
+       The Meta Verification iframes ARE in other documents, so they
+       react automatically. No further nudge needed. */
+  }
+
+  document.getElementById("btnVerifyPass").addEventListener("click", () => setVerifyState("pass"));
+  document.getElementById("btnVerifyFail").addEventListener("click", () => setVerifyState("fail"));
+
+  /* Reflect the saved state on load, and stay in sync if another
+     tool / tab changes it. */
+  applyVerifySegUI(currentVerifyState());
+  window.addEventListener("storage", (e) => {
+    if (e && e.key && e.key !== LS_DEV_VERIFY) return;
+    applyVerifySegUI(currentVerifyState());
+  });
+
+  /* ---------------- Dashboard Freemium simulation ---------------- */
+  const LS_DASH_FREEMIUM_SIM = "bbDevDashSimulateFreemium";
+
+  function currentDashTier() {
+    try {
+      return localStorage.getItem(LS_DASH_FREEMIUM_SIM) === "1" ? "freemium" : "premium";
+    } catch {
+      return "premium";
+    }
+  }
+
+  function applyDashTierSegUI(tier) {
+    const isPrem = tier !== "freemium";
+    const bp = document.getElementById("btnDashPremium");
+    const bf = document.getElementById("btnDashFreemium");
+    if (bp) bp.setAttribute("aria-pressed", String(isPrem));
+    if (bf) bf.setAttribute("aria-pressed", String(!isPrem));
+  }
+
+  function setDashTier(next) {
+    const isFree = next === "freemium";
+    try {
+      if (isFree) localStorage.setItem(LS_DASH_FREEMIUM_SIM, "1");
+      else localStorage.removeItem(LS_DASH_FREEMIUM_SIM);
+    } catch {}
+    applyDashTierSegUI(isFree ? "freemium" : "premium");
+    toast(
+      isFree
+        ? "Dashboard → Freemium mode (Premium routes gated)"
+        : "Dashboard → Premium (normal)",
+      isFree ? "warn" : null
+    );
+  }
+
+  const bprem = document.getElementById("btnDashPremium");
+  const bfree = document.getElementById("btnDashFreemium");
+  if (bprem) bprem.addEventListener("click", () => setDashTier("premium"));
+  if (bfree) bfree.addEventListener("click", () => setDashTier("freemium"));
+  applyDashTierSegUI(currentDashTier());
+  window.addEventListener("storage", (e) => {
+    if (e && e.key && e.key !== LS_DASH_FREEMIUM_SIM) return;
+    applyDashTierSegUI(currentDashTier());
+  });
+
+  /* ---------------- Stripe purchase verify dev toggle ---------------- */
+  const LS_DEV_STRIPE = "bbDevStripeVerifyOpen";
+
+  function currentStripeState() {
+    try {
+      return localStorage.getItem(LS_DEV_STRIPE) === "1" ? "show" : "hide";
+    } catch {
+      return "hide";
+    }
+  }
+
+  function applyStripeSegUI(state) {
+    const isShow = state === "show";
+    const bs = document.getElementById("btnStripeShow");
+    const bh = document.getElementById("btnStripeHide");
+    if (bs) bs.setAttribute("aria-pressed", String(isShow));
+    if (bh) bh.setAttribute("aria-pressed", String(!isShow));
+  }
+
+  function setStripeState(next) {
+    const show = next === "show";
+    try {
+      if (show) localStorage.setItem(LS_DEV_STRIPE, "1");
+      else localStorage.removeItem(LS_DEV_STRIPE);
+    } catch {}
+    applyStripeSegUI(show ? "show" : "hide");
+    toast(
+      show
+        ? "Stripe verify modal → shown on dashboard"
+        : "Stripe verify modal → hidden",
+      show ? "warn" : null
+    );
+  }
+
+  const bShow = document.getElementById("btnStripeShow");
+  const bHide = document.getElementById("btnStripeHide");
+  if (bShow) bShow.addEventListener("click", () => setStripeState("show"));
+  if (bHide) bHide.addEventListener("click", () => setStripeState("hide"));
+  applyStripeSegUI(currentStripeState());
+  window.addEventListener("storage", (e) => {
+    if (e && e.key && e.key !== LS_DEV_STRIPE) return;
+    applyStripeSegUI(currentStripeState());
+  });
+
+  /* ---------------- Brands page plan-tier preview ---------------- */
+  const LS_PLAN_TIER = "bbDevShowPlanTier";
+
+  function currentPlanState() {
+    try {
+      return localStorage.getItem(LS_PLAN_TIER) === "1" ? "show" : "hide";
+    } catch {
+      return "hide";
+    }
+  }
+
+  function applyPlanSegUI(state) {
+    const isShow = state === "show";
+    const bs = document.getElementById("btnPlanShow");
+    const bh = document.getElementById("btnPlanHide");
+    if (bs) bs.setAttribute("aria-pressed", String(isShow));
+    if (bh) bh.setAttribute("aria-pressed", String(!isShow));
+  }
+
+  function setPlanState(next) {
+    const show = next === "show";
+    try {
+      if (show) localStorage.setItem(LS_PLAN_TIER, "1");
+      else localStorage.removeItem(LS_PLAN_TIER);
+    } catch {}
+    applyPlanSegUI(show ? "show" : "hide");
+    toast(
+      show
+        ? "Brands → Premium pill shown on all cards"
+        : "Brands → Premium pill hidden",
+      show ? "warn" : null
+    );
+  }
+
+  const bPlanShow = document.getElementById("btnPlanShow");
+  const bPlanHide = document.getElementById("btnPlanHide");
+  if (bPlanShow) bPlanShow.addEventListener("click", () => setPlanState("show"));
+  if (bPlanHide) bPlanHide.addEventListener("click", () => setPlanState("hide"));
+  applyPlanSegUI(currentPlanState());
+  window.addEventListener("storage", (e) => {
+    if (e && e.key && e.key !== LS_PLAN_TIER) return;
+    applyPlanSegUI(currentPlanState());
+  });
+})();
+</script>
+</body>
+</html>

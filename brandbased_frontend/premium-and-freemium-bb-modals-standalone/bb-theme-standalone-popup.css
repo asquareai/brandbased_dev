@@ -1,0 +1,817 @@
+/* Brand Console theme tokens → Premium popup + Freemium modal (standalone bundle).
+   Vars are set on .popup / .bb-freemium-modal by bb-theme-console-sync.js from localStorage. */
+
+:root {
+  --bb-explore-compass-mask: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20122.88%20122.88%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M61.44%2C0A61.46%2C61.46%2C0%2C1%2C1%2C18%2C18%2C61.23%2C61.23%2C0%2C0%2C1%2C61.44%2C0Zm5.25%2C73.85-3.64-3.69-.15%2C0a8.38%2C8.38%2C0%2C0%2C1-.88%2C0%2C8.86%2C8.86%2C0%2C0%2C1-8.88-8.87%2C9.2%2C9.2%2C0%2C0%2C1%2C0-.94l0-.2-4-4L37.88%2C85.29%2C66.69%2C73.85Zm-2.22-6L70%2C73.4l1.43%2C1.43L33.17%2C90%2C48.28%2C51.41l7.82%2C7.92L56%2C60a5.67%2C5.67%2C0%2C0%2C0-.11.66c0%2C.24%2C0%2C.46%2C0%2C.66A6.23%2C6.23%2C0%2C0%2C0%2C62%2C67.56l.62%2C0a5.77%2C5.77%2C0%2C0%2C0%2C.62-.09l.7-.14.51.51ZM58.52%2C55.18l-6.3-6.39.42-.85.7-.64L89.71%2C32.85%2C74.61%2C71.47l-7.07-7.16.3-.79a5.85%2C5.85%2C0%2C0%2C0%2C.29-1.07%2C7.14%2C7.14%2C0%2C0%2C0%2C.1-1.1A6.23%2C6.23%2C0%2C0%2C0%2C62%2C55.14a6.56%2C6.56%2C0%2C0%2C0-1.08.09%2C5.45%2C5.45%2C0%2C0%2C0-1%2C.27l-.8.29-.6-.61ZM96.58%2C26.3a49.71%2C49.71%2C0%2C1%2C0%2C14.55%2C35.14A49.57%2C49.57%2C0%2C0%2C0%2C96.58%2C26.3Z%22%2F%3E%3C%2Fsvg%3E");
+  /* Freemium modal — same tokens as Freemium-Theme-Styles .bb-fm-preview-popup */
+  --bb-fm-modal-width: 238px;
+  --bb-fm-modal-height: 197px;
+  --bb-fm-modal-radius: 17px;
+  --bb-fm-modal-pad-top: 15px;
+  --bb-fm-modal-pad-x: 19px;
+  --bb-fm-modal-pad-bottom: 20px;
+}
+
+/* Standalone Premium/Freemium pages: in-text marks use the same line
+   metrics as Theme Styles #bbThemeSimulatedHost .bb-bts-sim-text (17px). */
+.bb-premium-wrap,
+.bb-freemium-wrap {
+  font-size: 17px;
+  line-height: var(--bb-preview-line-height, 1.3);
+}
+
+.bb-premium-wrap .brandbased-dynamic-logo-slot,
+.bb-freemium-wrap .brandbased-dynamic-logo-slot {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* —— Premium popup: brand mark —— */
+.popup .title-row .brand-icon.bb-upload {
+  background-color: var(
+    --bb-theme-popup-brand-icon-bg,
+    var(--bb-theme-popup-brand-icon, #1030f5)
+  ) !important;
+  background-image: none !important;
+  border: 1px solid var(--bb-theme-popup-brand-icon-border, #000) !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+}
+
+.popup .title-row .brand-icon.bb-upload::after {
+  inset: var(--bb-theme-popup-brand-icon-logo-inset, 3px) !important;
+  background-color: transparent !important;
+  background-image: var(--bb-logo) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
+  filter: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+
+.popup .title-row .brand-icon:not(.bb-upload) {
+  background-color: var(
+    --bb-theme-popup-brand-icon-bg,
+    var(--bb-theme-popup-brand-icon, #1030f5)
+  ) !important;
+  border: 1px solid var(--bb-theme-popup-brand-icon-border, #000) !important;
+}
+
+.popup .title-row .brand-icon:not(.bb-upload)::after {
+  background-color: #fff !important;
+}
+
+/* —— Premium popup: typography + colours —— */
+.popup,
+.popup .product-title,
+.popup .product-description,
+.popup .product-description p {
+  font-family: var(--bb-theme-popup-font-stack, Roboto, system-ui, sans-serif) !important;
+  font-weight: var(--bb-theme-popup-font-weight, 400) !important;
+  font-style: var(--bb-theme-popup-font-style, normal) !important;
+}
+
+.popup .product-title {
+  color: var(--bb-theme-popup-product-title-color, #000) !important;
+}
+
+.popup .product-description,
+.popup .product-description p {
+  color: var(--bb-theme-popup-content-color, #14141a) !important;
+}
+
+.popup .buy-now-button {
+  background-color: var(
+    --bb-theme-popup-buy-button-bg,
+    var(--bb-theme-accent-hex, #1030f4)
+  ) !important;
+  color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+  -webkit-text-fill-color: var(--bb-theme-popup-buy-button-label, #fff) !important;
+}
+
+.popup .lock-icon-bb-logo,
+.popup .lock-icon-bb-logo .bb-lock-logo-inline {
+  color: var(--bb-theme-lock-logo-color, #1030f5) !important;
+}
+
+/* Explore compass (mask recolour; hide raster img from bb-smart-ui template) */
+.popup .explore-icon-when-buy-now-is-used {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none !important;
+  background-color: transparent !important;
+}
+
+.popup .explore-icon-when-buy-now-is-used img {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+.popup .explore-icon-when-buy-now-is-used::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 88%;
+  height: 88%;
+  background-color: var(--bb-theme-popup-explore-icon-color, #1030f4);
+  -webkit-mask-image: var(--bb-explore-compass-mask);
+  mask-image: var(--bb-explore-compass-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  pointer-events: none;
+}
+
+/* —— Premium popup: theme background layers (bb-smart-ui markup) —— */
+/* Theme shell + layers apply only when close-up gallery is closed (.bb-zoom-open = zoom active). */
+/* Z-index: glass/tint/stack → overlay (::before) → chrome (buy row). Zoom uses bb-shared-ui.css only. */
+.popup:not(.bb-zoom-open) {
+  --bb-popup-z-glass: 1;
+  --bb-popup-z-theme: 2;
+  --bb-popup-z-overlay: 5;
+  --bb-popup-z-chrome: 20;
+  /* Theme tint colour wash — 40% lighter than preview default (0.25 → 0.15). */
+  --bb-popup-theme-tint-opacity: 0.15;
+  --bb-popup-theme-tint-glass-mix: 16%;
+  /* Softer elevation than bb-shared-ui default (Premium standalone only). */
+  --bb-popup-elevation-shadow: -2px 4px 22px -4px rgba(0, 0, 0, 0.16);
+}
+
+.popup {
+  box-shadow: var(--bb-popup-elevation-shadow) !important;
+}
+
+@media (max-width: 840px) {
+  .popup {
+    --bb-popup-elevation-shadow: 0 -1px 10px rgba(0, 0, 0, 0.1);
+    height: min(100dvh, calc(90vh * 1.2)) !important;
+    max-height: 100dvh;
+    box-shadow: var(--bb-popup-elevation-shadow) !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .popup {
+    --bb-popup-elevation-shadow: 0 0 1rem 0 rgba(34, 34, 34, 0.22);
+  }
+}
+
+/* Desktop card only: transparent shell; glass layer provides frosted fill. */
+@media (min-width: 841px) {
+  .popup:not(.bb-zoom-open) {
+    position: relative;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Mobile sheet (≤840): keep bb-shared-ui fixed bottom sheet — do not override position/background. */
+@media (max-width: 840px) {
+  .popup:not(.bb-zoom-open):not(.bb-theme-bg-on):not(.bb-theme-tint-on):not(.bb-theme-backdrop-tint-on)
+    .bb-popup-glass-base {
+    display: none !important;
+  }
+}
+
+.popup.bb-zoom-open .bb-popup-glass-base,
+.popup.bb-zoom-open .bb-popup-theme-tint,
+.popup.bb-zoom-open .bb-popup-theme-stack {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.popup.bb-zoom-open.bb-theme-backdrop-tint-on::before {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.popup .bb-popup-glass-base {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: var(--bb-popup-z-glass);
+  background: rgba(130, 132, 140, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(24px) saturate(1.24) !important;
+  backdrop-filter: blur(24px) saturate(1.24) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bb-popup-glass-base {
+    background: rgba(120, 122, 132, 0.22);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.bb-popup-theme-tint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: var(--bb-popup-z-glass);
+  background-color: var(--bb-theme-accent, transparent);
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-tint-on .bb-popup-theme-tint {
+  opacity: var(--bb-popup-theme-tint-opacity, 0.15);
+}
+
+.popup:not(.bb-zoom-open).bb-theme-tint-on:not(.bb-theme-bg-on) .bb-popup-glass-base {
+  background: color-mix(
+      in srgb,
+      var(--bb-theme-accent-hex, #1030f4) var(--bb-popup-theme-tint-glass-mix, 16%),
+      rgba(130, 132, 140, 0.34)
+    ) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .popup:not(.bb-zoom-open).bb-theme-tint-on:not(.bb-theme-bg-on) .bb-popup-glass-base {
+    background: color-mix(
+        in srgb,
+        var(--bb-theme-accent-hex, #1030f4) var(--bb-popup-theme-tint-glass-mix, 16%),
+        rgba(120, 122, 132, 0.22)
+      ) !important;
+  }
+}
+
+.bb-popup-theme-stack {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: var(--bb-popup-z-theme);
+  isolation: isolate;
+}
+
+.bb-popup-theme-stack .blur-bg,
+.bb-popup-theme-stack .bb-theme-video-bg {
+  z-index: 0;
+}
+
+.bb-theme-logo-blend {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 1;
+}
+
+.popup .blur-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(30px);
+  width: 110%;
+  height: 110%;
+  z-index: 0;
+  padding: 0;
+  margin: 0;
+  margin-left: -5%;
+  margin-top: -5%;
+  opacity: 1;
+  box-sizing: border-box;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.popup .bb-theme-video-bg {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 0;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.28s ease, visibility 0.28s ease, filter 0.28s ease;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-video-on .bb-theme-video-bg,
+.popup:not(.bb-zoom-open).bb-theme-accent-fill-on .bb-theme-video-bg {
+  opacity: 1;
+  visibility: visible;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-bg-on:not(.bb-theme-frosted):not(.bb-theme-blend-logo) .blur-bg {
+  filter: none !important;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-bg-on.bb-theme-frosted:not(.bb-theme-blend-logo) .blur-bg {
+  filter: blur(28px) !important;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-bg-on.bb-theme-video-on:not(.bb-theme-blend-logo) .blur-bg,
+.popup:not(.bb-zoom-open).bb-theme-bg-on.bb-theme-accent-fill-on:not(.bb-theme-blend-logo) .blur-bg {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-bg-on.bb-theme-frosted.bb-theme-video-on:not(.bb-theme-blend-logo) .bb-theme-video-bg,
+.popup:not(.bb-zoom-open).bb-theme-bg-on.bb-theme-frosted.bb-theme-accent-fill-on:not(.bb-theme-blend-logo) .bb-theme-video-bg {
+  filter: blur(22px);
+  transform: scale(1.07);
+}
+
+.popup:not(.bb-zoom-open).bb-theme-bg-on:not(.bb-theme-frosted).bb-theme-video-on:not(.bb-theme-blend-logo) .bb-theme-video-bg,
+.popup:not(.bb-zoom-open).bb-theme-bg-on:not(.bb-theme-frosted).bb-theme-accent-fill-on:not(.bb-theme-blend-logo) .bb-theme-video-bg {
+  filter: none;
+  transform: none;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-bg-on.bb-theme-accent-fill-on:not(.bb-theme-blend-logo):not(.bb-theme-custom-upload)
+  .bb-theme-video-bg {
+  background-color: var(--bb-theme-accent) !important;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-bg-on.bb-theme-accent-fill-on:not(.bb-theme-frosted):not(.bb-theme-blend-logo):not(.bb-theme-custom-upload)
+  .bb-theme-video-bg {
+  background-color: var(--bb-theme-accent-hex, #1030f4) !important;
+}
+
+/* Product UI + buy row — above theme / colour overlay. Corner controls stay direct .popup children. */
+.bb-popup-chrome {
+  position: relative;
+  z-index: var(--bb-popup-z-chrome);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 0 0 auto;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.popup > .lock-icon-bb-logo,
+.popup > .popup-mobile-sheet-close,
+.popup > .close-icon-desktop {
+  z-index: calc(var(--bb-popup-z-chrome) + 1);
+}
+
+.bb-popup-chrome .buy-now-row,
+.bb-popup-chrome .buy-now-link,
+.bb-popup-chrome .buy-now-button {
+  position: relative;
+  z-index: 1;
+}
+
+/* Logo blend: overlay on top of glass / theme layers — never replaces .blur-bg. */
+.popup:not(.bb-zoom-open).bb-theme-blend-logo .bb-theme-video-bg {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-blend-logo:not(.bb-theme-custom-upload) .blur-bg {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-blend-logo .bb-theme-logo-blend {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: var(--bb-theme-accent) !important;
+  background-image: var(
+    --bb-theme-blend-bg-image,
+    url("./BB-Full-Logo-Blue.svg")
+  ) !important;
+  background-size: min(92%, 480px) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  filter: blur(72px) saturate(1.15) !important;
+}
+
+.popup:not(.bb-zoom-open).bb-theme-blend-logo:not(.bb-theme-frosted):not(.bb-theme-custom-upload)
+  .bb-theme-logo-blend {
+  background-color: var(--bb-theme-accent-hex, #1030f4) !important;
+}
+
+/* Colour overlay (above theme stack, below chrome). */
+.popup:not(.bb-zoom-open).bb-theme-backdrop-tint-on::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--bb-theme-backdrop-layer, rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  z-index: var(--bb-popup-z-overlay);
+}
+
+/* —— Freemium modal shell (matches Freemium-Theme-Styles .bb-fm-preview-popup) —— */
+.bb-freemium-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: var(--bb-fm-modal-width, 238px);
+  max-width: min(var(--bb-fm-modal-width, 238px), calc(100vw - 24px));
+  height: var(--bb-fm-modal-height, 197px);
+  min-height: var(--bb-fm-modal-height, 197px);
+  padding: var(--bb-fm-modal-pad-top, 15px) var(--bb-fm-modal-pad-x, 19px)
+    var(--bb-fm-modal-pad-bottom, 20px);
+  border-radius: var(--bb-fm-modal-radius, 17px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  background: rgba(130, 132, 140, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(24px) saturate(1.24);
+  backdrop-filter: blur(24px) saturate(1.24);
+  transform-origin: top left;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bb-freemium-modal.bb-theme-blend-logo:not(.bb-fm-theme-bg-on):not(.bb-theme-custom-upload) {
+  background: color-mix(
+    in srgb,
+    var(--bb-theme-accent-hex, #1030f4) 26%,
+    rgba(130, 132, 140, 0.34)
+  );
+}
+
+.bb-freemium-modal.bb-fm-theme-bg-on.bb-fm-theme-video-on {
+  background: rgba(20, 22, 30, 0.28);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.bb-freemium-modal:hover,
+.bb-freemium-modal:focus-within {
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.bb-freemium-close {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  backdrop-filter: blur(8px) saturate(1.4);
+  z-index: 4;
+}
+
+.bb-freemium-close__icon {
+  display: block;
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  color: inherit;
+}
+
+button.bb-freemium-badge {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin-top: 9px;
+  padding: 17px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  -webkit-appearance: none;
+  margin-left: 0;
+  margin-right: 0;
+  font: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  border: 1px solid var(--bb-fm-brand-icon-border, var(--bb-theme-popup-brand-icon-border, transparent));
+  background: var(
+    --bb-fm-brand-icon-bg,
+    var(--bb-theme-popup-brand-icon-bg, #1030f5)
+  );
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  z-index: 3;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+button.bb-freemium-badge::after {
+  content: "";
+  position: absolute;
+  inset: 17px;
+  background-color: transparent;
+  background-image: var(--bb-logo, url("./brandbased-logo.svg"));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: none;
+  -webkit-mask: none;
+  mask: none;
+  pointer-events: none;
+}
+
+.bb-freemium-badge-glyph {
+  display: none;
+}
+
+.bb-freemium-explore {
+  position: relative;
+  width: 100%;
+  min-height: 38px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(
+    --bb-theme-popup-buy-button-bg,
+    var(--bb-fm-button-bg, #1030f5)
+  );
+  color: var(--bb-theme-popup-buy-button-label, var(--bb-fm-button-label, #fff));
+  -webkit-text-fill-color: var(
+    --bb-theme-popup-buy-button-label,
+    var(--bb-fm-button-label, #fff)
+  );
+  font: 800 17px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+  z-index: 3;
+}
+
+.bb-freemium-explore:hover {
+  color: var(--bb-theme-popup-buy-button-label, var(--bb-fm-button-label, #fff));
+}
+
+@media (prefers-color-scheme: dark) {
+  .bb-freemium-modal {
+    background: rgba(120, 122, 132, 0.22);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .bb-freemium-modal.bb-theme-blend-logo:not(.bb-fm-theme-bg-on):not(.bb-theme-custom-upload) {
+    background: color-mix(
+      in srgb,
+      var(--bb-theme-accent-hex, #1030f4) 26%,
+      rgba(120, 122, 132, 0.22)
+    );
+  }
+
+  .bb-freemium-modal.bb-fm-theme-bg-on.bb-fm-theme-video-on {
+    background: rgba(20, 22, 30, 0.28);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  .bb-freemium-modal:hover,
+  .bb-freemium-modal:focus-within {
+    box-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  .bb-freemium-close {
+    color: rgba(255, 255, 255, 0.72);
+  }
+}
+
+/* —— Freemium modal: theme background layers —— */
+
+.bb-freemium-modal-bgwrap {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 320ms ease;
+  z-index: 1;
+}
+
+.bb-freemium-modal.bb-fm-theme-bg-on .bb-freemium-modal-bgwrap,
+.bb-freemium-modal.bb-theme-blend-logo .bb-freemium-modal-bgwrap {
+  opacity: 1;
+}
+
+.bb-freemium-modal-blend {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 0;
+}
+
+.bb-freemium-modal.bb-theme-blend-logo .bb-freemium-modal-blend {
+  opacity: 1;
+  visibility: visible;
+  background-color: var(--bb-theme-accent) !important;
+  background-image: var(
+    --bb-theme-blend-bg-image,
+    url("./BB-Full-Logo-Blue.svg")
+  ) !important;
+  background-size: min(92%, 480px) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  filter: blur(72px) saturate(1.15) !important;
+}
+
+.bb-freemium-modal.bb-theme-blend-logo:not(.bb-theme-frosted):not(.bb-theme-custom-upload)
+  .bb-freemium-modal-blend {
+  background-color: var(--bb-theme-accent-hex, #1030f4) !important;
+}
+
+.bb-freemium-modal.bb-theme-blend-logo .bb-freemium-modal-bg {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.bb-freemium-modal-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bb-freemium-modal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--bb-fm-accent, var(--bb-theme-accent, transparent));
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: 1;
+  transition: background-color 240ms ease;
+}
+
+.bb-freemium-modal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--bb-fm-backdrop-layer, var(--bb-theme-backdrop-layer, transparent));
+  pointer-events: none;
+  z-index: 2;
+  transition: background 220ms ease;
+}
+
+/* Close stays position:absolute (shell block); only raise stacking for content. */
+button.bb-freemium-badge,
+.bb-freemium-explore {
+  position: relative;
+  z-index: 3;
+}
+
+/* 841–980 only: pin close-up to .popup so gallery height matches the card (79vw wide). */
+@media (min-width: 841px) and (max-width: 980px) {
+  .popup > .slider-close-up.bb-closeup-pinned-popup {
+    position: absolute !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: inherit;
+    z-index: 200;
+    transform: none !important;
+    box-sizing: border-box;
+  }
+
+  .popup > .slider-close-up.bb-closeup-pinned-popup .swiper,
+  .popup > .slider-close-up.bb-closeup-pinned-popup .slider-close-up-swiper {
+    width: 79vw !important;
+    max-width: 79vw !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+    flex-shrink: 0;
+    border-radius: 20px;
+    box-sizing: border-box;
+  }
+}
+
+/* Ads off: hide ad; on mobile reflow (same sheet height — buy block sits where ad was). */
+body.bb-theme-ads-off .popup .add-element {
+  display: none !important;
+}
+
+@media (max-width: 840px) {
+  /*
+    Mobile + ads hidden: do not change .popup height (avoids sheet bugs).
+    Grow description; push qty + Buy to the bottom band (~100px) where the fixed ad was.
+  */
+  body.bb-theme-ads-off .popup {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+  }
+
+  body.bb-theme-ads-off .popup .bb-popup-chrome {
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.bb-theme-ads-off .popup .product-top-section {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin-bottom: 0 !important;
+  }
+
+  body.bb-theme-ads-off .popup .text-section {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-bottom: none !important;
+    padding-bottom: 4px !important;
+  }
+
+  body.bb-theme-ads-off .popup .product-description-holder {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    mask-image: linear-gradient(to bottom, black 92%, transparent 100%) !important;
+    -webkit-mask-image: linear-gradient(to bottom, black 92%, transparent 100%) !important;
+  }
+
+  body.bb-theme-ads-off .popup .product-description {
+    flex: 1 1 auto !important;
+    min-height: clamp(140px, 34vh, 340px) !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+  }
+
+  /* Sit in the lower band where .add-element (fixed, ~100px) used to be */
+  body.bb-theme-ads-off .popup .selectors-row {
+    flex: 0 0 auto !important;
+    margin-top: auto !important;
+    padding-top: 12px !important;
+    margin-bottom: 0 !important;
+  }
+
+  body.bb-theme-ads-off .popup .buy-now-row {
+    flex: 0 0 auto !important;
+    margin-top: 10px !important;
+    margin-bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.bb-theme-ads-off .popup .buy-now-button {
+    margin-top: 0 !important;
+  }
+}

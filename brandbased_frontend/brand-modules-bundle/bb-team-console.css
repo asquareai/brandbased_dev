@@ -1,0 +1,409 @@
+/* Admin Team Console — Brand Settings AI Rules (page chrome; rules UI reuses bb-smart-rules-* tokens) */
+
+.bb-team-console-page {
+  margin: 0;
+  font-family: Roboto, system-ui, sans-serif;
+  padding: clamp(16px, 4vw, 36px);
+  padding-bottom: 96px;
+  background: linear-gradient(180deg, #f7f8fb 0%, #eef1f8 100%);
+  color: #121212;
+}
+
+.bb-team-console-slab {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.bb-team-console-slab--rules-wide {
+  max-width: min(920px, 100%);
+}
+
+.bb-team-console-engine-card {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 48, 244, 0.22);
+  background: linear-gradient(135deg, rgba(16, 48, 244, 0.06) 0%, rgba(255, 255, 255, 0.92) 55%);
+  box-shadow: 0 10px 28px rgba(16, 48, 244, 0.06);
+}
+
+.bb-team-console-engine-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: #0c174d;
+}
+
+.bb-team-console-engine-lede {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #303030;
+}
+
+.bb-team-console-section--smart-sizing .bb-smart-rules-intro--compact {
+  margin-top: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0.92;
+}
+
+.bb-team-console-page h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+}
+
+.bb-team-console-lede {
+  margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #383838;
+}
+
+.bb-team-console-lede--tight {
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+.bb-team-console-section--dynamic-themes .bb-team-console-dynamic-themes-panel {
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 12px 36px rgba(16, 48, 244, 0.06);
+}
+
+.bb-team-console-subsection-title {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.9;
+  color: #1a1a1a;
+}
+
+.bb-admin-theme-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bb-admin-theme-gallery-row {
+  display: grid;
+  grid-template-columns: minmax(108px, 136px) 88px minmax(0, 1fr);
+  gap: 10px 14px;
+  align-items: center;
+}
+
+.bb-admin-theme-slot-preview {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #e9ecf3;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6a6a6a;
+}
+
+.bb-admin-theme-slot-preview--empty {
+  font-weight: 700;
+}
+
+.bb-admin-theme-slot-preview-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bb-admin-theme-gallery-label {
+  grid-column: 2;
+  grid-row: 1;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  color: #2a2a2a;
+}
+
+.bb-admin-theme-gallery-select-wrap {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .bb-admin-theme-gallery-row {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .bb-admin-theme-slot-preview {
+    grid-column: 1;
+    grid-row: 1;
+    max-width: 280px;
+  }
+
+  .bb-admin-theme-gallery-label {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .bb-admin-theme-gallery-select-wrap {
+    grid-column: 1;
+    grid-row: 3;
+  }
+}
+
+.bb-admin-theme-gallery-select {
+  font: 14px/1.2 Roboto, system-ui, sans-serif;
+  padding: 8px 36px 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  color: #0f172a;
+  -webkit-text-fill-color: #0f172a;
+  color-scheme: light;
+  min-width: 0;
+  flex: 1 1 200px;
+  max-width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.bb-admin-theme-upload-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.bb-admin-theme-upload-btn {
+  font: 700 13px/1 Roboto, system-ui, sans-serif;
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: #fff;
+  color: #1030f4;
+  -webkit-text-fill-color: #1030f4;
+  cursor: pointer;
+}
+
+.bb-admin-theme-upload-btn:hover {
+  background: rgba(16, 48, 244, 0.06);
+}
+
+.bb-admin-theme-upload-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #484848;
+}
+
+.bb-admin-theme-gallery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.bb-admin-theme-gallery-save {
+  font: 700 13px/1 Roboto, system-ui, sans-serif;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 0;
+  background: #1030f4;
+  color: #fff;
+  cursor: pointer;
+}
+
+.bb-admin-theme-gallery-save:hover {
+  filter: brightness(1.06);
+}
+
+.bb-admin-theme-gallery-status {
+  font-size: 13px;
+  color: #383838;
+}
+
+.bb-team-console-page .bb-module-nav {
+  margin-bottom: 28px;
+  font-size: 13px;
+}
+
+.bb-team-console-page .bb-module-nav a {
+  color: #1030f5;
+  margin-right: 14px;
+}
+
+.bb-team-console-section {
+  margin-bottom: 26px;
+}
+
+.bb-team-console-section-title {
+  font-weight: 800;
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.88;
+}
+
+.bb-team-console-section--dynamic-themes > .bb-team-console-section-subtitle {
+  margin: -2px 0 14px;
+  max-width: 52rem;
+  font: 500 13px/1.45 Roboto, system-ui, sans-serif;
+  color: #475569;
+  letter-spacing: 0.01em;
+}
+
+body.dark-mode .bb-team-console-section--dynamic-themes > .bb-team-console-section-subtitle,
+body.bb-dark-ui .bb-team-console-section--dynamic-themes > .bb-team-console-section-subtitle,
+html.bb-dash-scheme-dark .bb-team-console-section--dynamic-themes > .bb-team-console-section-subtitle,
+html.bb-embedded[style*="color-scheme: dark"] .bb-team-console-section--dynamic-themes > .bb-team-console-section-subtitle {
+  color: rgba(226, 232, 240, 0.88) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.light-mode) .bb-team-console-section--dynamic-themes > .bb-team-console-section-subtitle {
+    color: rgba(226, 232, 240, 0.88) !important;
+  }
+}
+
+/* Inline rules panel — not fixed to viewport corner */
+.bb-team-console-page .bb-smart-rules-btn {
+  display: none !important;
+}
+
+.bb-team-console-page .bb-smart-rules-panel {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  display: block !important;
+}
+
+.bb-team-console-page .bb-dev-openai {
+  position: relative;
+  padding: 14px;
+}
+
+/* Theme gallery — dark dashboards / embedded iframe (bb-dash-scheme-dark set by embed script) */
+body.dark-mode .bb-admin-theme-upload-btn,
+body.bb-dark-ui .bb-admin-theme-upload-btn,
+html.bb-dash-scheme-dark .bb-admin-theme-upload-btn,
+html.bb-embedded[style*="color-scheme: dark"] .bb-admin-theme-upload-btn {
+  background: #1030f4 !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+
+body.dark-mode .bb-admin-theme-upload-btn:hover,
+body.bb-dark-ui .bb-admin-theme-upload-btn:hover,
+html.bb-dash-scheme-dark .bb-admin-theme-upload-btn:hover,
+html.bb-embedded[style*="color-scheme: dark"] .bb-admin-theme-upload-btn:hover {
+  background: #2547ff !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  filter: brightness(1.06);
+}
+
+body.dark-mode .bb-admin-theme-gallery-select,
+body.bb-dark-ui .bb-admin-theme-gallery-select,
+html.bb-dash-scheme-dark .bb-admin-theme-gallery-select,
+html.bb-embedded[style*="color-scheme: dark"] .bb-admin-theme-gallery-select {
+  background-color: #1e293b !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  color-scheme: dark !important;
+  border-color: rgba(148, 163, 184, 0.55) !important;
+}
+
+body.dark-mode .bb-admin-theme-gallery-select option,
+body.bb-dark-ui .bb-admin-theme-gallery-select option,
+html.bb-dash-scheme-dark .bb-admin-theme-gallery-select option,
+html.bb-embedded[style*="color-scheme: dark"] .bb-admin-theme-gallery-select option {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+/*
+ * bb-shared-ui.css sets `@media (prefers-color-scheme: dark) { body * { color: #fff !important } }`
+ * without styling form controls — selects stay native/light while text is forced white (unreadable).
+ * Mirror dashboard dark hooks here whenever OS prefers dark, unless the page opted into light-mode.
+ */
+@media (prefers-color-scheme: dark) {
+  body:not(.light-mode) .bb-admin-theme-upload-btn {
+    background: #1030f4 !important;
+    border-color: rgba(255, 255, 255, 0.28) !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+  }
+
+  body:not(.light-mode) .bb-admin-theme-upload-btn:hover {
+    background: #2547ff !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    filter: brightness(1.06);
+  }
+
+  body:not(.light-mode) .bb-admin-theme-gallery-select {
+    background-color: #1e293b !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    color-scheme: dark !important;
+    border-color: rgba(148, 163, 184, 0.55) !important;
+  }
+
+  body:not(.light-mode) .bb-admin-theme-gallery-select option {
+    background-color: #1e293b;
+    color: #f8fafc;
+  }
+
+  body:not(.light-mode) .bb-admin-theme-upload-hint {
+    color: rgba(226, 232, 240, 0.82) !important;
+  }
+
+  body:not(.light-mode) .bb-admin-theme-gallery-status {
+    color: rgba(226, 232, 240, 0.85) !important;
+  }
+}
+
+body.dark-mode .bb-admin-theme-upload-hint,
+body.bb-dark-ui .bb-admin-theme-upload-hint,
+html.bb-dash-scheme-dark .bb-admin-theme-upload-hint,
+html.bb-embedded[style*="color-scheme: dark"] .bb-admin-theme-upload-hint {
+  color: rgba(226, 232, 240, 0.82);
+}
+
+body.dark-mode .bb-admin-theme-gallery-status,
+body.bb-dark-ui .bb-admin-theme-gallery-status,
+html.bb-dash-scheme-dark .bb-admin-theme-gallery-status,
+html.bb-embedded[style*="color-scheme: dark"] .bb-admin-theme-gallery-status {
+  color: rgba(226, 232, 240, 0.85);
+}

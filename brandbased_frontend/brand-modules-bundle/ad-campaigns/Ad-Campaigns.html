@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ad Campaigns — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="../favicons/manifest.webmanifest" />
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+  <link rel="stylesheet" href="../platforms/platforms.css?v=platforms-50" />
+  <link rel="stylesheet" href="../hotspots/hotspots.css?v=hotspots-8" />
+  <link rel="stylesheet" href="../_shared/sync-popup.css?v=shared-2" />
+  <link rel="stylesheet" href="./ad-campaigns.css?v=adcampaigns-8" />
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-platforms-page bb-hotspots-page bb-ad-campaigns-page bb-brand-theme-settings">
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <div id="bbAdCampaignsMount" class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="../start-now/Start-Now.html">Start Now</a>
+        <a href="../logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="../brands/Brands.html">Brands</a>
+        <a href="../Brand-Settings-Module.html">Brand Settings</a>
+        <a href="../Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="../products/Products.html">Products</a>
+        <a href="../Product-Scheduling-Module.html">Scheduling</a>
+        <a href="../platforms/Platforms.html">Platforms</a>
+        <a href="../hotspots/Hotspots.html">Hotspots</a>
+        <a href="../ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="Ad-Campaigns.html">Campaigns</a>
+        <a href="../metrics/Metrics.html">Metrics</a>
+        <a href="../payments/Payments.html">Payments</a>
+        <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <h1>Ad Campaigns</h1>
+    </header>
+
+    <div class="bb-bts-layout bb-hotspots-dash-layout" role="main" aria-label="Ad Campaigns">
+      <section class="bb-hotspots-center bb-plat-dash-col" aria-label="Ad Campaigns settings">
+
+        <!-- 1 + 1b: Intro and Ad Preview side-by-side on desktop, stacked on mobile -->
+        <div class="bb-adc-top-row">
+
+        <!-- 1. Intro: BrandBased + Google AdSense -->
+        <div class="bb-plat-dash-panel bb-hotspots-panel bb-adc-panel bb-adc-panel--intro">
+          <div class="bb-adc-icons" aria-hidden="true">
+            <span class="bb-adc-icon bb-adc-icon--logo" title="BrandBased">
+              <img src="../brandbased-logo.svg" alt="" />
+            </span>
+            <span class="bb-adc-icon-x">+</span>
+            <span class="bb-adc-icon bb-adc-icon--google" title="Google AdSense">
+              <svg viewBox="0 0 48 48" focusable="false">
+                <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                <path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/>
+                <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/>
+                <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+              </svg>
+            </span>
+          </div>
+          <p class="bb-hotspots-heading">BrandBased Ad Campaigns, powered by Google AdSense</p>
+          <div class="bb-plat-dash-copy bb-hotspots-copy">
+            <p>Earn additional revenue when your brand's ads appear across the BrandBased network. We use Google AdSense to deliver and monetise these placements, so your campaigns benefit from Google's ad auction, targeting, and brand-safety controls — with no ad-tech for you to manage.</p>
+          </div>
+        </div>
+
+        <!-- 1b. Ad Preview -->
+        <div class="bb-plat-dash-panel bb-hotspots-panel bb-adc-panel bb-adc-panel--preview">
+          <p class="bb-hotspots-heading">Ad Preview</p>
+          <div class="bb-plat-dash-copy bb-hotspots-copy">
+            <p>An example BrandBased ad unit as it appears across platform partners and (if opted in) on your brand website.</p>
+          </div>
+
+          <div class="bb-adc-preview">
+            <div class="bb-adc-preview-frame">
+              <span class="bb-adc-preview-pill" aria-hidden="true">Ad</span>
+              <video
+                class="bb-adc-preview-video"
+                src="./add-sample.mp4"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                aria-label="Sample BrandBased ad unit"
+              ></video>
+            </div>
+            <p class="bb-adc-preview-caption">
+              <span>Sample BrandBased ad unit</span>
+              <span class="bb-adc-preview-by">Powered by Google AdSense</span>
+            </p>
+          </div>
+        </div>
+
+        </div>
+        <!-- /bb-adc-top-row -->
+
+        <!-- 2. Where Your Ads Appear -->
+        <div class="bb-plat-dash-panel bb-hotspots-panel bb-adc-panel">
+          <p class="bb-hotspots-heading">Where Your Ads Appear</p>
+          <div class="bb-plat-dash-copy bb-hotspots-copy">
+            <p>Choose where BrandBased serves AdSense placements for your brand.</p>
+          </div>
+
+          <div class="bb-adc-where-grid">
+            <!-- Always-on: Platform Partners -->
+            <div class="bb-adc-where-card">
+              <div class="bb-adc-where-card-head">
+                <span class="bb-adc-where-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M3 12h18" />
+                    <path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+                  </svg>
+                </span>
+                <h3>Across BrandBased platform partners</h3>
+                <span class="bb-adc-where-pill">Always on</span>
+              </div>
+              <p>Your brand's ads are automatically syndicated across the BrandBased platform partner network — partner storefronts, brand discovery surfaces, and integrated digital platforms — wherever BrandBased serves ad inventory.</p>
+            </div>
+
+            <!-- Opt-in: Brand Website -->
+            <div class="bb-adc-where-card">
+              <div class="bb-adc-where-card-head">
+                <span class="bb-adc-where-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="14" rx="2" />
+                    <path d="M3 9h18" />
+                    <path d="M8 21h8M12 18v3" />
+                  </svg>
+                </span>
+                <h3>On your own brand website</h3>
+                <label class="bb-adc-toggle" aria-label="Allow ads on my brand website">
+                  <input type="checkbox" id="bbAdcOptInWebsite" />
+                  <span class="bb-adc-toggle-track"><span class="bb-adc-toggle-thumb"></span></span>
+                </label>
+              </div>
+              <p>Optionally let BrandBased serve AdSense ad units on your own brand website. When enabled, BrandBased adds an ad slot to your site — you keep full control of placement, and you can opt out at any time.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Connecting AdSense + content compliance -->
+        <div class="bb-plat-dash-panel bb-hotspots-panel bb-adc-panel">
+          <p class="bb-hotspots-heading">Connecting Google AdSense</p>
+          <div class="bb-plat-dash-copy bb-hotspots-copy">
+            <p>To start earning, brands need a Google AdSense account and must register the website they'd like monetised. Google reviews each site against the AdSense Program Policies before it's eligible to serve ads.</p>
+          </div>
+
+          <ol class="bb-adc-steps">
+            <li>
+              <span class="bb-adc-step-num">1</span>
+              <div>
+                <h4>Sign in to Google AdSense</h4>
+                <p>Use your existing AdSense account or create one at <a href="https://adsense.google.com" target="_blank" rel="noreferrer noopener">adsense.google.com</a>, then connect it to BrandBased below.</p>
+              </div>
+            </li>
+            <li>
+              <span class="bb-adc-step-num">2</span>
+              <div>
+                <h4>Register your brand website in AdSense</h4>
+                <p>Add the website you'd like monetised as a <em>site</em> in your AdSense account. Site verification is required before Google will serve ads on it through BrandBased.</p>
+              </div>
+            </li>
+            <li>
+              <span class="bb-adc-step-num">3</span>
+              <div>
+                <h4>Pass content review</h4>
+                <p>AdSense requires sites to comply with the <a href="https://support.google.com/adsense/answer/48182" target="_blank" rel="noreferrer noopener">AdSense Program Policies</a>. Original, high-quality content with clear ownership and a privacy policy is the minimum bar — adult, dangerous, deceptive, or copyright-infringing content will be rejected.</p>
+              </div>
+            </li>
+          </ol>
+
+          <div class="bb-adc-policy-note" role="note">
+            <span class="bb-adc-policy-icon" aria-hidden="true">&#9432;</span>
+            <p><strong>Content compatibility:</strong> Google AdSense reviews every brand website for content quality and policy compliance. If your site doesn't meet AdSense requirements, ads will only run across the BrandBased platform partner network until your site is approved.</p>
+          </div>
+        </div>
+
+        <!-- Purple CTA: View Metrics -->
+        <div class="bb-bts-card bb-bts-cta bb-adc-connect-cta">
+          <h2>View Metrics</h2>
+          <p class="bb-bts-help">Access behavioural AI insights and user-driven analytics across BrandBased-integrated platforms.</p>
+          <div class="bb-bts-cta-actions">
+            <a class="bb-bts-cta-btn" href="../metrics/Metrics.html">Go to Metrics</a>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </div>
+
+  <script src="../_shared/sync-popup.js?v=shared-1"></script>
+  <script src="./ad-campaigns-page.js?v=adcampaigns-1"></script>
+</body>
+</html>

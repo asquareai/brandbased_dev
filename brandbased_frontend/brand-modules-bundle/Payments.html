@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payments — BrandBased</title>
+  <meta http-equiv="refresh" content="0; url=payments/Payments.html" />
+  <script>
+    window.location.replace("payments/Payments.html");
+  </script>
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body>
+  <p>
+    <a href="payments/Payments.html">Open Payments</a>
+  </p>
+</body>
+</html>

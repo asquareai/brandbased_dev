@@ -1,0 +1,323 @@
+/* Hotspots page — single-column overrides on top of platforms.css.
+   Body class includes `bb-platforms-page` so panel / URL pill / Sync button styles apply unchanged.
+   Anything tweaked here is scoped behind `body.bb-hotspots-page` to avoid affecting Platforms. */
+
+/* Force single-column layout: theme-design.css grid is 2-col on >=1351px and adds a vertical
+   divider via ::before — neither belongs on this page. */
+body.bb-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: calc(clamp(6px, 1.5vh, 20px) + 30px);
+  grid-template-columns: 1fr !important;
+  position: relative;
+}
+
+/* Kill the vertical divider that the shared theme draws between the two grid columns. */
+body.bb-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout::before,
+body.bb-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout::after {
+  content: none !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+body.bb-hotspots-page .bb-hotspots-center {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+/* Match the page title's left edge to the centered Hotspots panel. */
+body.bb-hotspots-page .bb-module-head h1 {
+  width: min(720px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 15px;
+}
+
+@media (min-width: 1351px) {
+  body.bb-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout {
+    /* Shared desktop CSS makes .bb-bts-layout flex:1 and viewport-height; keep this page
+       content-sized so the single card sits near the top like tablet/mobile. */
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding-top: 8px;
+  }
+}
+
+/* Single panel: cap the width, no min-height (Platforms forces 590px on non-excluded panels for
+   visual parity with the partners panel — we don't have that here, so let the panel size to content). */
+body.bb-hotspots-page .bb-plat-dash-panel.bb-hotspots-panel {
+  width: 100%;
+  max-width: 720px;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 32px);
+  min-height: 0 !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Secondary CTA: match the purple panels used elsewhere (Platforms/Payments/Products). */
+body.bb-hotspots-page .bb-hotspots-ai-cta {
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+body.bb-hotspots-page .bb-hotspots-ai-cta h2 {
+  margin: 0 0 8px;
+  font: 900 16px/1.15 Roboto, system-ui, sans-serif;
+  color: #fff;
+}
+
+body.bb-hotspots-page .bb-hotspots-ai-cta .bb-bts-help {
+  margin: 0 0 6px;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: #fff !important;
+}
+
+body.bb-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-actions {
+  margin-top: 14px;
+  justify-content: flex-start;
+}
+
+body.bb-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-btn {
+  width: 100%;
+  max-width: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+}
+
+/* Bold lede paragraph (top of the panel) — matches the screenshot's white bold heading. */
+body.bb-hotspots-page .bb-hotspots-heading {
+  margin: 0;
+  font: 700 17px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  color: var(--bb-plat-dash-text);
+}
+
+@media (min-width: 768px) {
+  body.bb-hotspots-page .bb-hotspots-heading {
+    font-size: 18px;
+    line-height: 1.45;
+  }
+}
+
+/* Copy paragraph: same family as platforms but a touch more breathing room since this is the only block. */
+body.bb-hotspots-page .bb-hotspots-copy p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* URL field shouldn't show the row remove button (single URL on this page) — none rendered, but keep
+   the field self-contained in case a stray remove button is added later. */
+body.bb-hotspots-page .bb-hotspots-url-field .bb-plat-url-remove {
+  display: none;
+}
+
+/* Sync button: brand purple, full width, slightly taller. */
+body.bb-hotspots-page .bb-plat-sync-btn.bb-hotspots-sync-btn {
+  width: 100%;
+  --bb-plat-sync-bg: #635bff;
+  --bb-plat-sync-bg-hover: #5249e8;
+  background: var(--bb-plat-sync-bg);
+  font-size: 18px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  letter-spacing: 0.01em;
+}
+
+body.bb-hotspots-page .bb-plat-sync-btn.bb-hotspots-sync-btn:hover {
+  background: var(--bb-plat-sync-bg-hover);
+}
+
+/* Hide the resize handle / collapse chevron / "Add Excluded URL" button affordances that the
+   panel--excluded variant adds in the Platforms page chrome — they have no place here. */
+body.bb-hotspots-page .bb-plat-excluded-collapse,
+body.bb-hotspots-page .bb-plat-excluded-resize-handle,
+body.bb-hotspots-page .bb-plat-add-url {
+  display: none !important;
+}
+
+/* Defensive: kill any inherited horizontal divider lines around the URL field / scroll wrapper.
+   The Platforms layout uses these as separators on a multi-row scrollable list — the single-URL
+   Hotspots layout doesn't want them. */
+body.bb-hotspots-page .bb-plat-excluded-scroll,
+body.bb-hotspots-page .bb-plat-url-field,
+body.bb-hotspots-page .bb-plat-url-field-main {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Mobile: keep the panel comfy with side margins. */
+@media (max-width: 600px) {
+  body.bb-hotspots-page .bb-module-head h1 {
+    margin-bottom: -20px;
+  }
+  body.bb-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  body.bb-hotspots-page .bb-plat-dash-panel.bb-hotspots-panel {
+    padding: 18px;
+    gap: 14px;
+  }
+  body.bb-hotspots-page .bb-hotspots-heading {
+    font-size: 16px;
+  }
+}
+
+/* ----------------------------------------------------------------
+   Publish-ready CTA panel (Premium-side mirror of the Freemium
+   Hotspots publish panel). Same animated treatment: Sync purple
+   background, breathing scale, diagonal white shimmer sweep,
+   purple glow + drop shadow. The button label is Sync purple on
+   a white pill so it reads as the celebratory action.
+   Everything is scoped to `.bb-hotspots-publish-cta` so the
+   sibling `.bb-hotspots-ai-cta` panel above keeps its own look.
+   ---------------------------------------------------------------- */
+body.bb-hotspots-page .bb-hotspots-publish-cta {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: left;
+  background: #635bff !important;
+  overflow: hidden;
+  isolation: isolate;
+  transform-origin: center;
+  box-shadow:
+    0 18px 40px rgba(99, 91, 255, 0.34),
+    0 0 38px rgba(99, 91, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  animation: bb-hotspots-publish-breathe 3.8s ease-in-out infinite;
+}
+
+body.dark-mode.bb-brand-theme-settings.bb-hotspots-page .bb-hotspots-publish-cta,
+body.dark-mode.bb-brand-theme-settings.bb-hotspots-page .bb-bts-card.bb-bts-cta.bb-hotspots-publish-cta,
+body.dark-mode.bb-hotspots-page .bb-hotspots-publish-cta {
+  background: #635bff !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-hotspots-page .bb-hotspots-publish-cta,
+  body.bb-brand-theme-settings.bb-hotspots-page .bb-hotspots-publish-cta,
+  body.bb-brand-theme-settings.bb-hotspots-page .bb-bts-card.bb-bts-cta.bb-hotspots-publish-cta {
+    background: #635bff !important;
+  }
+}
+
+body.bb-hotspots-page .bb-hotspots-publish-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-18deg);
+  pointer-events: none;
+  z-index: 0;
+  animation: bb-hotspots-publish-shimmer 3s ease-in-out infinite;
+}
+
+body.bb-hotspots-page .bb-hotspots-publish-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes bb-hotspots-publish-shimmer {
+  0%   { left: -60%; opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { left: 110%; opacity: 1; }
+  100% { left: 110%; opacity: 0; }
+}
+
+@keyframes bb-hotspots-publish-breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 18px 40px rgba(99, 91, 255, 0.34),
+      0 0 38px rgba(99, 91, 255, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  }
+  50% {
+    transform: scale(1.018);
+    box-shadow:
+      0 22px 52px rgba(99, 91, 255, 0.42),
+      0 0 52px rgba(99, 91, 255, 0.36),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-hotspots-page .bb-hotspots-publish-cta {
+    animation: none;
+  }
+  body.bb-hotspots-page .bb-hotspots-publish-cta::before {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+body.bb-hotspots-page .bb-hotspots-publish-cta h2 {
+  margin: 0 0 8px;
+  font: 900 16px/1.15 Roboto, system-ui, sans-serif;
+  color: #fff;
+}
+
+body.bb-hotspots-page .bb-hotspots-publish-cta .bb-bts-help {
+  margin: 0 0 6px;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: #fff !important;
+}
+
+body.bb-hotspots-page .bb-hotspots-publish-cta .bb-bts-cta-actions {
+  margin-top: 14px;
+  justify-content: flex-start;
+}
+
+body.bb-hotspots-page .bb-hotspots-publish-cta .bb-bts-cta-btn {
+  width: 100%;
+  max-width: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+  color: #635bff !important;
+  -webkit-text-fill-color: #635bff !important;
+  transition: opacity 200ms ease;
+}
+
+body.bb-hotspots-page .bb-hotspots-publish-cta .bb-bts-cta-btn:hover,
+body.bb-hotspots-page .bb-hotspots-publish-cta .bb-bts-cta-btn:focus-visible {
+  opacity: 0.78;
+}
+
+body.dark-mode.bb-brand-theme-settings.bb-hotspots-page .bb-hotspots-publish-cta .bb-bts-cta-btn,
+body.dark-mode.bb-hotspots-page .bb-hotspots-publish-cta .bb-bts-cta-btn {
+  color: #635bff !important;
+  -webkit-text-fill-color: #635bff !important;
+}
+

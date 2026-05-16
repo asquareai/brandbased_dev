@@ -1,0 +1,417 @@
+/* Shared sync popup overlay — used by every Sync button across the bundle.
+   Glass card, brand logo, "Syncing" label, animated progress bar.
+   Colour of the bar is overridable per-call via --bb-sync-popup-bar-color. */
+
+.bb-sync-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 11, 26, 0.42);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.bb-sync-popup-backdrop--show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bb-sync-popup {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(360px, 100%);
+  padding: 28px 28px 22px;
+  border-radius: 22px;
+  /* Glass effect — translucent surface + blur of whatever is behind. */
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+  backdrop-filter: blur(28px) saturate(1.2);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+  color: #fff;
+  isolation: isolate;
+  transform: translateY(8px) scale(0.985);
+  opacity: 0;
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .bb-sync-popup {
+    background: rgba(15, 23, 42, 0.92);
+  }
+}
+
+.bb-sync-popup-backdrop--show .bb-sync-popup {
+  opacity: 1;
+  transform: none;
+}
+
+.bb-sync-popup__logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  /* Pulse: subtle scale + soft brand-coloured halo that breathes while syncing. */
+  animation: bb-sync-popup-logo-pulse 1.4s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, box-shadow;
+}
+
+@keyframes bb-sync-popup-logo-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.22),
+      0 0 0 0 var(--bb-sync-popup-bar-color, #635bff);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 12px 28px rgba(0, 0, 0, 0.28),
+      0 0 0 10px rgba(99, 91, 255, 0.001),
+      0 0 22px 6px var(--bb-sync-popup-bar-color, #635bff);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-sync-popup__logo {
+    animation-duration: 2.6s;
+  }
+}
+
+.bb-sync-popup__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.bb-sync-popup__label {
+  margin: 0;
+  font: 700 17px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.bb-sync-popup__label--shine {
+  background: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffffff 35%,
+    #d8d5ff 48%,
+    var(--bb-sync-popup-bar-color, #635bff) 54%,
+    #ffffff 68%,
+    #ffffff 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: bb-sync-popup-label-shine 2.4s ease-in-out infinite;
+}
+
+@keyframes bb-sync-popup-label-shine {
+  0%   { background-position: 120% 50%; }
+  100% { background-position: -120% 50%; }
+}
+
+/* Light mode (dashboard toggle, or any page that uses
+   `body.light-mode`): swap the white edges of the shine gradient
+   for silver so the label is visible against the light glass card.
+   Brand-purple shine band stays so the sweep animation still reads.
+   The non-shine fallback also gets a silver flat colour. */
+body.light-mode .bb-sync-popup__label {
+  color: #c0c0c0;
+  text-shadow: none;
+}
+body.light-mode .bb-sync-popup__label--shine {
+  background: linear-gradient(
+    100deg,
+    #c0c0c0 0%,
+    #c0c0c0 35%,
+    #d8d5ff 48%,
+    var(--bb-sync-popup-bar-color, #635bff) 54%,
+    #c0c0c0 68%,
+    #c0c0c0 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.bb-sync-popup__bar {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.bb-sync-popup__bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  background: var(--bb-sync-popup-bar-color, #635bff);
+  border-radius: 999px;
+  animation: bb-sync-popup-bar-fill var(--bb-sync-popup-duration, 3s) cubic-bezier(0.45, 0.05, 0.55, 0.95) forwards;
+  box-shadow: 0 0 12px var(--bb-sync-popup-bar-color, #635bff);
+}
+
+@keyframes bb-sync-popup-bar-fill {
+  0%   { width: 0; }
+  100% { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-sync-popup__bar-fill {
+    animation-duration: 600ms;
+  }
+  .bb-sync-popup__label--shine {
+    animation: none;
+    background: none;
+    color: #fff;
+    -webkit-text-fill-color: #fff;
+  }
+}
+
+/* ----------------------------------------------------------------
+   "Done" finishing beat — added by sync-popup.js at the end of the
+   bar fill (Syncing → Synced, Publishing → Published, etc.).
+   - Label swaps to a solid white with a soft brand-coloured glow.
+   - Logo fires one strong pulse + halo so the moment reads as
+     "complete" before the popup fades away.
+   ---------------------------------------------------------------- */
+.bb-sync-popup__label--done {
+  /* Override the running shine sweep — its background-clip:text would
+     otherwise keep the new label looking like a moving gradient. */
+  animation: none;
+  background: none;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.30),
+    0 0 18px color-mix(in srgb, var(--bb-sync-popup-bar-color, #635bff) 65%, transparent);
+  letter-spacing: 0.04em;
+  transition: color 200ms ease, text-shadow 200ms ease;
+}
+
+.bb-sync-popup__label--done::after {
+  /* Tiny checkmark suffix so the "done" label feels finished. */
+  content: " \2713";
+  margin-left: 4px;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+}
+
+.bb-sync-popup__logo--done {
+  /* One-shot strong pulse with a brand-coloured halo. Overrides the
+     looping breath via a higher-specificity animation declaration. */
+  animation: bb-sync-popup-logo-done-pulse 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0s 1 both;
+}
+
+@keyframes bb-sync-popup-logo-done-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.22),
+      0 0 0 0 var(--bb-sync-popup-bar-color, #635bff);
+  }
+  35% {
+    transform: scale(1.18);
+    box-shadow:
+      0 16px 36px rgba(0, 0, 0, 0.32),
+      0 0 0 14px color-mix(in srgb, var(--bb-sync-popup-bar-color, #635bff) 22%, transparent),
+      0 0 38px 10px var(--bb-sync-popup-bar-color, #635bff);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.22),
+      0 0 0 28px color-mix(in srgb, var(--bb-sync-popup-bar-color, #635bff) 0%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--bb-sync-popup-bar-color, #635bff) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-sync-popup__logo--done {
+    animation-duration: 0.6s;
+  }
+}
+
+/* ============================================================
+   Confirm popup — same glass language as the sync popup, but
+   with a title, body, and two action buttons. Rendered by
+   window.bbShowConfirmPopup. Lives in the dashboard document
+   when invoked from an iframe, so the blur covers chrome + iframe
+   together (just like sync / verify / publish popups).
+   ============================================================ */
+
+.bb-confirm-popup {
+  /* Confirm card is a touch wider than the sync card so two
+     side-by-side buttons sit comfortably. */
+  width: min(420px, 100%);
+  gap: 12px;
+  padding: 24px 26px 22px;
+  text-align: center;
+}
+
+/* Confirm popups dwell longer than sync popups (the user has to
+   read + choose), so they get a heavier wash + deeper blur on the
+   backdrop. Scoped to `.bb-confirm-popup-backdrop` so sync /
+   publish / verify popups keep their lighter, briefer treatment. */
+.bb-confirm-popup-backdrop {
+  background: rgba(8, 11, 26, 0.62);
+  -webkit-backdrop-filter: blur(12px) saturate(1.05);
+          backdrop-filter: blur(12px) saturate(1.05);
+}
+
+/* Light mode: the *card* gets a soft white tint so it reads as a
+   clean modal over the bright dashboard. Backdrop wash stays the
+   shared dark veil — only the popup itself changes. */
+body.light-mode .bb-confirm-popup {
+  background: #ffffff78;
+}
+
+/* Brand B icon at the top of the confirm card. Re-uses the
+   .bb-sync-popup__logo white-circle + breathing-pulse styles. The
+   B itself is inline SVG, so we control its fill directly — red
+   for the danger / delete variant, brand purple otherwise. */
+.bb-confirm-popup__logo {
+  width: 54px;
+  height: 54px;
+  padding: 12px;
+}
+
+.bb-confirm-popup__logo-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.bb-confirm-popup__logo-svg path {
+  fill: #635bff;
+}
+
+/* Danger / delete variant: red B + red breathing halo behind the
+   white circle (the halo is driven by --bb-sync-popup-bar-color,
+   which the .bb-sync-popup__logo keyframes already read). */
+.bb-confirm-popup--danger {
+  --bb-sync-popup-bar-color: #e74c3c;
+}
+
+.bb-confirm-popup--danger .bb-confirm-popup__logo-svg path {
+  fill: #e74c3c;
+}
+
+.bb-confirm-popup__title {
+  margin: 0;
+  font: 700 19px/1.25 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.bb-confirm-popup__body {
+  margin: 0;
+  font: 500 14px/1.45 Roboto, system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.bb-confirm-popup__actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+.bb-confirm-popup__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font: 600 14px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease,
+              border-color 0.18s ease, box-shadow 0.18s ease,
+              transform 0.06s ease;
+}
+
+.bb-confirm-popup__btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+
+.bb-confirm-popup__btn:active {
+  transform: translateY(1px);
+}
+
+.bb-confirm-popup__btn--cancel {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.bb-confirm-popup__btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
+.bb-confirm-popup__btn--confirm {
+  background: var(--bb-sync-popup-bar-color, #635bff);
+  color: #fff;
+  border: 1px solid transparent;
+  box-shadow: 0 6px 18px rgba(99, 91, 255, 0.36),
+              inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.bb-confirm-popup__btn--confirm:hover {
+  filter: brightness(1.08);
+}
+
+.bb-confirm-popup__btn--confirm.bb-confirm-popup__btn--danger {
+  background: #e74c3c;
+  box-shadow: 0 6px 18px rgba(231, 76, 60, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.bb-confirm-popup__btn--confirm.bb-confirm-popup__btn--danger:hover {
+  background: #d44434;
+}
+
+/* Light-mode tweaks: the glass card stays dark-tinted (so the
+   sync popup still reads), but the body copy needs a touch more
+   contrast against the lighter ambient blur. */
+body.light-mode .bb-confirm-popup__body {
+  color: rgba(255, 255, 255, 0.92);
+}

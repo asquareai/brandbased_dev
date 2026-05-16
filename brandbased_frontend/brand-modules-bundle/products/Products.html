@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Montserrat:ital,wght@0,300;0,500;0,700;1,500&family=Nunito:ital,wght@0,300;0,500;0,700;1,500&family=Open+Sans:ital,wght@0,300;0,500;0,700;1,500&family=Poppins:ital,wght@0,300;0,500;0,700;1,500&family=Raleway:ital,wght@0,300;0,500;0,700;1,500&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Work+Sans:ital,wght@0,300;0,500;0,700;1,500&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Favicons (same as Premium) -->
+  <link rel="icon" href="../favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="../favicons/manifest.webmanifest" />
+
+  <!-- Swiper + bb-smart-ui.js. Popup docks into #bbThemePopupMount after loader. -->
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="stylesheet" href="./products.css?v=products-90" />
+  
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-brand-theme-settings bb-theme-preview-loading">
+  <!------------------------ Base Light More gradient light behind UI ---------------------->
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <div class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="../start-now/Start-Now.html">Start Now</a>
+        <a href="../logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="../brands/Brands.html">Brands</a>
+        <a href="../Brand-Settings-Module.html">Brand Settings</a>
+        <a href="../Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="Products.html">Products</a>
+        <a href="../Product-Scheduling-Module.html">Scheduling</a>
+        <a href="../platforms/Platforms.html">Platforms</a>
+        <a href="../hotspots/Hotspots.html">Hotspots</a>
+        <a href="../ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="../ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+        <a href="../metrics/Metrics.html">Metrics</a>
+        <a href="../payments/Payments.html">Payments</a>
+        <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <h1>Products</h1>
+    </header>
+
+    <div class="bb-bts-layout" role="main" aria-label="Products setup">
+    <section class="bb-bts-left" aria-label="Product setup">
+      <div class="bb-bts-card bb-products-setup-card">
+        <p id="bbProductsActiveSlotPill" class="bb-products-slot-pill" role="status" aria-live="polite">Product 1</p>
+        <h2>Add products to your brand modal</h2>
+
+        <div class="bb-bts-panel bb-products-panel">
+          <h3>Product Display Name</h3>
+          <input
+            id="bbProductName"
+            class="bb-products-input"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Product Display Name"
+          />
+
+          <h3 class="bb-products-subhead">Product Description</h3>
+          <textarea
+            id="bbProductDescription"
+            class="bb-products-textarea"
+            rows="4"
+            placeholder="Every product has a story… add a product description"
+            spellcheck="true"
+          ></textarea>
+
+          <div class="bb-products-fields" aria-label="Pricing and shipping">
+            <div class="bb-products-field">
+              <label class="bb-products-label" for="bbProductPrice">Price</label>
+              <div class="bb-products-money-input">
+                <span id="bbProductPricePrefix" class="bb-products-money-input__prefix" aria-hidden="true">US$</span>
+                <input
+                  id="bbProductPrice"
+                  class="bb-products-input bb-products-money-input__field"
+                  type="number"
+                  inputmode="decimal"
+                  placeholder="Enter unit price"
+                />
+              </div>
+            </div>
+            <div class="bb-products-field">
+              <label class="bb-products-label" for="bbProductCurrency">Currency</label>
+              <select id="bbProductCurrency" class="bb-products-select">
+                <option value="USD" selected>USD</option>
+                <option value="AUD">AUD</option>
+                <option value="CA">CA</option>
+                <option value="EUR">EUR</option>
+                <option value="GBP">GBP</option>
+              </select>
+            </div>
+            <div class="bb-products-field bb-products-field--wide bb-products-field--inventory">
+              <label class="bb-products-label" for="bbProductInventory">Available inventory qty</label>
+              <input id="bbProductInventory" class="bb-products-input" type="number" inputmode="numeric" min="0" placeholder="Enter available quantity on hand" />
+              <div class="bb-products-inv-check-row" role="group" aria-label="Inventory display options">
+                <label class="bb-products-inv-check" for="bbProductInvUnlimited">
+                  <input id="bbProductInvUnlimited" type="checkbox" />
+                  <span>Enable unlimited product availability</span>
+                </label>
+                <label class="bb-products-inv-check" for="bbProductShowAvailScarcity">
+                  <input id="bbProductShowAvailScarcity" type="checkbox" />
+                  <span>Show available quantity to drive scarcity</span>
+                </label>
+                <label class="bb-products-inv-check" for="bbProductAllowQtyChoice">
+                  <input id="bbProductAllowQtyChoice" type="checkbox" checked />
+                  <span>Let customers choose quantity</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="bb-products-divider"></div>
+
+          <div class="bb-products-media-head">
+            <h3>Product Media (Images/Videos)</h3>
+            <span class="bb-products-media-hint">Drag media to reorder</span>
+          </div>
+          <div class="bb-products-upload-row">
+            <label class="bb-products-upload-tile" for="bbProductsGalleryUpload" aria-label="Upload gallery images or videos">
+              <input id="bbProductsGalleryUpload" class="bb-products-upload-input" type="file" accept="image/*,video/*" multiple />
+              <span class="bb-products-upload-plus" aria-hidden="true">+</span>
+              <span class="bb-products-upload-caption">Add media</span>
+            </label>
+            <div id="bbProductsGalleryList" class="bb-products-gallery-list" aria-label="Uploaded media"></div>
+          </div>
+          <p id="bbProductsMediaLimit" class="bb-products-media-limit" aria-live="polite">Up to 5 media items per product</p>
+
+          <div class="bb-products-divider"></div>
+
+          <h3>Product variants</h3>
+          <p class="bb-products-variants-hint">
+            Shopify-style option groups (max 3). Each value can override price in the preview. Use “Preview image” under a value to tie it to one of your five gallery slots (e.g. Color → image 2); the live preview jumps to that slide when the shopper selects it (first matching dropdown wins; leave on Auto for default).
+          </p>
+          <div id="bbProductsVariantsRoot" class="bb-products-variants-root" aria-label="Product variants"></div>
+        </div>
+
+        <div class="bb-bts-panel bb-bts-panel--dense bb-products-shipping-panel">
+          <div class="bb-panel-topline">
+            <h3>Shipping</h3>
+          </div>
+
+          <div class="bb-products-fields" aria-label="Shipping settings">
+            <div class="bb-products-field bb-products-field--wide">
+              <div class="bb-products-label">Shipping mode</div>
+              <div class="bb-products-ship-mode-row" role="radiogroup" aria-label="Shipping mode">
+                <label class="bb-products-ship-mode" for="bbProductShipModeRegion">
+                  <input id="bbProductShipModeRegion" type="radio" name="bbProductShipMode" value="region" checked />
+                  <span>National (country / region)</span>
+                </label>
+                <label class="bb-products-ship-mode" for="bbProductShipModeGlobal">
+                  <input id="bbProductShipModeGlobal" type="radio" name="bbProductShipMode" value="global" />
+                  <span>Global</span>
+                </label>
+              </div>
+            </div>
+
+            <div id="bbProductsShipByRegionFields" class="bb-products-ship-fields">
+              <div class="bb-products-field">
+                <label class="bb-products-label" for="bbProductShippingFlat">Domestic flat-rate shipping only</label>
+                <div class="bb-products-money-input">
+                  <span id="bbProductShippingFlatPrefix" class="bb-products-money-input__prefix" aria-hidden="true">$</span>
+                  <input
+                    id="bbProductShippingFlat"
+                    class="bb-products-input bb-products-money-input__field"
+                    type="number"
+                    inputmode="decimal"
+                    placeholder="Enter rate"
+                  />
+                </div>
+              </div>
+              <div class="bb-products-field">
+                <label class="bb-products-label" for="bbProductShipRegion">Select 1 shipping country</label>
+                <select id="bbProductShipRegion" class="bb-products-select">
+                  <option value="" selected>Select Exclusive Country</option>
+                  <option value="AU">Australia</option>
+                  <option value="NZ">New Zealand</option>
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="IE">Ireland</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="ES">Spain</option>
+                  <option value="IT">Italy</option>
+                  <option value="NL">Netherlands</option>
+                  <option value="SE">Sweden</option>
+                  <option value="NO">Norway</option>
+                  <option value="DK">Denmark</option>
+                  <option value="CH">Switzerland</option>
+                  <option value="AT">Austria</option>
+                  <option value="BE">Belgium</option>
+                  <option value="PT">Portugal</option>
+                  <option value="PL">Poland</option>
+                  <option value="SG">Singapore</option>
+                  <option value="HK">Hong Kong</option>
+                  <option value="JP">Japan</option>
+                  <option value="KR">South Korea</option>
+                  <option value="IN">India</option>
+                  <option value="AE">United Arab Emirates</option>
+                  <option value="SA">Saudi Arabia</option>
+                  <option value="ZA">South Africa</option>
+                  <option value="BR">Brazil</option>
+                  <option value="MX">Mexico</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="bbProductsShipGlobalFields" class="bb-products-ship-fields bb-products-ship-fields--wide" hidden>
+              <div class="bb-products-field bb-products-field--wide">
+                <label class="bb-products-label" for="bbProductGlobalShippingFlat">Global shipping flat rate</label>
+                <div class="bb-products-money-input">
+                  <span id="bbProductGlobalShippingFlatPrefix" class="bb-products-money-input__prefix" aria-hidden="true">$</span>
+                  <input
+                    id="bbProductGlobalShippingFlat"
+                    class="bb-products-input bb-products-money-input__field"
+                    type="number"
+                    inputmode="decimal"
+                    placeholder="Enter rate"
+                  />
+                </div>
+              </div>
+              <div class="bb-products-field bb-products-field--wide">
+                <label class="bb-products-label" for="bbProductGlobalShipExcludedBtn">Shipping exclusions</label>
+                <input id="bbProductGlobalShipExcluded" type="hidden" value="" />
+                <button
+                  id="bbProductGlobalShipExcludedBtn"
+                  class="bb-products-excl-btn"
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded="false"
+                >
+                  Configure shipping exclusions
+                </button>
+                <div
+                  id="bbProductGlobalShipExcludedMenu"
+                  class="bb-products-excl-menu"
+                  role="menu"
+                  aria-label="Shipping exclusions: policy-blocked regions and optional country list"
+                  hidden
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bb-bts-panel bb-bts-panel--dense" hidden>
+          <div class="bb-panel-topline">
+            <h3>Custom Theme Styles</h3>
+            <div class="bb-toggle-pair" role="group" aria-label="Theme Styles options">
+              <label class="bb-switch">
+                <input id="bbThemeBackgroundOn" type="checkbox" />
+                <span class="bb-switch-ui" aria-hidden="true"></span>
+                <span class="bb-switch-label">Theme Styles</span>
+              </label>
+              <label class="bb-switch">
+                <input id="bbBackdropTint" type="checkbox" />
+                <span class="bb-switch-ui" aria-hidden="true"></span>
+                <span class="bb-switch-label">Overlay</span>
+              </label>
+              <div class="bb-backdrop-tint-inline" aria-label="Overlay colour and opacity">
+                <div class="bb-backdrop-tint-inline__controls">
+                  <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                    <input
+                      id="bbThemeBackdropTintColour"
+                      class="bb-theme-colour-swatch"
+                      type="color"
+                      value="#000000"
+                      title="Overlay colour"
+                      aria-label="Overlay colour"
+                    />
+                    <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+                  </div>
+                  <input
+                    id="bbThemeBackdropOpacity"
+                    class="bb-theme-brand-opacity__range bb-theme-brand-opacity__range--compact bb-backdrop-tint-inline__range"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="100"
+                    aria-label="Backdrop opacity"
+                    title="Backdrop Opacity"
+                  />
+                </div>
+              </div>
+              <label class="bb-switch">
+                <input id="bbBlendMode" type="checkbox" />
+                <span class="bb-switch-ui" aria-hidden="true"></span>
+                <span class="bb-switch-label">Logo blend mode</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="bb-bts-subcopy bb-theme-select-panel">
+            <div class="bb-subcopy-title">Dynamic Themes</div>
+            <div class="bb-subcopy-body bb-subcopy-body--hide-sm">Choose a background theme for your popup.</div>
+            <div class="bb-theme-select-panel__chips" aria-label="Theme previews (compact)">
+            <div class="bb-theme-video-row" id="bbThemeVideoRow" aria-label="Theme video backgrounds">
+                <button class="bb-theme-video-chip" type="button" data-theme="1" aria-pressed="true" title="Theme 1">
+                  <span class="bb-theme-video-chip__thumb" aria-hidden="true"><video src="../../themes/theme-1.mp4" muted playsinline preload="metadata"></video></span>
+                  <span class="bb-theme-video-chip__name">Theme 1</span>
+                </button>
+                <button class="bb-theme-video-chip" type="button" data-theme="2" aria-pressed="false" title="Theme 2">
+                  <span class="bb-theme-video-chip__thumb" aria-hidden="true"><video src="../../themes/theme-2.mp4" muted playsinline preload="metadata"></video></span>
+                  <span class="bb-theme-video-chip__name">Theme 2</span>
+                </button>
+                <button class="bb-theme-video-chip" type="button" data-theme="3" aria-pressed="false" title="Theme 3">
+                  <span class="bb-theme-video-chip__thumb" aria-hidden="true"><video src="../../themes/theme-3.mp4" muted playsinline preload="metadata"></video></span>
+                  <span class="bb-theme-video-chip__name">Theme 3</span>
+                </button>
+                <button class="bb-theme-video-chip" type="button" data-theme="4" aria-pressed="false" title="Theme 4">
+                  <span class="bb-theme-video-chip__thumb" aria-hidden="true"><video src="../../themes/theme-4.mp4" muted playsinline preload="metadata"></video></span>
+                  <span class="bb-theme-video-chip__name">Theme 4</span>
+                </button>
+                <button class="bb-theme-video-chip" type="button" data-theme="5" aria-pressed="false" title="Theme 5">
+                  <span class="bb-theme-video-chip__thumb" aria-hidden="true"><video src="../../themes/theme-5.mp4" muted playsinline preload="metadata"></video></span>
+                  <span class="bb-theme-video-chip__name">Theme 5</span>
+                </button>
+                <button class="bb-theme-video-chip" type="button" data-theme="6" aria-pressed="false" title="Theme 6">
+                  <span class="bb-theme-video-chip__thumb" aria-hidden="true"><video src="../../themes/theme-6.mp4" muted playsinline preload="metadata"></video></span>
+                  <span class="bb-theme-video-chip__name">Theme 6</span>
+                </button>
+                <button class="bb-theme-video-chip" type="button" data-theme="7" aria-pressed="false" title="Theme 7">
+                  <span class="bb-theme-video-chip__thumb" aria-hidden="true"><video src="../../themes/theme-7.mp4" muted playsinline preload="metadata"></video></span>
+                  <span class="bb-theme-video-chip__name">Theme 7</span>
+                </button>
+                <div
+                  class="bb-theme-custom-bg-preview-wrap"
+                  id="bbThemeCustomBgPreviewWrap"
+                  hidden
+                  aria-live="polite"
+                  role="button"
+                  tabindex="-1"
+                  title="Turn theme background on again to reuse this upload"
+                >
+                  <div class="bb-theme-custom-bg-preview-chip" aria-hidden="true">
+                    <span class="bb-theme-video-chip__thumb">
+                      <img class="bb-theme-custom-bg-preview__img" alt="" decoding="async" hidden />
+                      <video
+                        class="bb-theme-custom-bg-preview__video"
+                        muted
+                        playsinline
+                        loop
+                        preload="metadata"
+                        hidden
+                      ></video>
+                    </span>
+                    <span class="bb-theme-video-chip__name">Custom</span>
+            </div>
+          </div>
+                <label
+                  class="bb-theme-custom-bg-tile bb-theme-custom-bg-tile--add"
+                  for="bbThemeBgUpload"
+                  title="Add Custom Theme — choose a background image or video"
+                  aria-label="Add Custom Theme — choose a background image or video"
+                >
+              <input id="bbThemeBgUpload" class="bb-theme-upload-input" type="file" accept="video/*,image/*" />
+                  <span class="bb-theme-custom-bg-tile__add-row">
+                    <span class="bb-theme-custom-bg-tile__thumb">
+                      <span class="bb-theme-custom-bg-tile__plus" aria-hidden="true">+</span>
+                    </span>
+                    <span class="bb-theme-custom-bg-tile__cta">Add Custom Theme</span>
+                  </span>
+                </label>
+            </div>
+          </div>
+            <div class="bb-theme-select-tint bb-theme-select-tint--compact" role="group" aria-label="Popup colours">
+              <div class="bb-theme-select-tint__layout">
+                <div class="bb-theme-select-tint__main-col">
+                  <div
+                    class="bb-theme-select-tint__quick-strip bb-theme-select-tint__quick-strip--col-align"
+                    aria-label="Popup colours"
+                  >
+                    <div class="bb-theme-select-tint__quick-strip-swatches" aria-label="Popup tint colours row">
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeProductTitleColour">Product title</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            id="bbThemeProductTitleColour"
+                            class="bb-theme-colour-swatch"
+                            type="color"
+                            value="#000000"
+                            title="Product title"
+                            aria-label="Product title colour"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+          </div>
+        </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeContentColour">Content color</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            type="color"
+                            id="bbThemeContentColour"
+                            class="bb-theme-colour-swatch"
+                            value="#000000"
+                            title="Content color"
+                            aria-label="Content color for description, selectors, and icons (not product title)"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+          </div>
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeExploreIconColour">Explore icon</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            id="bbThemeExploreIconColour"
+                            class="bb-theme-colour-swatch"
+                            type="color"
+                            value="#1030f4"
+                            title="Explore icon"
+                            aria-label="Explore icon colour"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeBrandIconOutlineColour">Brand outline</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            id="bbThemeBrandIconOutlineColour"
+                            class="bb-theme-colour-swatch"
+                            type="color"
+                            value="#000000"
+                            title="Brand icon outline"
+                            aria-label="Brand icon outline colour"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeBrandIconFillColour">Brand fill</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            id="bbThemeBrandIconFillColour"
+                            class="bb-theme-colour-swatch"
+                            type="color"
+                            value="#1030f4"
+                            title="Brand icon circle fill"
+                            aria-label="Brand icon circle fill colour"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--opacity-compact">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeBrandIconFillOpacity">Brand bg opacity</label>
+                        <input
+                          id="bbThemeBrandIconFillOpacity"
+                          class="bb-theme-brand-opacity__range bb-theme-brand-opacity__range--compact"
+                          type="range"
+                          min="0"
+                          max="100"
+                          value="100"
+                          aria-label="Brand icon background opacity"
+                        />
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeLockLogoColour">BrandBased icon</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            id="bbThemeLockLogoColour"
+                            class="bb-theme-colour-swatch"
+                            type="color"
+                            value="#1030f4"
+                            title="BrandBased icon colour"
+                            aria-label="BrandBased icon colour"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="bb-theme-select-tint__quick-strip-bottom" aria-label="Button colours and Buy Now label">
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeBuyButtonColour">Button colour</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            id="bbThemeBuyButtonColour"
+                            class="bb-theme-colour-swatch"
+                            type="color"
+                            value="#1030f4"
+                            title="Button colour"
+                            aria-label="Button colour"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeBuyButtonLabelColour">Button label</label>
+                        <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
+                          <input
+                            id="bbThemeBuyButtonLabelColour"
+                            class="bb-theme-colour-swatch"
+                            type="color"
+                            value="#ffffff"
+                            title="Button label colour"
+                            aria-label="Button label colour"
+                          />
+                          <span class="bb-theme-colour-picker-ring" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--text">
+                        <span class="bb-theme-tint-slot__label" id="bbThemeBuyNowLabelCaption">Button Label Text</span>
+                        <input
+                          id="bbThemeBuyNowLabel"
+                          class="bb-theme-buy-label bb-theme-buy-label--tint-strip"
+                          type="text"
+                          value="Buy Now"
+                          inputmode="text"
+                          autocomplete="off"
+                          spellcheck="false"
+                          aria-labelledby="bbThemeBuyNowLabelCaption"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bb-theme-select-tint__right-cluster">
+                  <div
+                    class="bb-theme-select-tint__aux-slot"
+                    data-bb-theme-aux-slot="1"
+                    role="region"
+                    aria-label="Typeface and ad visibility"
+                  >
+                    <div class="bb-theme-font-ad-card">
+                      <div class="bb-theme-font-ad-grid">
+                        <div class="bb-theme-font-panel">
+                          <div class="bb-subcopy-title">Modal Typeface</div>
+                          <label class="bb-theme-font-field__label" for="bbThemePopupFontFamily">Font family</label>
+                          <select id="bbThemePopupFontFamily" class="bb-theme-font-select" aria-label="Popup font family">
+                            <option value="Roboto" selected>Roboto</option>
+                            <option value="Open Sans">Open Sans</option>
+                            <option value="Lato">Lato</option>
+                            <option value="Montserrat">Montserrat</option>
+                            <option value="Poppins">Poppins</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Nunito">Nunito</option>
+                            <option value="Raleway">Raleway</option>
+                            <option value="Work Sans">Work Sans</option>
+                            <option value="Source Sans 3">Source Sans 3</option>
+                            <option value="Merriweather">Merriweather</option>
+                          </select>
+                          <label class="bb-theme-font-field__label" for="bbThemePopupFontWeight">Weight</label>
+                          <select id="bbThemePopupFontWeight" class="bb-theme-font-select" aria-label="Popup font weight">
+                            <option value="300">Light</option>
+                            <option value="400" selected>Regular</option>
+                            <option value="500">Medium</option>
+                            <option value="700">Bold</option>
+                          </select>
+                          <label class="bb-switch bb-theme-font-italic-switch">
+                            <input id="bbThemePopupFontItalic" type="checkbox" />
+                            <span class="bb-switch-ui" aria-hidden="true"></span>
+                            <span class="bb-switch-label">Italic</span>
+                          </label>
+                        </div>
+                        <aside class="bb-theme-ad-panel-inner" aria-label="Ad visibility">
+                          <div class="bb-theme-ad-heading-row">
+                            <div class="bb-subcopy-title">Ad Visibility Settings</div>
+                            <span
+                              class="bb-help-tooltip"
+                              tabindex="0"
+                              role="img"
+                              aria-label="About ad visibility in the preview"
+                              title="If disabled, ads are shown exclusively on BrandBased partner platforms (e.g. Google Search and other platforms) and are excluded from your website popup experience."
+                            >
+                              <img src="../tool-tip.svg" alt="" width="20" height="20" decoding="async" />
+                            </span>
+                          </div>
+                          <label class="bb-switch bb-theme-ad-enable-switch">
+                            <input id="bbThemeAdsEnabled" type="checkbox" checked />
+                            <span class="bb-switch-ui" aria-hidden="true"></span>
+                            <span class="bb-switch-label">Enable ads (earn revenue)</span>
+                          </label>
+                          <p class="bb-theme-ad-panel__hint">If disabled, ads are shown exclusively on BrandBased partner platforms (e.g. Google Search and other platforms) and are excluded from your website popup experience.</p>
+                        </aside>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bb-bts-card bb-bts-cta">
+        <h2>Setup Dynamic Product Scheduling</h2>
+        <p class="bb-bts-help">Put your products into rotation with automated scheduling</p>
+        <div class="bb-bts-cta-actions">
+          <a
+            id="bbProductsPayoutBtn"
+            class="bb-bts-cta-btn"
+            href="../Product-Scheduling-Module.html"
+            role="button"
+          >Enable Product Scheduling</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="bb-bts-right bb-bts-right--preview" aria-label="Preview">
+      <div class="bb-preview-title">Preview</div>
+      <div class="bb-preview-stage">
+        <!-- Programmatic open anchor only — not a replace threshold slot (sim upload mark owns sizing). -->
+        <span
+          id="bbThemePopupSeed"
+          class="bb-theme-popup-seed"
+          data-brand="brandbased"
+          aria-hidden="true"
+        ></span>
+
+        <div id="bbThemeLoader" class="bb-theme-loader" aria-busy="true" aria-live="polite">
+          <span class="bb-theme-loader-text">Loading brand modal…</span>
+          <img class="bb-theme-loader-logo" src="../brandbased-logo.svg" alt="" width="48" height="48" />
+          <div class="bb-theme-loader-bar" aria-hidden="true"></div>
+        </div>
+
+        <!-- Sim sits on a lower z-index under the modal; mount paints on top while the modal is open. -->
+        <div class="bb-preview-modal-stack">
+          <div id="bbThemeSimulatedHost" class="bb-bts-simulated bb-theme-sim-underlayer" hidden>
+            <p id="bbThemeSimulatedContent" class="bb-bts-sim-text">
+              Click the
+            <span
+              class="brandbased brandbased-dynamic-logo-slot"
+                data-brand="upload"
+                tabindex="0"
+                aria-label="Open brand popup preview"
+                >brand</span
+              >
+              icon to see a preview of your popup
+          </p>
+        </div>
+        <div id="bbThemePopupMount" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+    </div>
+  </div>
+
+  <script>
+    // Theme colour: swatch + hex + Use toggle + Opacity (alpha) + recent dots → CSS vars on :root
+    (function () {
+      const KEY_RECENT = "bbTheme:recentColours:v1";
+      const KEY_ACCENT = "bbTheme:accent:v1";
+      const root = document.documentElement;
+      const hexInput = document.getElementById("bbThemeColourHex");
+      const picker = document.getElementById("bbThemeColourPicker");
+      const accentOnEl = document.getElementById("bbThemeAccentOn");
+      const accentAlphaEl = document.getElementById("bbThemeAccentAlpha");
+      const recentHost = document.getElementById("bbThemeRecent");
+      const recentDots = Array.from(document.querySelectorAll(".bb-theme-recent-dot"));
+
+      // Products page removes the Theme Tint UI, but should still apply saved accent vars for the popup preview.
+      (function syncAccentVarsFromStorageOnly() {
+        let meta = null;
+        try {
+          meta = JSON.parse(localStorage.getItem(KEY_ACCENT) || "null");
+        } catch {
+          meta = null;
+        }
+        const on = !!(meta && meta.on === true);
+        const hex = String(meta?.hex || "#1030f4").trim();
+        const hx = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toLowerCase() : "#1030f4";
+        let aPct = Number(meta?.alpha);
+        if (!Number.isFinite(aPct)) aPct = 100;
+        aPct = Math.max(0, Math.min(100, aPct));
+        const a = on ? aPct / 100 : 0;
+        const h = hx.replace(/^#/, "");
+        const r = parseInt(h.slice(0, 2), 16) || 16;
+        const g = parseInt(h.slice(2, 4), 16) || 48;
+        const b = parseInt(h.slice(4, 6), 16) || 244;
+        try {
+          root.style.setProperty("--bb-theme-accent-hex", hx);
+          root.style.setProperty("--bb-theme-accent-solid", hx);
+          root.style.setProperty("--bb-theme-accent", `rgba(${r}, ${g}, ${b}, ${a})`);
+        } catch {}
+      })();
+
+      // No Theme Tint controls on Products page.
+      if (!hexInput || !picker || !accentOnEl || !accentAlphaEl || !recentHost) return;
+
+      const normHex = (v) => {
+        const t = String(v || "").trim().replace(/^#/, "");
+        if (!/^[0-9a-fA-F]{6}$/.test(t)) return null;
+        return t.toLowerCase();
+      };
+      const toCss = (h) => `#${h}`;
+      const hexToRgb = (h6) => {
+        const h = normHex(h6);
+        if (!h) return { r: 16, g: 48, b: 244 };
+        return {
+          r: parseInt(h.slice(0, 2), 16),
+          g: parseInt(h.slice(2, 4), 16),
+          b: parseInt(h.slice(4, 6), 16),
+        };
+      };
+      const readRecent = () => {
+        try {
+          const a = JSON.parse(localStorage.getItem(KEY_RECENT) || "[]");
+          if (!Array.isArray(a)) return [];
+          return a.map(normHex).filter(Boolean).slice(0, 5);
+        } catch {
+          return [];
+        }
+      };
+      const writeRecent = (arr) => {
+        try {
+          localStorage.setItem(KEY_RECENT, JSON.stringify(arr.slice(0, 5)));
+        } catch {}
+      };
+      const renderRecent = (arr) => {
+        for (let i = 0; i < recentDots.length; i++) {
+          const el = recentDots[i];
+          const h = arr[i] || "";
+          el.disabled = !h;
+          el.dataset.hex = h;
+          el.style.background = h ? toCss(h) : "rgba(0,0,0,0.08)";
+        }
+      };
+      const readAccent = () => {
+        try {
+          const o = JSON.parse(localStorage.getItem(KEY_ACCENT) || "null");
+          const hex = normHex(o?.hex) || normHex(hexInput?.value) || "1030f4";
+          const on = o && o.on === true;
+          let a = Number(o?.alpha);
+          if (!Number.isFinite(a)) a = 100;
+          a = Math.max(0, Math.min(100, a));
+          return { hex, on, alpha: a };
+        } catch {
+          return { hex: normHex(hexInput?.value) || "1030f4", on: false, alpha: 100 };
+        }
+      };
+      const writeAccent = (s) => {
+        try {
+          localStorage.setItem(
+            KEY_ACCENT,
+            JSON.stringify({ hex: s.hex, on: !!s.on, alpha: Math.max(0, Math.min(100, Number(s.alpha) || 0)) })
+          );
+        } catch {}
+      };
+
+      const syncRootAccent = ({ pushRecent } = {}) => {
+        const h = normHex(hexInput?.value) || "1030f4";
+        const cssHex = toCss(h);
+        const on = !!accentOnEl?.checked;
+        const alphaPct = Math.max(0, Math.min(100, Number(accentAlphaEl?.value ?? 100)));
+        writeAccent({ hex: h, on, alpha: alphaPct });
+        if (hexInput) hexInput.value = h;
+        if (picker) picker.value = cssHex;
+        if (accentAlphaEl) accentAlphaEl.disabled = !on;
+        const { r, g, b } = hexToRgb(h);
+        const a = alphaPct / 100;
+        document.body.classList.toggle("bb-theme-accent-on", on);
+        try {
+          root.style.setProperty("--bb-theme-accent-hex", cssHex);
+          root.style.setProperty("--bb-theme-accent-solid", on ? cssHex : "#9a9aa3");
+          root.style.setProperty("--bb-theme-accent", on ? `rgba(${r},${g},${b},${a})` : `rgba(${r},${g},${b},0)`);
+        } catch {}
+        if (pushRecent) {
+          const cur = readRecent();
+          const next = [h, ...cur.filter((x) => x !== h)].slice(0, 5);
+          writeRecent(next);
+          renderRecent(next);
+        } else {
+          renderRecent(readRecent());
+        }
+        try {
+          window.dispatchEvent(
+            new CustomEvent("bb-theme-accent-updated", { detail: { hex: h, cssHex, on, alpha: alphaPct } })
+          );
+        } catch {}
+      };
+
+      const applyColour = (hex6, { pushRecent } = {}) => {
+        const h = normHex(hex6);
+        if (!h) return;
+        if (hexInput) hexInput.value = h;
+        if (picker) picker.value = toCss(h);
+        syncRootAccent({ pushRecent: !!pushRecent });
+      };
+
+      const saved = readAccent();
+      if (hexInput) hexInput.value = saved.hex;
+      if (picker) picker.value = toCss(saved.hex);
+      if (accentOnEl) accentOnEl.checked = saved.on;
+      if (accentAlphaEl) accentAlphaEl.value = String(saved.alpha);
+      syncRootAccent({ pushRecent: false });
+
+      picker?.addEventListener("input", (e) => applyColour(e.target.value, { pushRecent: true }));
+      picker?.addEventListener("change", (e) => applyColour(e.target.value, { pushRecent: true }));
+      hexInput?.addEventListener("input", (e) => applyColour(e.target.value, { pushRecent: false }));
+      hexInput?.addEventListener("change", (e) => applyColour(e.target.value, { pushRecent: true }));
+      accentOnEl?.addEventListener("change", () => {
+        if (accentOnEl?.checked) {
+          window.__bbThemeForceFrostedOff?.();
+          window.__bbThemeForceThemeBackgroundOff?.();
+        }
+        syncRootAccent({ pushRecent: false });
+      });
+      accentAlphaEl?.addEventListener("input", () => syncRootAccent({ pushRecent: false }));
+
+      recentHost?.addEventListener("click", (e) => {
+        const t = e.target;
+        if (!(t instanceof HTMLElement)) return;
+        const b = t.closest(".bb-theme-recent-dot");
+        if (!b) return;
+        const h = b.dataset.hex;
+        if (!h) return;
+        applyColour(h, { pushRecent: true });
+      });
+
+      /** Called when Theme background is turned on — turns off "Use theme colour". */
+      window.__bbThemeForceUseThemeColourOff = () => {
+        if (accentOnEl) accentOnEl.checked = false;
+        syncRootAccent({ pushRecent: false });
+      };
+    })();
+  </script>
+
+  <script src="../brand-pages-isolated/bb-theme-gallery-uploads.js?v=isolated-1"></script>
+  <script>
+    // Theme background controls → apply to live popup preview
+    (function () {
+      const KEY = "bbTheme:background:v1";
+      const KEY_VIDEO = "bbTheme:video:v1";
+      const KEY_CUSTOM_BG = "bbTheme:customBgSession:v1";
+      /* Cross-folder navigation (e.g. Theme Settings ↔ Products): sessionStorage blob URLs often do not
+         carry over under file:/// or after the creating document unloads — persist uploads in IndexedDB. */
+      const KEY_CUSTOM_BG_PERSIST = "bbTheme:customBgPersist:v1";
+      let bbHydratedCustomBgPersistId = "";
+      let bbHydratedCustomBg = null;
+
+      const readPersistedCustomBgUploadRef = () => {
+        try {
+          const raw = localStorage.getItem(KEY_CUSTOM_BG_PERSIST);
+          if (!raw) return null;
+          const o = JSON.parse(raw);
+          const uploadId = String(o?.uploadId || "").trim();
+          const kind = String(o?.kind || "").trim();
+          if (!uploadId || (kind !== "video" && kind !== "image")) return null;
+          return { uploadId, kind };
+        } catch {
+          return null;
+        }
+      };
+
+      async function hydrateCustomBgFromPersist() {
+        const pref = readPersistedCustomBgUploadRef();
+        const U = window.BbThemeGalleryUploads;
+        if (!pref?.uploadId || !U?.getObjectUrl) {
+          bbHydratedCustomBgPersistId = "";
+          bbHydratedCustomBg = null;
+          return null;
+        }
+        if (bbHydratedCustomBgPersistId === pref.uploadId && bbHydratedCustomBg?.url) {
+          try {
+            sessionStorage.setItem(
+              KEY_CUSTOM_BG,
+              JSON.stringify({ kind: pref.kind, dataUrl: bbHydratedCustomBg.url })
+            );
+          } catch {}
+          return bbHydratedCustomBg;
+        }
+        try {
+          const url = await U.getObjectUrl(pref.uploadId);
+          if (!url) {
+            bbHydratedCustomBgPersistId = "";
+            bbHydratedCustomBg = null;
+            return null;
+          }
+          bbHydratedCustomBgPersistId = pref.uploadId;
+          bbHydratedCustomBg = { uploadId: pref.uploadId, kind: pref.kind, url };
+          try {
+            sessionStorage.setItem(KEY_CUSTOM_BG, JSON.stringify({ kind: pref.kind, dataUrl: url }));
+          } catch {}
+          return bbHydratedCustomBg;
+        } catch {
+          bbHydratedCustomBgPersistId = "";
+          bbHydratedCustomBg = null;
+          return null;
+        }
+      }
+      /** Brand icon ring default (storage + CSS var fallback); not theme accent blue */
+      const DEFAULT_BRAND_ICON_BORDER_HEX = "#000000";
+
+      const themeOn = document.getElementById("bbThemeBackgroundOn");
+      const backdropTintEl = document.getElementById("bbBackdropTint");
+      const backdropTintColourEl = document.getElementById("bbThemeBackdropTintColour");
+      const backdropOpacityEl = document.getElementById("bbThemeBackdropOpacity");
+      const blend = document.getElementById("bbBlendMode");
+      const videoRow = document.getElementById("bbThemeVideoRow");
+      const contentColourEl = document.getElementById("bbThemeContentColour");
+      const productTitleColourEl = document.getElementById("bbThemeProductTitleColour");
+      const brandIconFillColourEl = document.getElementById("bbThemeBrandIconFillColour");
+      const brandIconOutlineColourEl = document.getElementById("bbThemeBrandIconOutlineColour");
+      const brandIconFillOpacityEl = document.getElementById("bbThemeBrandIconFillOpacity");
+      const lockLogoColourEl = document.getElementById("bbThemeLockLogoColour");
+      const exploreIconColourEl = document.getElementById("bbThemeExploreIconColour");
+      const buyButtonColourEl = document.getElementById("bbThemeBuyButtonColour");
+      const buyButtonLabelColourEl = document.getElementById("bbThemeBuyButtonLabelColour");
+      const fontFamilyEl = document.getElementById("bbThemePopupFontFamily");
+      const fontWeightEl = document.getElementById("bbThemePopupFontWeight");
+      const fontItalicEl = document.getElementById("bbThemePopupFontItalic");
+      const adsEnabledEl = document.getElementById("bbThemeAdsEnabled");
+
+      const normHex6 = (v) => {
+        const t = String(v || "").trim();
+        if (/^#[0-9a-fA-F]{6}$/i.test(t)) return t.toLowerCase();
+        if (/^#[0-9a-fA-F]{3}$/i.test(t)) {
+          const x = t.slice(1).toLowerCase();
+          return `#${x[0]}${x[0]}${x[1]}${x[1]}${x[2]}${x[2]}`;
+        }
+        return null;
+      };
+      const clampPct = (v, def) => {
+        let n = Number(v);
+        if (!Number.isFinite(n)) n = def;
+        return Math.max(0, Math.min(100, Math.round(n)));
+      };
+      const hexToRgba = (hex6, opacityPct) => {
+        const h = normHex6(hex6) || "#1030f4";
+        const hx = h.replace(/^#/, "");
+        const defRgb = [16, 48, 244];
+        const ch = (i) => {
+          const n = parseInt(hx.slice(i * 2, i * 2 + 2), 16);
+          return Number.isFinite(n) ? Math.max(0, Math.min(255, n)) : defRgb[i];
+        };
+        const r = ch(0);
+        const g = ch(1);
+        const b = ch(2);
+        const a = clampPct(opacityPct, 100) / 100;
+        return `rgba(${r},${g},${b},${a})`;
+      };
+      const rootAccentHex = () => {
+        try {
+          const css = window.getComputedStyle(document.documentElement).getPropertyValue("--bb-theme-accent-hex").trim();
+          if (/^#([0-9a-fA-F]{6})$/.test(css)) return css.toLowerCase();
+        } catch {}
+        const el = document.getElementById("bbThemeColourHex");
+        const t = String(el?.value || "").trim().replace(/^#/, "");
+        if (/^[0-9a-fA-F]{6}$/i.test(t)) return `#${t.toLowerCase()}`;
+        return "#1030f4";
+      };
+
+      const isLegacyAccentRingHex = (hex6) => /^#1030f4$/i.test(hex6 || "") || /^#1030f5$/i.test(hex6 || "");
+
+      /** Older saves mirrored theme accent (#1030f4) onto the ring — rewrite once to black default */
+      (function migrateLegacyBrandIconRingFromAccent() {
+        try {
+          const MIG = "bbTheme:brandIconRingOffAccent:v3";
+          if (localStorage.getItem(MIG)) return;
+          const raw = localStorage.getItem(KEY);
+          if (!raw) {
+            localStorage.setItem(MIG, "1");
+            return;
+          }
+          const o = JSON.parse(raw);
+          if (!o || typeof o !== "object") {
+            localStorage.setItem(MIG, "1");
+            return;
+          }
+          const b = normHex6(o.brandIconBorderHex);
+          if (!b || isLegacyAccentRingHex(b)) {
+            o.brandIconBorderHex = DEFAULT_BRAND_ICON_BORDER_HEX;
+            localStorage.setItem(KEY, JSON.stringify(o));
+          }
+          localStorage.setItem(MIG, "1");
+        } catch {}
+      })();
+
+      function syncBackdropTintControlsDisabled() {
+        const on = !!backdropTintEl?.checked;
+        if (backdropTintColourEl) backdropTintColourEl.disabled = !on;
+        if (backdropOpacityEl) backdropOpacityEl.disabled = !on;
+      }
+
+      // Defaults: Theme Background OFF, Frosted ON, Blend OFF, Theme 1 (legacy video id 0 → 1 unless custom session)
+      const read = () => {
+        let o = null;
+        try { o = JSON.parse(localStorage.getItem(KEY) || "null"); } catch { o = null; }
+        let parsedVid = NaN;
+        try {
+          const raw = localStorage.getItem(KEY_VIDEO);
+          if (raw != null && raw !== "") parsedVid = Number(raw);
+        } catch {}
+        let video = Number.isFinite(parsedVid) ? Math.max(0, Math.min(7, parsedVid)) : 1;
+        if (video === 0) {
+          let hasCustomSession = false;
+          try {
+            const raw = sessionStorage.getItem(KEY_CUSTOM_BG);
+            if (raw) {
+              const c = JSON.parse(raw);
+              hasCustomSession = !!(c && c.dataUrl && (c.kind === "image" || c.kind === "video"));
+            }
+          } catch {}
+          if (!hasCustomSession) {
+            try {
+              const pr = readPersistedCustomBgUploadRef();
+              hasCustomSession = !!(pr && pr.uploadId);
+            } catch {}
+          }
+          if (!hasCustomSession) video = 1;
+        }
+        const contentHex =
+          normHex6(o?.contentColorHex) ||
+          normHex6(o?.uiTintHex) ||
+          "#000000";
+        const productTitleHex =
+          normHex6(o?.productTitleColorHex) || normHex6(o?.contentColorHex) || "#000000";
+        const legacyAccent = normHex6(o?.buttonAccentHex);
+        const ra = rootAccentHex();
+        const legacyBrand = normHex6(o?.brandIconHex);
+        const brandIconFillHex =
+          normHex6(o?.brandIconFillHex) || legacyBrand || legacyAccent || ra;
+        const brandIconBorderHex = (() => {
+          const b = normHex6(o?.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX;
+          return isLegacyAccentRingHex(b) ? DEFAULT_BRAND_ICON_BORDER_HEX : b;
+        })();
+        const buyButtonBgHex = normHex6(o?.buyButtonBgHex) || legacyAccent || ra;
+        const buyButtonLabelHex = normHex6(o?.buyButtonLabelHex) || "#ffffff";
+        const exploreIconHex = normHex6(o?.exploreIconHex) || legacyAccent || ra;
+        const lockLogoHex = normHex6(o?.lockLogoHex) || legacyAccent || ra;
+        return {
+          on: !!(o && o.on),
+          frosted: o && o.frosted != null ? !!o.frosted : true,
+          blend: !!(o && o.blend),
+          backdropTint: !!(o && o.backdropTint),
+          backdropTintHex: normHex6(o?.backdropTintHex) || "#000000",
+          backdropOpacity: clampPct(o?.backdropOpacity, 100),
+          video,
+          uiTintOn: true,
+          contentColorHex: contentHex,
+          productTitleColorHex: productTitleHex,
+          brandIconFillHex,
+          brandIconBorderHex,
+          brandIconFillOpacity: clampPct(o?.brandIconFillOpacity, 100),
+          brandIconBorderOpacity: clampPct(o?.brandIconBorderOpacity, 100),
+          buyButtonBgHex,
+          buyButtonLabelHex,
+          exploreIconHex,
+          lockLogoHex,
+        };
+      };
+      const write = (s) => {
+        try {
+          localStorage.setItem(
+            KEY,
+            JSON.stringify({
+              on: !!s.on,
+              frosted: !!s.frosted,
+              blend: !!s.blend,
+              backdropTint: !!s.backdropTint,
+              backdropTintHex: String(normHex6(s.backdropTintHex) || "#000000"),
+              backdropOpacity: clampPct(s.backdropOpacity, 100),
+              uiTintOn: true,
+              contentColorHex: String(s.contentColorHex || "#000000"),
+              productTitleColorHex: String(s.productTitleColorHex || "#000000"),
+              brandIconFillHex: String(s.brandIconFillHex || rootAccentHex()),
+              brandIconBorderHex: String(
+                normHex6(s.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX
+              ),
+              brandIconFillOpacity: clampPct(s.brandIconFillOpacity, 100),
+              brandIconBorderOpacity: 100,
+              brandIconHex: String(s.brandIconFillHex || rootAccentHex()),
+              buyButtonBgHex: String(s.buyButtonBgHex || rootAccentHex()),
+              buyButtonLabelHex: String(s.buyButtonLabelHex || "#ffffff"),
+              exploreIconHex: String(s.exploreIconHex || rootAccentHex()),
+              lockLogoHex: String(s.lockLogoHex || rootAccentHex()),
+            })
+          );
+        } catch {}
+        try { localStorage.setItem(KEY_VIDEO, String(s.video || 0)); } catch {}
+      };
+
+      const KEY_ADMIN_GALLERY = "bbTheme:adminGallery:v1";
+      const UPLOAD_PREFIX = "bbtheme-upload:";
+      const VIDEO_FILE_RE = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
+      const IMAGE_FILE_RE = /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i;
+
+      const isVideoPath = (p) => VIDEO_FILE_RE.test(String(p || "").trim());
+      const isImagePath = (p) => IMAGE_FILE_RE.test(String(p || "").trim());
+      const isUploadRef = (p) => String(p || "").trim().startsWith(UPLOAD_PREFIX);
+      const uploadIdFromRef = (p) => {
+        if (!isUploadRef(p)) return "";
+        const id = String(p).trim().slice(UPLOAD_PREFIX.length);
+        return /^[a-zA-Z0-9_-]+$/.test(id) ? id : "";
+      };
+
+      const normalizeThemesFolderPath = (p) => {
+        let t = String(p || "").trim();
+        // Bundle products page lives under brand-modules-bundle/products/; repo-root products use `../themes/`.
+        if (t.startsWith("../themes/") && !t.startsWith("../../themes/")) {
+          t = "../../themes/" + t.slice("../themes/".length);
+        }
+        if (!t.startsWith("../../themes/")) return "";
+        if (t.includes("\n") || t.includes("<")) return "";
+        if (t.length > 200) return "";
+        return t;
+      };
+
+      const normalizeThemeSlot = (raw) => {
+        const t = String(raw || "").trim();
+        if (isUploadRef(t)) return uploadIdFromRef(t) ? t : "";
+        return normalizeThemesFolderPath(t);
+      };
+
+      let uploadMetaById = new Map();
+      const uploadObjectUrlById = new Map();
+
+      async function prepareUploadCaches() {
+        uploadMetaById = new Map();
+        const U = window.BbThemeGalleryUploads;
+        if (!U) return;
+        let list = [];
+        try {
+          list = await U.listUploads();
+        } catch {
+          list = [];
+        }
+        for (const u of list) uploadMetaById.set(u.id, u);
+        const slots = readAdminGallerySlots();
+        const needed = new Set();
+        for (const s of slots) {
+          const id = uploadIdFromRef(s);
+          if (id) needed.add(id);
+        }
+        for (const [id, url] of [...uploadObjectUrlById.entries()]) {
+          if (!needed.has(id)) {
+            try {
+              URL.revokeObjectURL(url);
+            } catch {}
+            uploadObjectUrlById.delete(id);
+          }
+        }
+        for (const id of needed) {
+          if (uploadObjectUrlById.has(id)) continue;
+          try {
+            const url = await U.getObjectUrl(id);
+            if (url) uploadObjectUrlById.set(id, url);
+          } catch {}
+        }
+      }
+
+      const resolveSlotToUrl = (slot) => {
+        const s = String(slot || "").trim();
+        if (!s) return "";
+        if (isUploadRef(s)) {
+          const id = uploadIdFromRef(s);
+          return id ? uploadObjectUrlById.get(id) || "" : "";
+        }
+        return normalizeThemesFolderPath(s);
+      };
+
+      const isVideoSlotPath = (slot) => {
+        const s = String(slot || "").trim();
+        if (isVideoPath(s)) return true;
+        if (isUploadRef(s)) {
+          const m = uploadMetaById.get(uploadIdFromRef(s));
+          return !!(m && String(m.mime || "").startsWith("video/"));
+        }
+        return false;
+      };
+
+      const isImageSlotPath = (slot) => {
+        const s = String(slot || "").trim();
+        if (isImagePath(s)) return true;
+        if (isUploadRef(s)) {
+          const m = uploadMetaById.get(uploadIdFromRef(s));
+          return !!(m && String(m.mime || "").startsWith("image/"));
+        }
+        return false;
+      };
+
+      const defaultThemeSlots = () =>
+        [1, 2, 3, 4, 5, 6, 7].map((i) => `../../themes/theme-${i}.mp4`);
+
+      const readAdminGallerySlots = () => {
+        const fallback = defaultThemeSlots();
+        try {
+          const raw = localStorage.getItem(KEY_ADMIN_GALLERY);
+          if (!raw) return fallback;
+          const o = JSON.parse(raw);
+          if (!o || !Array.isArray(o.slots)) return fallback;
+          const next = fallback.slice();
+          for (let i = 0; i < 7; i++) {
+            const n = normalizeThemeSlot(String(o.slots[i] ?? "").trim());
+            if (n) next[i] = n;
+          }
+          return next;
+        } catch {
+          return fallback;
+        }
+      };
+
+      const getBuiltinVideoSourceForThemeId = (id) => {
+        if (id < 1 || id > 7) return undefined;
+        const slot = String(readAdminGallerySlots()[id - 1] || "").trim();
+        if (!slot || !isVideoSlotPath(slot)) return undefined;
+        const url = resolveSlotToUrl(slot);
+        return url || undefined;
+      };
+
+      const isBuiltinVideoSrc = (src) => {
+        const t = String(src || "").trim();
+        if (!t) return false;
+        const slots = readAdminGallerySlots();
+        for (let i = 0; i < 7; i++) {
+          const slot = String(slots[i] || "").trim();
+          if (!slot || !isVideoSlotPath(slot)) continue;
+          const u = resolveSlotToUrl(slot);
+          if (!u) continue;
+          if (t === u || t === slot || t.endsWith("/" + slot) || t.endsWith(slot)) return true;
+        }
+        return false;
+      };
+
+      const syncThemeGalleryChips = () => {
+        const slots = readAdminGallerySlots();
+        if (!videoRow) return;
+        videoRow.querySelectorAll(".bb-theme-video-chip[data-theme]").forEach((btn) => {
+          const n = Number(btn.getAttribute("data-theme") || "0") || 0;
+          if (n < 1 || n > 7) return;
+          const slot = String(slots[n - 1] || "").trim();
+          const thumb = btn.querySelector(".bb-theme-video-chip__thumb");
+          if (!thumb) return;
+          /* Tint / popup-only applies call apply() often — do not wipe chip thumbs when the slot is unchanged (avoids video reload / flash). */
+          if (thumb.getAttribute("data-bb-gallery-slot") === slot && thumb.firstElementChild) {
+            return;
+          }
+          thumb.setAttribute("data-bb-gallery-slot", slot || "");
+          thumb.innerHTML = "";
+          if (!slot) return;
+          const url = resolveSlotToUrl(slot);
+          if (isVideoSlotPath(slot) && url) {
+            const v = document.createElement("video");
+            v.setAttribute("muted", "");
+            v.muted = true;
+            v.setAttribute("playsinline", "");
+            v.setAttribute("preload", "metadata");
+            v.src = url;
+            thumb.appendChild(v);
+          } else if (isImageSlotPath(slot) && url) {
+            const img = document.createElement("img");
+            img.alt = "";
+            img.decoding = "async";
+            img.loading = "lazy";
+            img.src = url;
+            thumb.appendChild(img);
+          } else if (url) {
+            const v = document.createElement("video");
+            v.setAttribute("muted", "");
+            v.muted = true;
+            v.setAttribute("playsinline", "");
+            v.setAttribute("preload", "metadata");
+            v.src = url;
+            thumb.appendChild(v);
+          }
+        });
+      };
+
+      function syncCustomBgTile() {
+        const wrap = document.getElementById("bbThemeCustomBgPreviewWrap");
+        const img = document.querySelector(".bb-theme-custom-bg-preview__img");
+        const vid = document.querySelector(".bb-theme-custom-bg-preview__video");
+        if (!wrap || !img || !vid) return;
+        const c = readSessionCustomBgPayload();
+        const has = !!(c && c.dataUrl);
+        if (!has) {
+          wrap.hidden = true;
+          wrap.tabIndex = -1;
+          wrap.removeAttribute("aria-label");
+          img.hidden = true;
+          vid.hidden = true;
+          img.removeAttribute("src");
+          try {
+            vid.pause();
+          } catch {}
+          vid.removeAttribute("src");
+          return;
+        }
+        wrap.hidden = false;
+        wrap.tabIndex = 0;
+        wrap.setAttribute(
+          "aria-label",
+          "Custom background upload — choose to turn theme background on and apply again"
+        );
+        if (c.kind === "image") {
+          try {
+            vid.pause();
+          } catch {}
+          vid.removeAttribute("src");
+          img.removeAttribute("src");
+          img.src = c.dataUrl;
+          img.hidden = false;
+          vid.hidden = true;
+        } else {
+          img.removeAttribute("src");
+          img.hidden = true;
+          try {
+            vid.pause();
+          } catch {}
+          vid.removeAttribute("src");
+          vid.src = c.dataUrl;
+          try {
+            vid.load();
+          } catch {}
+          vid.hidden = false;
+          try {
+            vid.play().catch(() => {});
+          } catch {}
+        }
+      }
+
+      const revokeCustomBgMediaUrl = (u) => {
+        const s = String(u || "").trim();
+        if (s.startsWith("blob:")) {
+          try {
+            URL.revokeObjectURL(s);
+          } catch {}
+        }
+      };
+
+      const clearCustomBgSession = () => {
+        let prevUrl = "";
+        try {
+          const raw = sessionStorage.getItem(KEY_CUSTOM_BG);
+          if (raw) {
+            const c = JSON.parse(raw);
+            if (c?.dataUrl) prevUrl = String(c.dataUrl);
+          }
+        } catch {}
+        const pref = readPersistedCustomBgUploadRef();
+        try {
+          sessionStorage.removeItem(KEY_CUSTOM_BG);
+        } catch {}
+        revokeCustomBgMediaUrl(prevUrl);
+        try {
+          localStorage.removeItem(KEY_CUSTOM_BG_PERSIST);
+        } catch {}
+        bbHydratedCustomBgPersistId = "";
+        bbHydratedCustomBg = null;
+        try {
+          const U = window.BbThemeGalleryUploads;
+          if (pref?.uploadId && U?.revokeObjectUrl) U.revokeObjectUrl(pref.uploadId);
+        } catch {}
+        try {
+          const upl = document.getElementById("bbThemeBgUpload");
+          if (upl) upl.value = "";
+        } catch {}
+        syncCustomBgTile();
+      };
+
+      /** Parsed custom upload in session (same shape as syncCustomBgTile). */
+      const readSessionCustomBgPayload = () => {
+        try {
+          const pref = readPersistedCustomBgUploadRef();
+          if (pref?.uploadId && bbHydratedCustomBg?.uploadId === pref.uploadId && bbHydratedCustomBg.url) {
+            return { kind: bbHydratedCustomBg.kind, dataUrl: bbHydratedCustomBg.url };
+          }
+        } catch {}
+        try {
+          const raw = sessionStorage.getItem(KEY_CUSTOM_BG);
+          if (!raw) return null;
+          const c = JSON.parse(raw);
+          if (c?.dataUrl && (c.kind === "video" || c.kind === "image")) return c;
+        } catch {}
+        return null;
+      };
+
+      const sessionCustomKind = (state) => {
+        if (state?.blend) return null;
+        /* Theme off: still report session kind so blur / chip state keeps “custom upload waiting”. */
+        if (!state?.on) {
+          const c = readSessionCustomBgPayload();
+          return c ? c.kind : null;
+        }
+        const vid = state.video || 0;
+        if (vid && getBuiltinVideoSourceForThemeId(vid)) return null;
+        if (vid >= 1 && vid <= 7) {
+          const slot = String(readAdminGallerySlots()[vid - 1] || "").trim();
+          if (slot && isImageSlotPath(slot)) return "image";
+        }
+        const c = readSessionCustomBgPayload();
+        if (c) return c.kind;
+        return null;
+      };
+
+      /** Re-apply uploaded image/video after apply() so theme toggles do not wipe the DOM. */
+      const restoreCustomBgFromSession = (popup, state) => {
+        if (!popup || !state?.on || state?.blend) return;
+        const vid = state.video || 0;
+        if (vid && getBuiltinVideoSourceForThemeId(vid)) return;
+        const c = readSessionCustomBgPayload();
+        if (!c?.dataUrl || !c.kind) return;
+        const vEl = popup.querySelector(".bb-theme-video-bg");
+        const blur = popup.querySelector(".blur-bg");
+        if (c.kind === "image") {
+          popup.classList.remove("bb-theme-video-on");
+          popup.classList.add("bb-theme-custom-upload");
+          if (vEl) {
+            try {
+              vEl.pause();
+            } catch {}
+            vEl.removeAttribute("src");
+          }
+          if (blur) {
+            blur.style.display = "block";
+            blur.style.backgroundImage = `url("${c.dataUrl}")`;
+            blur.style.removeProperty("background-color");
+          }
+        } else if (c.kind === "video") {
+          popup.classList.remove("bb-theme-custom-upload");
+          if (blur) blur.style.display = "none";
+          if (vEl) {
+            vEl.setAttribute("src", c.dataUrl);
+            try {
+              vEl.load();
+            } catch {}
+            try {
+              vEl.play().catch(() => {});
+            } catch {}
+          }
+          popup.classList.add("bb-theme-video-on");
+        }
+      };
+
+      const getPopup = () =>
+        document.querySelector("#bbThemePopupMount .popup") || document.querySelector(".popup");
+
+      const KEY_TYPO = "bbTheme:typography:v1";
+      const KEY_ADS_PREVIEW = "bbTheme:adsPreview:v1";
+      const ALLOWED_FONT_FAMILIES = new Set([
+        "Roboto",
+        "Open Sans",
+        "Lato",
+        "Montserrat",
+        "Poppins",
+        "Inter",
+        "Nunito",
+        "Raleway",
+        "Work Sans",
+        "Source Sans 3",
+        "Merriweather",
+      ]);
+      const ALLOWED_WEIGHTS = new Set([300, 400, 500, 700]);
+
+      const readTypography = () => {
+        let o = null;
+        try {
+          o = JSON.parse(localStorage.getItem(KEY_TYPO) || "null");
+        } catch {
+          o = null;
+        }
+        let family = String(o?.family || "Roboto").trim();
+        if (!ALLOWED_FONT_FAMILIES.has(family)) family = "Roboto";
+        let weight = Number(o?.weight);
+        if (!ALLOWED_WEIGHTS.has(weight)) weight = 400;
+        const italic = !!(o && o.italic);
+        return { family, weight, italic };
+      };
+      const writeTypography = (t) => {
+        try {
+          localStorage.setItem(
+            KEY_TYPO,
+            JSON.stringify({
+              family: t.family,
+              weight: t.weight,
+              italic: !!t.italic,
+            })
+          );
+        } catch {}
+      };
+
+      const readAdsPreview = () => {
+        try {
+          const o = JSON.parse(localStorage.getItem(KEY_ADS_PREVIEW) || "null");
+          if (o && typeof o === "object" && "enabled" in o) return !!o.enabled;
+        } catch {}
+        return true;
+      };
+      const writeAdsPreview = (enabled) => {
+        try {
+          localStorage.setItem(KEY_ADS_PREVIEW, JSON.stringify({ enabled: !!enabled }));
+        } catch {}
+      };
+
+      const cssFontStackFromFamily = (family) => {
+        const raw = String(family || "Roboto").replace(/["'\\]/g, "").trim();
+        const safe = ALLOWED_FONT_FAMILIES.has(raw) ? raw : "Roboto";
+        return `'${safe}', Roboto, system-ui, sans-serif`;
+      };
+
+      const syncPopupTypographyAndAds = () => {
+        const ty = readTypography();
+        if (fontFamilyEl) fontFamilyEl.value = ty.family;
+        if (fontWeightEl) fontWeightEl.value = String(ty.weight);
+        if (fontItalicEl) fontItalicEl.checked = ty.italic;
+        const adsOn = readAdsPreview();
+        if (adsEnabledEl) adsEnabledEl.checked = adsOn;
+        document.body.classList.toggle("bb-theme-ads-off", !adsOn);
+
+        const stack = cssFontStackFromFamily(ty.family);
+        const w = String(ty.weight);
+        const st = ty.italic ? "italic" : "normal";
+        try {
+          document.documentElement.style.setProperty("--bb-theme-popup-font-stack", stack);
+          document.documentElement.style.setProperty("--bb-theme-popup-font-weight", w);
+          document.documentElement.style.setProperty("--bb-theme-popup-font-style", st);
+        } catch {}
+        const popup = getPopup();
+        if (popup) {
+          try {
+            popup.style.setProperty("--bb-theme-popup-font-stack", stack);
+            popup.style.setProperty("--bb-theme-popup-font-weight", w);
+            popup.style.setProperty("--bb-theme-popup-font-style", st);
+          } catch {}
+        }
+      };
+
+      let _applyChain = Promise.resolve();
+
+      function apply(incoming) {
+        _applyChain = _applyChain
+          .then(() => prepareUploadCaches())
+          .then(() => hydrateCustomBgFromPersist())
+          .then(() => {
+            doApplyInner(incoming);
+          })
+          .catch(() => {});
+      }
+
+      /** Logo blend: same artwork as `.brand-icon.bb-upload` / Asset Lab `.bb-upload` (--bb-logo), not a static B. */
+      function bbThemeResolveBlendLogoCss(popup) {
+        const fallback = 'url("../brand-pages-isolated/BB-Full-Logo-Blue.svg")';
+        const readLogoVar = (el) => {
+          if (!el) return "";
+          try {
+            const v = window.getComputedStyle(el).getPropertyValue("--bb-logo").trim();
+            if (!v || v === "none" || /^initial$/i.test(v)) return "";
+            return v;
+          } catch {
+            return "";
+          }
+        };
+        const icon = popup?.querySelector?.(".title-row .brand-icon");
+        if (icon?.classList?.contains("bb-upload")) {
+          const u = readLogoVar(icon);
+          if (u) return u;
+        }
+        let probe = null;
+        try {
+          probe = document.createElement("span");
+          probe.className = "bb-upload";
+          probe.setAttribute("aria-hidden", "true");
+          probe.style.cssText =
+            "position:absolute!important;left:-9999px!important;top:0!important;width:1px!important;height:1px!important;overflow:hidden!important;visibility:hidden!important;pointer-events:none!important;";
+          document.body.appendChild(probe);
+          const u = readLogoVar(probe);
+          if (u && !/brandbased-logo\.svg/i.test(u)) return u;
+        } catch {}
+        finally {
+          try {
+            probe?.remove();
+          } catch {}
+        }
+        const u = readLogoVar(icon);
+        return u || fallback;
+      }
+
+      function doApplyInner(incoming) {
+        const state = { ...(typeof incoming === "object" && incoming ? incoming : {}) };
+        state.uiTintOn = true;
+        if (state.on && state.frosted) state.frosted = false;
+        write(state);
+        if (themeOn) themeOn.checked = !!state.on;
+        if (backdropTintEl) backdropTintEl.checked = !!state.backdropTint;
+        if (backdropTintColourEl)
+          backdropTintColourEl.value = normHex6(state.backdropTintHex) || "#000000";
+        if (backdropOpacityEl) backdropOpacityEl.value = String(state.backdropOpacity ?? 100);
+        syncBackdropTintControlsDisabled();
+        if (blend) blend.checked = !!state.blend;
+        if (contentColourEl) contentColourEl.value = state.contentColorHex || "#000000";
+        if (productTitleColourEl) productTitleColourEl.value = state.productTitleColorHex || "#000000";
+        if (brandIconFillColourEl)
+          brandIconFillColourEl.value = state.brandIconFillHex || rootAccentHex();
+        if (brandIconOutlineColourEl)
+          brandIconOutlineColourEl.value =
+            normHex6(state.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX;
+        if (brandIconFillOpacityEl)
+          brandIconFillOpacityEl.value = String(state.brandIconFillOpacity ?? 100);
+        if (lockLogoColourEl) lockLogoColourEl.value = state.lockLogoHex || rootAccentHex();
+        if (exploreIconColourEl) exploreIconColourEl.value = state.exploreIconHex || rootAccentHex();
+        if (buyButtonColourEl) buyButtonColourEl.value = state.buyButtonBgHex || rootAccentHex();
+        if (buyButtonLabelColourEl) buyButtonLabelColourEl.value = state.buyButtonLabelHex || "#ffffff";
+
+        // Chips UI
+        if (videoRow) {
+          videoRow.querySelectorAll(".bb-theme-video-chip").forEach((b) => {
+            const n = Number(b.getAttribute("data-theme") || "0") || 0;
+            const active = n === (state.video || 0);
+            b.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+        }
+        syncCustomBgTile();
+        syncThemeGalleryChips();
+        syncPopupTypographyAndAds();
+
+        const popup = getPopup();
+        if (!popup) return;
+        try {
+          const lockWrapEarly = popup.querySelector(".lock-icon-bb-logo");
+          const lockImgEarly = lockWrapEarly?.querySelector("img");
+          if (lockImgEarly) {
+            const rawLock = String(lockImgEarly.getAttribute("src") || "brandbased-logo.svg").trim();
+            const docBaseLock =
+              popup.ownerDocument?.baseURI ||
+              lockImgEarly.ownerDocument?.baseURI ||
+              window.location.href;
+            popup.style.setProperty(
+              "--bb-lock-logo-mask-url",
+              `url("${new URL(rawLock || "brandbased-logo.svg", docBaseLock).href}")`
+            );
+          }
+        } catch {
+          try {
+            popup.style.removeProperty("--bb-lock-logo-mask-url");
+          } catch {}
+        }
+        popup.querySelectorAll(".bb-theme-accent-layer").forEach((n) => n.remove());
+
+        restoreCustomBgFromSession(popup, state);
+
+        // Popup receives resolved theme vars from :root (rgba + hex + solid for chips in preview).
+        try {
+          const r = document.documentElement;
+          const a = window.getComputedStyle(r).getPropertyValue("--bb-theme-accent").trim();
+          const h = window.getComputedStyle(r).getPropertyValue("--bb-theme-accent-hex").trim();
+          const s = window.getComputedStyle(r).getPropertyValue("--bb-theme-accent-solid").trim();
+          if (a) popup.style.setProperty("--bb-theme-accent", a);
+          if (h) popup.style.setProperty("--bb-theme-accent-hex", h);
+          if (s) popup.style.setProperty("--bb-theme-accent-solid", s);
+        } catch {}
+
+        const blendOn = !!state.blend;
+        const videoId = state.video || 0;
+        const sk = sessionCustomKind(state);
+        const gallerySlots = readAdminGallerySlots();
+        const slotPath =
+          videoId >= 1 && videoId <= 7 ? String(gallerySlots[videoId - 1] || "").trim() : "";
+        const builtinSlotVideo =
+          !blendOn && !!(state.on && videoId && slotPath && isVideoSlotPath(slotPath));
+        const builtinSlotImage =
+          !blendOn && !!(state.on && videoId && slotPath && isImageSlotPath(slotPath));
+        const builtinVideoOn = builtinSlotVideo;
+        const sessionVideoOn = sk === "video" && !!state.on && !blendOn;
+        const videoOn = builtinVideoOn || sessionVideoOn;
+
+        popup.classList.toggle("bb-theme-bg-on", !!state.on);
+        popup.classList.toggle("bb-theme-frosted", !!state.frosted);
+        popup.classList.toggle("bb-theme-blend-logo", !!state.blend);
+        popup.classList.toggle("bb-theme-backdrop-tint-on", !!state.backdropTint);
+        try {
+          if (state.backdropTint) {
+            const dh =
+              normHex6(backdropTintColourEl?.value) ||
+              normHex6(state.backdropTintHex) ||
+              "#000000";
+            const op = clampPct(
+              backdropOpacityEl?.value,
+              state.backdropOpacity ?? 100
+            );
+            popup.style.setProperty("--bb-theme-backdrop-layer", hexToRgba(dh, op));
+          } else {
+            popup.style.removeProperty("--bb-theme-backdrop-layer");
+          }
+        } catch {}
+
+        popup.classList.toggle("bb-theme-video-on", videoOn);
+        popup.classList.toggle(
+          "bb-theme-bg-default",
+          !!(
+            state.on &&
+            !blendOn &&
+            videoId === 0 &&
+            sk !== "video" &&
+            !popup.classList.contains("bb-theme-custom-upload")
+          )
+        );
+        popup.dataset.bbThemeVideo = String(videoId || 0);
+
+        const vEl = popup.querySelector(".bb-theme-video-bg");
+        const srcBeforeApply = vEl?.getAttribute("src") || "";
+        const customVideoBefore =
+          !!srcBeforeApply && !isBuiltinVideoSrc(srcBeforeApply);
+        if (vEl) {
+          if (blendOn) {
+            try {
+              vEl.pause();
+            } catch {}
+            vEl.removeAttribute("src");
+          } else if (builtinVideoOn) {
+            const src = getBuiltinVideoSourceForThemeId(videoId);
+            if (src && vEl.getAttribute("src") !== src) vEl.setAttribute("src", src);
+            try {
+              vEl.play().catch(() => {});
+            } catch {}
+          } else if (!customVideoBefore) {
+            const cSess = readSessionCustomBgPayload();
+            if (cSess?.kind === "video" && cSess.dataUrl) {
+              vEl.setAttribute("src", cSess.dataUrl);
+              try {
+                vEl.load();
+              } catch {}
+              try {
+                vEl.pause();
+              } catch {}
+          } else {
+              try {
+                vEl.pause();
+              } catch {}
+              vEl.removeAttribute("src");
+            }
+          } else {
+            const cSess = readSessionCustomBgPayload();
+            if (
+              cSess?.kind === "video" &&
+              cSess.dataUrl &&
+              vEl.getAttribute("src") !== cSess.dataUrl
+            ) {
+              vEl.setAttribute("src", cSess.dataUrl);
+              try {
+                vEl.load();
+              } catch {}
+            }
+            try {
+              vEl.play().catch(() => {});
+            } catch {}
+          }
+        }
+
+        const srcNow = vEl?.getAttribute("src") || "";
+        const customVideoActive = !!srcNow && !isBuiltinVideoSrc(srcNow);
+        const accentFillOn =
+          !!state.on &&
+          !blendOn &&
+          !popup.classList.contains("bb-theme-custom-upload") &&
+          !builtinVideoOn &&
+          !builtinSlotImage &&
+          !srcNow;
+        popup.classList.toggle("bb-theme-accent-fill-on", accentFillOn);
+
+        /* Theme colour on .bb-theme-video-bg — inline fill so frosted / CSS order cannot wipe it. */
+        if (vEl) {
+          if (accentFillOn) {
+            const hex = rootAccentHex();
+            const hx = hex.replace(/^#/, "");
+            const defRgb = [16, 48, 244];
+            const ch = (i) => {
+              const n = parseInt(hx.slice(i * 2, i * 2 + 2), 16);
+              return Number.isFinite(n) ? Math.max(0, Math.min(255, n)) : defRgb[i];
+            };
+            const r = ch(0);
+            const g = ch(1);
+            const b = ch(2);
+            let accentMeta = null;
+            try {
+              accentMeta = JSON.parse(localStorage.getItem("bbTheme:accent:v1") || "null");
+            } catch {
+              accentMeta = null;
+            }
+            const accentOn = !!(accentMeta && accentMeta.on === true);
+            let alphaPct = Number(accentMeta?.alpha);
+            if (!Number.isFinite(alphaPct)) alphaPct = 100;
+            alphaPct = Math.max(0, Math.min(100, alphaPct));
+            const a = accentOn ? alphaPct / 100 : 1;
+            if (!state.frosted) {
+              vEl.style.setProperty("background-color", hex, "important");
+            } else {
+              vEl.style.setProperty("background-color", `rgba(${r},${g},${b},${a})`, "important");
+            }
+          } else {
+            vEl.style.removeProperty("background-color");
+          }
+        }
+
+        const blurEl = popup.querySelector(".blur-bg");
+        const hasCustomImage =
+          popup.classList.contains("bb-theme-custom-upload") ||
+          sk === "image" ||
+          sk === "video";
+        if (blurEl) {
+          blurEl.style.removeProperty("background-color");
+          if (builtinSlotImage && slotPath && vEl) {
+            const imgUrl = resolveSlotToUrl(slotPath) || slotPath;
+            try {
+              vEl.pause();
+            } catch {}
+            vEl.removeAttribute("src");
+            popup.classList.remove("bb-theme-video-on");
+            popup.classList.remove("bb-theme-custom-upload");
+            blurEl.style.display = "block";
+            blurEl.style.backgroundImage = imgUrl.startsWith("blob:")
+              ? `url("${imgUrl}")`
+              : `url("${encodeURI(imgUrl)}")`;
+          } else if (!hasCustomImage) {
+            blurEl.style.removeProperty("background-image");
+          }
+          if (!customVideoActive && !hasCustomImage && !builtinSlotImage) {
+            blurEl.style.removeProperty("display");
+          }
+        }
+
+        try {
+          if (blendOn) {
+            popup.style.setProperty("--bb-theme-blend-bg-image", bbThemeResolveBlendLogoCss(popup));
+          } else {
+            popup.style.removeProperty("--bb-theme-blend-bg-image");
+          }
+        } catch {}
+
+        popup.classList.add("bb-theme-ui-tint-on");
+        try {
+          popup.style.removeProperty("--bb-theme-popup-button-accent");
+          popup.style.setProperty("--bb-theme-popup-content-color", state.contentColorHex || "#000000");
+          popup.style.setProperty("--bb-theme-popup-product-title-color", state.productTitleColorHex || "#000000");
+          /* Live colour inputs are source of truth (avoids stale state vs DOM after write/merge). */
+          const fillHexDom =
+            normHex6(brandIconFillColourEl?.value) ||
+            normHex6(state.brandIconFillHex) ||
+            rootAccentHex();
+          const borderHexDom =
+            normHex6(brandIconOutlineColourEl?.value) ||
+            normHex6(state.brandIconBorderHex) ||
+            DEFAULT_BRAND_ICON_BORDER_HEX;
+          const fillRgba = hexToRgba(
+            fillHexDom,
+            clampPct(brandIconFillOpacityEl?.value, state.brandIconFillOpacity ?? 100)
+          );
+          const borderRingOpacity = 100;
+          /* DevTools / tokens: full-opacity ring as hex (#000 for black), else rgba for alpha */
+          const borderCssVar =
+            borderRingOpacity >= 100
+              ? borderHexDom.toLowerCase() === "#000000"
+                ? "#000"
+                : borderHexDom
+              : hexToRgba(borderHexDom, borderRingOpacity);
+          popup.style.setProperty("--bb-theme-popup-brand-icon-bg", fillRgba);
+          popup.style.setProperty("--bb-theme-popup-brand-icon-border", borderCssVar);
+          popup.style.setProperty("--bb-theme-popup-brand-icon", fillRgba);
+          const brandIconEl = popup.querySelector(".title-row .brand-icon");
+          if (brandIconEl) {
+            brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-bg", fillRgba);
+            brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-border", borderCssVar);
+            brandIconEl.style.setProperty("--bb-theme-popup-brand-icon", fillRgba);
+            /* Inline fill beats theme-design `var(…) !important` so .bb-upload matches Brand Fill + opacity. */
+            brandIconEl.style.setProperty("background-color", fillRgba, "important");
+            brandIconEl.style.setProperty(
+              "border",
+              "1px solid var(--bb-theme-popup-brand-icon-border, #000000)",
+              "important"
+            );
+          }
+          popup.style.setProperty("--bb-theme-popup-buy-button-bg", state.buyButtonBgHex || rootAccentHex());
+          popup.style.setProperty("--bb-theme-popup-buy-button-label", state.buyButtonLabelHex || "#ffffff");
+          popup.style.setProperty("--bb-theme-popup-explore-icon-color", state.exploreIconHex || rootAccentHex());
+          const lockHex =
+            normHex6(lockLogoColourEl?.value) ||
+            normHex6(state.lockLogoHex) ||
+            rootAccentHex();
+          popup.style.setProperty("--bb-theme-lock-logo-color", lockHex);
+          try {
+            const host = popup.querySelector(".lock-icon-bb-logo");
+            if (host) {
+              host.style.color = lockHex;
+              // file:// pages often block fetch() of local svg assets; inline path instead.
+              const ensureInline = () => {
+                let svg = host.querySelector("svg.bb-lock-logo-inline");
+                if (svg) return svg;
+                svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.classList.add("bb-lock-logo-inline");
+                svg.setAttribute("viewBox", "0 0 30 43");
+                svg.setAttribute("width", "100%");
+                svg.setAttribute("height", "100%");
+                svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+                svg.setAttribute("aria-hidden", "true");
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute(
+                  "d",
+                  "M 14.082157,43.029444 C 11.486276,42.89346 8.7470742,41.989394 6.5481027,40.545644 3.009681,38.221044 0.76669177,34.647238 0.29724018,30.586288 0.22651188,29.980305 0.21739218,28.185467 0.21739218,14.997931 V 0.09673646 H 0.45824335 C 1.0837329,0.09774976 2.2762244,0.20834124 2.7583827,0.30402712 5.5982762,0.87464651 7.7319406,2.6517915 8.2862154,4.9106389 c 0.0762,0.3120656 0.087043,1.2618712 0.1116048,10.3299471 l 0.026751,9.985692 0.3011729,1.467339 c 0.1982217,0.97068 0.2853047,1.49185 0.253558,1.539475 -0.024927,0.03901 -0.8522863,0.602366 -1.8374769,1.25099 -0.9851906,0.648623 -2.5904293,1.704572 -3.5669968,2.347754 -0.9938036,0.653619 -1.7485699,1.183412 -1.7149993,1.201094 0.03354,0.01631 0.1859708,0.04631 0.3401849,0.06404 1.8479138,0.212722 8.518789,1.06138 8.54554,1.087696 0.01956,0.01956 0.629137,1.591164 1.355319,3.4926 1.647888,4.312228 1.541745,4.03965 1.577119,4.037826 0.01773,0 0.910805,-1.601621 1.984426,-3.559751 1.073651,-1.957665 1.972195,-3.570169 1.994872,-3.584233 0.0231,-0.01398 2.058833,-0.04762 4.523613,-0.07448 2.462976,-0.02675 4.488228,-0.05674 4.500479,-0.0689 0.01034,-0.01034 -0.524353,-0.485796 -1.190668,-1.054592 -0.666315,-0.568805 -2.127767,-1.817514 -3.247676,-2.774576 l -2.037492,-1.739957 1.335803,-3.798779 c 0.73526,-2.088755 1.332185,-3.811019 1.327199,-3.828712 -0.01034,-0.02675 -2.002138,0.901726 -7.71278,3.591479 l -0.281667,0.132914 -2.870292,-1.800289 0.01398,-3.800582 c 0.0091,-2.090579 0.02635,-3.812844 0.04266,-3.826908 0.03719,-0.03901 0.944355,-0.173721 1.566227,-0.235856 0.768831,-0.07448 2.237537,-0.06212 3.084382,0.02675 1.942242,0.203663 3.660889,0.713941 5.432593,1.615676 2.257489,1.14666 4.062764,2.735574 5.437578,4.785773 1.188854,1.771704 1.858797,3.508033 2.191726,5.691146 0.117006,0.766997 0.1188,2.680674 0.001,3.446333 -0.361505,2.400375 -1.261426,4.544466 -2.710627,6.450898 -0.462652,0.611425 -1.786224,1.956307 -2.404469,2.445305 -1.973988,1.562609 -4.348058,2.622115 -6.885411,3.073945 -1.077269,0.191413 -2.457525,0.265789 -3.694003,0.20185 z"
+                );
+                svg.appendChild(path);
+                host.appendChild(svg);
+                return svg;
+              };
+              const svg = ensureInline();
+              svg.querySelectorAll("*").forEach((n) => {
+                try { n.removeAttribute("style"); } catch {}
+                try { n.setAttribute("fill", lockHex); } catch {}
+                try { n.setAttribute("stroke", lockHex); } catch {}
+              });
+              const img = host.querySelector("img");
+              if (img) img.style.opacity = "0";
+            }
+          } catch {}
+        } catch {}
+      }
+
+      const state = read();
+      if (themeOn) themeOn.checked = !!state.on;
+      if (backdropTintEl) backdropTintEl.checked = !!state.backdropTint;
+      if (backdropTintColourEl)
+        backdropTintColourEl.value = normHex6(state.backdropTintHex) || "#000000";
+      if (backdropOpacityEl) backdropOpacityEl.value = String(state.backdropOpacity ?? 100);
+      syncBackdropTintControlsDisabled();
+      if (blend) blend.checked = !!state.blend;
+      if (contentColourEl) contentColourEl.value = state.contentColorHex || "#000000";
+      if (productTitleColourEl) productTitleColourEl.value = state.productTitleColorHex || "#000000";
+      if (brandIconFillColourEl)
+        brandIconFillColourEl.value = state.brandIconFillHex || rootAccentHex();
+      if (brandIconOutlineColourEl)
+        brandIconOutlineColourEl.value =
+          normHex6(state.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX;
+      if (brandIconFillOpacityEl)
+        brandIconFillOpacityEl.value = String(state.brandIconFillOpacity ?? 100);
+      if (lockLogoColourEl) lockLogoColourEl.value = state.lockLogoHex || rootAccentHex();
+      if (exploreIconColourEl) exploreIconColourEl.value = state.exploreIconHex || rootAccentHex();
+      if (buyButtonColourEl) buyButtonColourEl.value = state.buyButtonBgHex || rootAccentHex();
+      if (buyButtonLabelColourEl) buyButtonLabelColourEl.value = state.buyButtonLabelHex || "#ffffff";
+      apply(state);
+
+      const readFromUi = () => {
+        const p = getPopup();
+        let video = Math.max(0, Math.min(7, Number(read().video) || 0));
+        if (p?.classList.contains("bb-theme-custom-upload")) video = 0;
+        const vSrc = p?.querySelector(".bb-theme-video-bg")?.getAttribute("src") || "";
+        if (vSrc && !isBuiltinVideoSrc(vSrc)) video = 0;
+        const prev = read();
+        let frosted = prev.frosted;
+        if (themeOn?.checked) frosted = false;
+        return {
+        on: !!themeOn?.checked,
+        frosted,
+        blend: !!blend?.checked,
+        backdropTint: !!backdropTintEl?.checked,
+        backdropTintHex: normHex6(backdropTintColourEl?.value) || "#000000",
+        backdropOpacity: clampPct(backdropOpacityEl?.value, 100),
+        video,
+        uiTintOn: true,
+        contentColorHex: normHex6(contentColourEl?.value) || "#000000",
+        productTitleColorHex: normHex6(productTitleColourEl?.value) || "#000000",
+        brandIconFillHex: normHex6(brandIconFillColourEl?.value) || rootAccentHex(),
+        brandIconBorderHex:
+          normHex6(brandIconOutlineColourEl?.value) || DEFAULT_BRAND_ICON_BORDER_HEX,
+        brandIconFillOpacity: clampPct(brandIconFillOpacityEl?.value, 100),
+        brandIconBorderOpacity: 100,
+        buyButtonBgHex: normHex6(buyButtonColourEl?.value) || rootAccentHex(),
+        buyButtonLabelHex: normHex6(buyButtonLabelColourEl?.value) || "#ffffff",
+        exploreIconHex: normHex6(exploreIconColourEl?.value) || rootAccentHex(),
+        lockLogoHex: normHex6(lockLogoColourEl?.value) || rootAccentHex(),
+        };
+      };
+
+      const refreshPopupFromTheme = () => {
+        if (!getPopup()) return;
+        apply(readFromUi());
+      };
+      window.addEventListener("bb-theme-accent-updated", refreshPopupFromTheme);
+      window.addEventListener("storage", (e) => {
+        if (e.key === KEY_ADMIN_GALLERY) apply(readFromUi());
+        else if (e.key === KEY_TYPO || e.key === KEY_ADS_PREVIEW) syncPopupTypographyAndAds();
+      });
+
+      /** When "Use theme colour" is turned on — clear frosted preview flag (no UI toggle; stored in theme state). */
+      window.__bbThemeForceFrostedOff = () => {
+        const s = read();
+        s.frosted = false;
+        write(s);
+        apply(s);
+      };
+
+      /** When "Use theme colour" is on — turn off Theme background (mutual exclusion). */
+      window.__bbThemeForceThemeBackgroundOff = () => {
+        if (themeOn) themeOn.checked = false;
+        apply(readFromUi());
+      };
+
+      themeOn?.addEventListener("change", () => {
+        window.__bbThemeForceUseThemeColourOff?.();
+        if (themeOn?.checked && blend) blend.checked = false;
+        if (!themeOn?.checked) {
+          const s = read();
+          s.frosted = true;
+          write(s);
+        }
+        apply(readFromUi());
+      });
+      blend?.addEventListener("change", () => {
+        if (blend?.checked && themeOn) {
+          themeOn.checked = false;
+          const s = read();
+          s.frosted = true;
+          write(s);
+        }
+        apply(readFromUi());
+      });
+      backdropTintEl?.addEventListener("change", () => apply(readFromUi()));
+      backdropTintColourEl?.addEventListener("input", () => apply(readFromUi()));
+      backdropOpacityEl?.addEventListener("input", () => apply(readFromUi()));
+      contentColourEl?.addEventListener("input", () => apply(readFromUi()));
+      productTitleColourEl?.addEventListener("input", () => apply(readFromUi()));
+      brandIconFillColourEl?.addEventListener("input", () => apply(readFromUi()));
+      brandIconOutlineColourEl?.addEventListener("input", () => apply(readFromUi()));
+      brandIconFillOpacityEl?.addEventListener("input", () => apply(readFromUi()));
+      lockLogoColourEl?.addEventListener("input", () => apply(readFromUi()));
+      exploreIconColourEl?.addEventListener("input", () => apply(readFromUi()));
+      buyButtonColourEl?.addEventListener("input", () => apply(readFromUi()));
+      buyButtonLabelColourEl?.addEventListener("input", () => apply(readFromUi()));
+
+      const onTypographyChange = () => {
+        const family =
+          fontFamilyEl && ALLOWED_FONT_FAMILIES.has(fontFamilyEl.value)
+            ? fontFamilyEl.value
+            : "Roboto";
+        let weight = Number(fontWeightEl?.value);
+        if (!ALLOWED_WEIGHTS.has(weight)) weight = 400;
+        writeTypography({
+          family,
+          weight,
+          italic: !!fontItalicEl?.checked,
+        });
+        syncPopupTypographyAndAds();
+      };
+      fontFamilyEl?.addEventListener("change", onTypographyChange);
+      fontWeightEl?.addEventListener("change", onTypographyChange);
+      fontItalicEl?.addEventListener("change", onTypographyChange);
+      adsEnabledEl?.addEventListener("change", () => {
+        writeAdsPreview(!!adsEnabledEl?.checked);
+        syncPopupTypographyAndAds();
+      });
+
+      videoRow?.addEventListener("click", (e) => {
+        const t = e.target;
+        if (!(t instanceof HTMLElement)) return;
+        const b = t.closest(".bb-theme-video-chip");
+        if (!b) return;
+        const n = Number(b.getAttribute("data-theme") || "1") || 1;
+        const next = readFromUi();
+        next.video = Math.max(1, Math.min(7, n));
+        const popup = getPopup();
+        if (popup && n > 0) {
+          popup.classList.remove("bb-theme-custom-upload");
+          /* Keep session upload + Custom chip — user can switch pre themes and still reapply upload */
+        }
+        apply(next);
+      });
+
+      /** After “Theme background” off, session upload stays — click Custom chip to turn theme on + video 0 again. */
+      const reapplySessionCustomBackground = () => {
+        const c = readSessionCustomBgPayload();
+        if (!c?.dataUrl) return;
+        if (themeOn) themeOn.checked = true;
+        const next = readFromUi();
+        next.on = true;
+        next.video = 0;
+        /* Logo blend hides video + clears src in apply — turn off so custom bg can show. */
+        next.blend = false;
+        if (blend) blend.checked = false;
+        apply(next);
+      };
+      const customBgPreviewWrap = document.getElementById("bbThemeCustomBgPreviewWrap");
+      customBgPreviewWrap?.addEventListener("click", () => {
+        if (customBgPreviewWrap.hidden) return;
+        reapplySessionCustomBackground();
+      });
+      customBgPreviewWrap?.addEventListener("keydown", (e) => {
+        if (customBgPreviewWrap.hidden) return;
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        reapplySessionCustomBackground();
+      });
+
+      /* After dock script moves `.popup` into #bbThemePopupMount, apply saved theme once. */
+      let _bbThemePollN = 0;
+      let _bbThemePollId = window.setInterval(() => {
+        _bbThemePollN += 1;
+        const p = getPopup();
+        if (p && !p.__bbThemeApplied) {
+          p.__bbThemeApplied = true;
+          apply(read());
+          try {
+            window.clearInterval(_bbThemePollId);
+          } catch {}
+        } else if (_bbThemePollN >= 200) {
+          try {
+            window.clearInterval(_bbThemePollId);
+          } catch {}
+        }
+      }, 400);
+
+      // Upload custom background (image/video) + custom Buy Now label
+      const upload = document.getElementById("bbThemeBgUpload");
+      const buyLabel = document.getElementById("bbThemeBuyNowLabel");
+      const applyBuyLabel = () => {
+        const popup = getPopup();
+        if (!popup) return;
+        const t = String(buyLabel?.value || "Buy Now").trim() || "Buy Now";
+        const btn = popup.querySelector(".buy-now-button");
+        if (btn) btn.textContent = t;
+      };
+      const applyUploadBg = async (file) => {
+        const popup = getPopup();
+        if (!popup || !file) return;
+        const kind =
+          file.type && file.type.startsWith("video/") ? "video" : "image";
+        const U = window.BbThemeGalleryUploads;
+        let prevBlobUrl = "";
+        try {
+          const raw = sessionStorage.getItem(KEY_CUSTOM_BG);
+          if (raw) {
+            const o = JSON.parse(raw);
+            const u = String(o?.dataUrl || "");
+            if (u.startsWith("blob:")) prevBlobUrl = u;
+          }
+        } catch {}
+        let prevPersist = null;
+        try {
+          prevPersist = readPersistedCustomBgUploadRef();
+        } catch {}
+        let mediaUrl = "";
+        try {
+          if (U?.addUpload && U?.getObjectUrl) {
+            const uploadId = await U.addUpload(file);
+            localStorage.setItem(
+              KEY_CUSTOM_BG_PERSIST,
+              JSON.stringify({ uploadId, kind, savedAt: Date.now() })
+            );
+            mediaUrl = await U.getObjectUrl(uploadId);
+            if (!mediaUrl) throw new Error("empty object url");
+            bbHydratedCustomBgPersistId = uploadId;
+            bbHydratedCustomBg = { uploadId, kind, url: mediaUrl };
+            if (prevPersist?.uploadId && prevPersist.uploadId !== uploadId) {
+              try {
+                U.revokeObjectUrl(prevPersist.uploadId);
+              } catch {}
+            }
+          } else {
+            throw new Error("BbThemeGalleryUploads unavailable");
+          }
+        } catch {
+          try {
+            localStorage.removeItem(KEY_CUSTOM_BG_PERSIST);
+          } catch {}
+          bbHydratedCustomBgPersistId = "";
+          bbHydratedCustomBg = null;
+          if (prevPersist?.uploadId && U?.revokeObjectUrl) {
+            try {
+              U.revokeObjectUrl(prevPersist.uploadId);
+            } catch {}
+          }
+          try {
+            mediaUrl = URL.createObjectURL(file);
+          } catch {
+            return;
+          }
+        }
+        try {
+          sessionStorage.setItem(KEY_CUSTOM_BG, JSON.stringify({ kind, dataUrl: mediaUrl }));
+        } catch {
+          if (!readPersistedCustomBgUploadRef()) {
+            revokeCustomBgMediaUrl(mediaUrl);
+            return;
+          }
+        }
+        const vEl = popup.querySelector(".bb-theme-video-bg");
+        const blur = popup.querySelector(".blur-bg");
+        if (kind === "video") {
+          popup.classList.remove("bb-theme-custom-upload");
+          if (blur) {
+            blur.style.removeProperty("background-image");
+            blur.style.removeProperty("background-color");
+            blur.style.display = "none";
+          }
+          if (vEl) {
+            try {
+              vEl.pause();
+            } catch {}
+            vEl.removeAttribute("src");
+            vEl.setAttribute("src", mediaUrl);
+            try {
+              vEl.load();
+            } catch {}
+            try {
+              vEl.play().catch(() => {});
+            } catch {}
+            popup.classList.add("bb-theme-video-on");
+          }
+        } else {
+          popup.classList.remove("bb-theme-video-on");
+          popup.classList.add("bb-theme-custom-upload");
+          if (vEl) {
+            try {
+              vEl.pause();
+            } catch {}
+            vEl.removeAttribute("src");
+          }
+          if (blur) {
+            blur.style.display = "block";
+            blur.style.removeProperty("background-image");
+            blur.style.backgroundImage = `url("${mediaUrl}")`;
+            blur.style.removeProperty("background-color");
+          }
+          popup.classList.add("bb-theme-bg-on");
+        }
+        if (prevBlobUrl && prevBlobUrl !== mediaUrl) {
+          revokeCustomBgMediaUrl(prevBlobUrl);
+        }
+        const s = read();
+        s.video = 0;
+        s.on = true;
+        s.blend = false;
+        if (blend) blend.checked = false;
+        apply(s);
+        try {
+          if (upload) upload.value = "";
+        } catch {}
+      };
+      upload?.addEventListener("change", async () => {
+        const f = upload.files && upload.files[0];
+        if (f) await applyUploadBg(f);
+      });
+      buyLabel?.addEventListener("input", applyBuyLabel);
+      buyLabel?.addEventListener("change", applyBuyLabel);
+    })();
+  </script>
+
+  <script src="../brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-4"></script>
+
+  <script src="./products-page.js?v=products-48"></script>
+
+  <script>
+    /*
+      Loader → (after delay) dock body.popup into #bbThemePopupMount + show — same markup as Premium.
+      bb-smart-ui creates .popup after its init delay; we dock/show after OPEN_DELAY_MS so the loader finishes first.
+      On close: simulated content block (#bbThemeSimulatedHost) via syncPreviewChrome.
+    */
+    (function () {
+      const seed = document.getElementById("bbThemePopupSeed");
+      const mount = document.getElementById("bbThemePopupMount");
+      const loader = document.getElementById("bbThemeLoader");
+      const simHost = document.getElementById("bbThemeSimulatedHost");
+      if (!mount) return;
+
+      /**
+       * Trackpad/wheel over the docked popup must not scroll the page behind it.
+       * With no scrollport, wheel goes straight to the document — preventDefault when nothing inside consumes the delta.
+       */
+      (function attachThemePreviewWheelGuard() {
+        if (mount.__bbThemeWheelGuard) return;
+        mount.__bbThemeWheelGuard = true;
+        mount.addEventListener(
+          "wheel",
+          (e) => {
+            if (!document.body.classList.contains("bb-theme-dock-enabled")) return;
+            const popup = mount.querySelector(".popup");
+            if (!popup || !popup.classList.contains("popup-visible")) return;
+            if (!mount.contains(e.target)) return;
+            let el = e.target;
+            const dy = e.deltaY;
+            if (dy === 0) return;
+            while (el && el !== mount && mount.contains(el)) {
+              const cs = window.getComputedStyle(el);
+              const oy = cs.overflowY;
+              const canY =
+                (oy === "auto" || oy === "scroll" || oy === "overlay") &&
+                el.scrollHeight > el.clientHeight + 1;
+              if (canY) {
+                const st = el.scrollTop;
+                const sh = el.scrollHeight;
+                const ch = el.clientHeight;
+                if (dy > 0 && st + ch < sh - 1) return;
+                if (dy < 0 && st > 0) return;
+              }
+              el = el.parentElement;
+            }
+            e.preventDefault();
+          },
+          { passive: false }
+        );
+      })();
+
+      /* Thumbnail carousel: Swiper init lives in bb-smart-ui createPopup (was missing — bullets/swipe broken). */
+
+      /* After bb-smart-ui init delay (~2000ms); keeps loader visible first on desktop.
+         ≤840px: skip loader wait + auto-open — dock only, show simulated content like popup already closed. */
+      const OPEN_DELAY_MS = 2400;
+      const isThemeMobilePreview = () => {
+        try {
+          return window.matchMedia("(max-width: 840px)").matches;
+        } catch {
+          return window.innerWidth <= 840;
+        }
+      };
+
+      let hadPopupOpen = false;
+      if (isThemeMobilePreview()) {
+        hadPopupOpen = true;
+        if (simHost) simHost.hidden = false;
+        document.body.classList.remove("bb-theme-preview-loading");
+        if (loader) {
+          loader.classList.add("bb-theme-loader--done");
+          loader.setAttribute("aria-busy", "false");
+        }
+      }
+
+      const syncPreviewChrome = () => {
+        const popup = document.querySelector("#bbThemePopupMount .popup");
+        const open = !!(popup && popup.classList.contains("popup-visible"));
+
+        document.body.classList.toggle("bb-theme-hide-sim", open);
+
+        if (open) {
+          hadPopupOpen = true;
+          document.body.classList.remove("bb-theme-preview-loading");
+          document.body.classList.remove("bb-theme-sim-active");
+          if (simHost) simHost.hidden = true;
+          if (loader) {
+            loader.classList.add("bb-theme-loader--done");
+            loader.setAttribute("aria-busy", "false");
+          }
+        } else {
+          if (hadPopupOpen) {
+            if (simHost) {
+              simHost.hidden = false;
+              requestAnimationFrame(() => {
+                try {
+                  window.dispatchEvent(new Event("resize"));
+                } catch {}
+                try {
+                  if (typeof window.bbRefreshThemeSimSmartSizing === "function") {
+                    window.bbRefreshThemeSimSmartSizing();
+                  }
+                } catch {}
+                try {
+                  simHost.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((el) => {
+                    if (el.classList.contains("bb-enhanced")) {
+                      el.classList.add("slide-up");
+                    }
+                  });
+                } catch {}
+              });
+            }
+          } else {
+            if (simHost) simHost.hidden = true;
+          }
+        }
+
+        const simVisible = !!(simHost && !simHost.hidden);
+        document.body.classList.toggle("bb-theme-sim-active", !!(hadPopupOpen && simVisible && !open));
+      };
+
+      /**
+       * Products + ≤840px: open the docked sheet from the sim “brand” chip.
+       * Vendor `click` + delayed `createPopup` are unreliable on mobile WebKit; this uses the same
+       * `mount` / `syncPreviewChrome` as the dock script and forces `popup-visible` + theme transforms.
+       */
+      const wireProductsMobilePreviewSimOpen = () => {
+        if (!isThemeMobilePreview() || !simHost || simHost.__bbProductsMobileSimWired) return;
+        simHost.__bbProductsMobileSimWired = true;
+
+        let lastOpen = 0;
+
+        const unwrapFlipWrap = () => {
+          try {
+            const wrap = mount.querySelector(":scope > .bb-products-popup-flip-wrap");
+            const popupEl = wrap && wrap.querySelector(".popup");
+            if (!wrap || !popupEl) return;
+            mount.insertBefore(popupEl, wrap);
+            wrap.remove();
+          } catch (_) {}
+        };
+
+        const openSheetFromSlot = (slot) => {
+          const now = Date.now();
+          if (now - lastOpen < 550) return;
+          lastOpen = now;
+
+          unwrapFlipWrap();
+          let p = mount.querySelector(".popup");
+          if (!p) return;
+
+          try {
+            if (typeof window.bbOpenModalForBrandMark === "function") {
+              window.bbOpenModalForBrandMark(slot);
+            }
+          } catch (_) {}
+
+          p = mount.querySelector(".popup");
+          if (!p) return;
+
+          p.classList.add("popup-visible");
+          p.style.setProperty("opacity", "1", "important");
+          p.style.setProperty("pointer-events", "auto", "important");
+          p.style.setProperty("transform", "translateY(0)", "important");
+          p.style.setProperty("visibility", "visible", "important");
+
+          syncPreviewChrome();
+        };
+
+        const onActivate = (e) => {
+          if (!isThemeMobilePreview()) return;
+          const t = e.target;
+          if (!t || typeof t.closest !== "function") return;
+          const slot = t.closest(".brandbased-dynamic-logo-slot");
+          if (!slot || !simHost.contains(slot)) return;
+          openSheetFromSlot(slot);
+        };
+
+        simHost.addEventListener("touchend", onActivate, { capture: true, passive: false });
+        simHost.addEventListener("pointerup", onActivate, { capture: true, passive: true });
+        simHost.addEventListener("click", onActivate, true);
+      };
+
+      /* Products page helpers: scripts can refresh sim/sheet chrome after forcing open states on mobile WebKit */
+      try {
+        window.bbThemeSyncPreviewChrome = syncPreviewChrome;
+      } catch {}
+
+      const attachPopupObservers = (popup) => {
+        if (!popup || popup.__bbThemeChromeObserved) return;
+        popup.__bbThemeChromeObserved = true;
+        try {
+          const mo = new MutationObserver(syncPreviewChrome);
+          mo.observe(popup, { attributes: true, attributeFilter: ["class"] });
+        } catch {}
+        syncPreviewChrome();
+      };
+
+      syncPreviewChrome();
+
+      simHost?.addEventListener("keydown", (e) => {
+        const slot = e.target?.closest?.(".brandbased-dynamic-logo-slot");
+        if (!slot || !simHost?.contains(slot)) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          slot.click();
+        }
+      });
+
+      const syncCloseUpBodyClass = () => {
+        const popup = document.querySelector("#bbThemePopupMount .popup") || document.querySelector(".popup");
+        const cu = popup?.querySelector(".slider-close-up");
+        if (!cu) return;
+        let open = false;
+        try {
+          open =
+            cu.style.display === "flex" || window.getComputedStyle(cu).display === "flex";
+        } catch {
+          open = cu.style.display === "flex";
+        }
+        document.body.classList.toggle("bb-theme-closeup-open", open);
+      };
+
+      let _dockMo = null;
+      const watchPopupForCloseUp = () => {
+        const popup = document.querySelector("#bbThemePopupMount .popup");
+        if (!popup || _dockMo) return;
+        const cu = popup.querySelector(".slider-close-up");
+        if (!cu) return;
+        _dockMo = new MutationObserver(syncCloseUpBodyClass);
+        _dockMo.observe(cu, { attributes: true, attributeFilter: ["style"] });
+        syncCloseUpBodyClass();
+      };
+
+      let docked = false;
+      /** Move popup into preview mount; initial open via window.bbOpenModalForBrandMark(seed). */
+      const tryDock = () => {
+        if (docked) return true;
+        const popup =
+          document.body.querySelector(":scope > .popup") || document.querySelector(".popup");
+        if (!popup || !mount) return false;
+        mount.appendChild(popup);
+        docked = true;
+        document.body.classList.add("bb-theme-dock-enabled");
+        attachPopupObservers(popup);
+        watchPopupForCloseUp();
+        return true;
+      };
+
+      window.setTimeout(() => {
+      let n = 0;
+      const iv = window.setInterval(() => {
+        n += 1;
+          if (!tryDock()) {
+            if (n > 250) window.clearInterval(iv);
+          return;
+        }
+          window.clearInterval(iv);
+          try {
+            if (typeof window.bbOpenModalForBrandMark !== "function") return;
+            if (isThemeMobilePreview()) {
+              const p = mount.querySelector(".popup");
+              if (p) {
+                p.classList.remove("popup-visible");
+                p.classList.remove("close-visible");
+                p.style.opacity = "0";
+                p.style.pointerEvents = "none";
+                try {
+                  window.clearTimeout(p.__bbCloseTimer);
+                } catch {}
+              }
+              syncPreviewChrome();
+              wireProductsMobilePreviewSimOpen();
+            } else {
+              window.bbOpenModalForBrandMark(seed);
+            }
+          } catch {}
+      }, 80);
+      }, isThemeMobilePreview() ? 0 : OPEN_DELAY_MS);
+    })();
+  </script>
+</body>
+</html>
+

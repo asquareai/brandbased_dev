@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Brand Assets — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link rel="icon" href="../favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="../favicons/manifest.webmanifest" />
+
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="stylesheet" href="../_shared/sync-popup.css?v=shared-3" />
+  <link rel="stylesheet" href="./logo-upload.css?v=logoupload-44" />
+
+  <script src="https://unpkg.com/konva@9/konva.min.js"></script>
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-logo-upload-page bb-brand-theme-settings">
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <div id="bbLogoUploadMount" class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="../start-now/Start-Now.html">Start Now</a>
+        <a href="./Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="../brands/Brands.html">Brands</a>
+        <a href="../Brand-Settings-Module.html">Brand Settings</a>
+        <a href="../Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="../products/Products.html">Products</a>
+        <a href="../Product-Scheduling-Module.html">Scheduling</a>
+        <a href="../platforms/Platforms.html">Platforms</a>
+        <a href="../hotspots/Hotspots.html">Hotspots</a>
+        <a href="../ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="../ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+        <a href="../metrics/Metrics.html">Metrics</a>
+        <a href="../payments/Payments.html">Payments</a>
+        <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <h1>Upload Brand Assets</h1>
+    </header>
+
+    <div class="bb-lu-layout" role="main" aria-label="Logo upload">
+      <!-- LEFT: form column ============================================== -->
+      <section class="bb-bs-card bb-lu-card bb-lu-form" aria-labelledby="bbLuFormTitle">
+        <h2 id="bbLuFormTitle" class="bb-lu-card-title">Your Brand</h2>
+
+        <!-- Brand name -->
+        <div class="bb-lu-row">
+          <label for="bbLuBrandName" class="bb-visually-hidden">Brand name</label>
+          <input
+            id="bbLuBrandName"
+            class="bb-lu-input"
+            type="text"
+            autocomplete="off"
+            placeholder="Brand name (we replace this with your logo)"
+          />
+          <button type="button" class="bb-lu-tip" aria-label="About brand name">
+            <img src="../tool-tip.svg" alt="" width="20" height="20" />
+          </button>
+        </div>
+
+        <!-- Brand URL -->
+        <div class="bb-lu-row">
+          <label for="bbLuBrandUrl" class="bb-visually-hidden">Global Brand URL</label>
+          <span class="bb-lu-input-wrap">
+            <input
+              id="bbLuBrandUrl"
+              class="bb-lu-input bb-lu-input--url"
+              type="url"
+              autocomplete="off"
+              placeholder="Global Brand URL"
+            />
+            <span class="bb-lu-input-globe" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"></path>
+              </svg>
+            </span>
+          </span>
+          <button type="button" class="bb-lu-tip" aria-label="About brand URL">
+            <img src="../tool-tip.svg" alt="" width="20" height="20" />
+          </button>
+        </div>
+
+
+        <p class="bb-lu-uploads-label">Upload your brand logo</p>
+
+        <!-- Two upload tiles: light + dark mode -->
+        <div class="bb-lu-uploads">
+          <!-- Light mode tile (uses the original IDs so vendor bb-smart-ui.js
+               auto-wires it to the Konva crop modal). -->
+          <div class="bb-upload-inline bb-lu-upload" aria-label="Upload light mode logo">
+            <button class="bb-upload-inline-btn" id="bbUploadBtn" type="button" aria-label="Upload light mode logo" title="Choose an SVG and open the cropper">
+              <span class="bb-upload-card bb-lu-tile bb-lu-tile--light" aria-hidden="true">
+                <span class="bb-upload-plus" aria-hidden="true"></span>
+                <span class="bb-lu-tile-format" aria-hidden="true">SVG or EPS format</span>
+              </span>
+              <span class="bb-upload-caption bb-lu-tile-caption">Light Mode Logo</span>
+            </button>
+            <input class="bb-upload-inline-input" id="bbUploadInput" type="file" accept=".svg,.eps,image/svg+xml,application/postscript" />
+            <span class="bb-upload-inline-status bb-visually-hidden" id="bbUploadStatus" aria-live="polite">Upload an SVG to crop.</span>
+          </div>
+
+          <!-- Dark mode tile — has its own file input so the picker
+               always opens cleanly, independent of the light tile. -->
+          <div class="bb-upload-inline bb-lu-upload" aria-label="Upload dark mode logo">
+            <button class="bb-upload-inline-btn" id="bbUploadBtnDark" type="button" aria-label="Upload dark mode logo" title="Choose an SVG, PNG or JPG for the dark-mode logo">
+              <span class="bb-upload-card bb-lu-tile bb-lu-tile--dark" aria-hidden="true">
+                <span class="bb-upload-plus" aria-hidden="true"></span>
+                <span class="bb-lu-tile-format" aria-hidden="true">SVG or EPS format</span>
+              </span>
+              <span class="bb-upload-caption bb-lu-tile-caption">Dark Mode Logo</span>
+            </button>
+            <input class="bb-upload-inline-input" id="bbUploadInputDark" type="file" accept=".svg,.eps,image/svg+xml,application/postscript,image/png,image/jpeg" />
+          </div>
+
+          <button type="button" class="bb-lu-tip bb-lu-tip--uploads" aria-label="About logo uploads">
+            <img src="../tool-tip.svg" alt="" width="20" height="20" />
+          </button>
+        </div>
+
+        <button type="button" class="bb-plat-sync-btn bb-hotspots-sync-btn bb-lu-continue" id="bbLuContinue">Sync</button>
+      </section>
+
+      <!-- RIGHT: verification column ===================================== -->
+      <section class="bb-bs-card bb-lu-card bb-lu-verify" aria-labelledby="bbLuVerifyTitle">
+        <h2 id="bbLuVerifyTitle" class="bb-lu-card-title">Brand Identity</h2>
+
+        <!-- Two preview panels: the uploaded light/dark logos drop in
+             here, replacing the BrandBased B reference. Each panel
+             carries the breathing + shimmer animations on its logo,
+             plus a verification badge in the top-right corner that
+             flips from "not verified" to a tick once the user uploads
+             a real logo for that mode. -->
+        <div class="bb-lu-previews">
+          <figure class="bb-lu-preview bb-lu-preview--light">
+            <div class="bb-lu-preview-stage" aria-hidden="true">
+              <img
+                class="bb-lu-preview-img"
+                id="bbLuPreviewLight"
+                src="../../Brandbased-B-Icon.svg"
+                alt=""
+                data-default-src="../../Brandbased-B-Icon.svg"
+              />
+            </div>
+            <figcaption class="bb-lu-preview-caption">Light Mode</figcaption>
+          </figure>
+
+          <figure class="bb-lu-preview bb-lu-preview--dark">
+            <div class="bb-lu-preview-stage" aria-hidden="true">
+              <img
+                class="bb-lu-preview-img"
+                id="bbLuPreviewDark"
+                src="../../Brandbased-B-Icon.svg"
+                alt=""
+                data-default-src="../../Brandbased-B-Icon.svg"
+              />
+            </div>
+            <figcaption class="bb-lu-preview-caption">Dark Mode</figcaption>
+          </figure>
+        </div>
+
+        <button type="button" class="bb-lu-tip bb-lu-tip--verify" aria-label="About verification">
+          <img src="../tool-tip.svg" alt="" width="20" height="20" />
+        </button>
+      </section>
+
+      <!-- FULL-WIDTH PURPLE CTA: hand-off to Brand Verification ============ -->
+      <aside class="bb-mv-cta" aria-labelledby="bbLuVerifyCtaTitle">
+        <div class="bb-mv-cta-text">
+          <h2 id="bbLuVerifyCtaTitle" class="bb-mv-cta-title">Let&rsquo;s Verify your identity</h2>
+          <p class="bb-mv-cta-help">BrandBased builds trusted brand experiences for consumers.</p>
+        </div>
+        <div class="bb-mv-cta-actions">
+          <a class="bb-mv-cta-btn" id="bbLuVerifyCtaBtn" href="./Meta-Verification.html">
+            Continue to Brand Verification
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Konva crop overlay — preserved from the original page so the
+       existing crop pipeline keeps working from this new bundle location. -->
+  <div class="bb-crop-overlay" role="dialog" aria-label="Custom crop">
+    <div class="bb-crop-modal">
+      <div class="bb-crop-header">
+        <p class="bb-crop-header-title">Brand Fit Setup</p>
+        <div class="bb-crop-header-trail">
+          <img class="bb-crop-header-b" src="../B-ICON-wallpaper-grey.svg" alt="" width="30" height="43" />
+          <button class="bb-crop-close" type="button">Close</button>
+        </div>
+      </div>
+      <div class="bb-crop-stage" id="bbCropStage"></div>
+      <div class="bb-crop-footer">
+        <div class="bb-crop-hint">
+          <div class="bb-crop-sliders-title">Crop sliders</div>
+          <div class="bb-crop-sliders">
+            <label>
+              Left
+              <input class="bb-crop-left" type="range" min="0" max="45" value="6" />
+            </label>
+            <label>
+              Right
+              <input class="bb-crop-right" type="range" min="0" max="45" value="6" />
+            </label>
+            <label>
+              Top
+              <input class="bb-crop-top" type="range" min="0" max="45" value="10" />
+            </label>
+            <label>
+              Bottom
+              <input class="bb-crop-bottom" type="range" min="0" max="45" value="10" />
+            </label>
+            <label class="bb-crop-scale-label">
+              Logo size
+              <input class="bb-crop-scale" type="range" min="50" max="200" value="100" step="1" title="Scale the logo on the stage (pan still works)" />
+            </label>
+          </div>
+        </div>
+        <div class="bb-crop-actions">
+          <button class="bb-crop-reset" type="button">Reset</button>
+          <button class="bb-crop-save" type="button">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../bb-smart-ui.js?v=20260503-brand-theme-gallery-portal"></script>
+  <script src="../_shared/sync-popup.js?v=shared-2"></script>
+  <script src="./logo-upload-page.js?v=logoupload-14"></script>
+</body>
+</html>

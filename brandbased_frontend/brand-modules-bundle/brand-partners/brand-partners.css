@@ -1,0 +1,384 @@
+/* Brand Partners admin — extends platforms.css row layout */
+body.bb-platforms-page.bb-brand-partners-admin.bb-platforms-page--admin-solo {
+  --bb-plat-admin-solo-max: 1180px;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-signals {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: 600 10px/1.25 Inter, system-ui, sans-serif;
+  color: var(--bb-plat-dash-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px 0;
+}
+
+/* ---- Credit slider: flowing light + value-driven fill (see --bb-bp-fill from JS) -- */
+@keyframes bb-bp-track-flow {
+  0% {
+    background-position: 18% 50%, 0 0, 0 0;
+  }
+  100% {
+    background-position: 82% 50%, 0 0, 0 0;
+  }
+}
+
+@keyframes bb-bp-track-flow-fast {
+  0% {
+    background-position: 10% 50%, 0 0, 0 0;
+  }
+  100% {
+    background-position: 90% 50%, 0 0, 0 0;
+  }
+}
+
+@keyframes bb-bp-thumb-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(180, 175, 255, 0.35),
+      0 2px 10px rgba(99, 91, 255, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px rgba(180, 175, 255, 0.12),
+      0 0 22px rgba(199, 210, 255, 0.75),
+      0 2px 12px rgba(99, 91, 255, 0.55);
+  }
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider {
+  --bb-bp-fill: 50%;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  border-radius: 999px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  border: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 2px rgba(0, 0, 0, 0.2),
+    0 0 14px rgba(99, 91, 255, 0.12);
+  -webkit-filter: blur(0.45px);
+  filter: blur(0.45px);
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0) 46%,
+      rgba(255, 255, 255, 0.02) 48%,
+      rgba(255, 255, 255, 0.06) 49%,
+      rgba(255, 255, 255, 0.11) 49.6%,
+      rgba(255, 255, 255, 0.13) 50%,
+      rgba(255, 255, 255, 0.11) 50.4%,
+      rgba(255, 255, 255, 0.06) 51%,
+      rgba(255, 255, 255, 0.02) 52%,
+      rgba(255, 255, 255, 0) 54%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 155% 420% at var(--bb-bp-fill) 50%,
+      rgba(210, 206, 255, 0.26) 0%,
+      rgba(165, 155, 242, 0.1) 38%,
+      transparent 64%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(34, 28, 78, 0.9) 0%,
+      rgba(52, 44, 118, 0.76) 18%,
+      rgba(70, 60, 158, 0.7) 45%,
+      rgba(58, 50, 138, 0.72) 62%,
+      rgba(48, 40, 110, 0.78) 100%
+    );
+  background-size: 720% 100%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0% 50%, 0 0, 0 0;
+  animation: bb-bp-track-flow 2.8s ease-in-out infinite;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider.bb-brand-partner-slider--dragging::-webkit-slider-runnable-track {
+  animation: bb-bp-track-flow-fast 1.05s linear infinite;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 1px 2px rgba(0, 0, 0, 0.12),
+    0 0 18px rgba(165, 155, 255, 0.35),
+    0 0 28px rgba(99, 91, 255, 0.28);
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 28%,
+    #f5f3ff 0%,
+    #c4b5fd 38%,
+    #635bff 72%,
+    #4338ca 100%
+  );
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 0 0 0 rgba(180, 175, 255, 0.35),
+    0 2px 10px rgba(99, 91, 255, 0.45);
+  animation: bb-bp-thumb-pulse 1.8s ease-in-out infinite;
+  transition: transform 0.15s ease;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider.bb-brand-partner-slider--dragging::-webkit-slider-thumb {
+  transform: scale(1.06);
+  animation: bb-bp-thumb-pulse 0.85s ease-in-out infinite;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  border: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 2px rgba(0, 0, 0, 0.2),
+    0 0 14px rgba(99, 91, 255, 0.12);
+  -webkit-filter: blur(0.45px);
+  filter: blur(0.45px);
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0) 46%,
+      rgba(255, 255, 255, 0.02) 48%,
+      rgba(255, 255, 255, 0.06) 49%,
+      rgba(255, 255, 255, 0.11) 49.6%,
+      rgba(255, 255, 255, 0.13) 50%,
+      rgba(255, 255, 255, 0.11) 50.4%,
+      rgba(255, 255, 255, 0.06) 51%,
+      rgba(255, 255, 255, 0.02) 52%,
+      rgba(255, 255, 255, 0) 54%,
+      rgba(255, 255, 255, 0) 100%
+    ),
+    radial-gradient(
+      ellipse 155% 420% at var(--bb-bp-fill) 50%,
+      rgba(210, 206, 255, 0.26) 0%,
+      rgba(165, 155, 242, 0.1) 38%,
+      transparent 64%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(34, 28, 78, 0.9) 0%,
+      rgba(52, 44, 118, 0.76) 18%,
+      rgba(70, 60, 158, 0.7) 45%,
+      rgba(58, 50, 138, 0.72) 62%,
+      rgba(48, 40, 110, 0.78) 100%
+    );
+  background-size: 720% 100%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0% 50%, 0 0, 0 0;
+  animation: bb-bp-track-flow 2.8s ease-in-out infinite;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider.bb-brand-partner-slider--dragging::-moz-range-track {
+  animation: bb-bp-track-flow-fast 1.05s linear infinite;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 1px 2px rgba(0, 0, 0, 0.12),
+    0 0 18px rgba(165, 155, 255, 0.35),
+    0 0 28px rgba(99, 91, 255, 0.28);
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 28%,
+    #f5f3ff 0%,
+    #c4b5fd 38%,
+    #635bff 72%,
+    #4338ca 100%
+  );
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 0 0 0 rgba(180, 175, 255, 0.35),
+    0 2px 10px rgba(99, 91, 255, 0.45);
+  animation: bb-bp-thumb-pulse 1.8s ease-in-out infinite;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider.bb-brand-partner-slider--dragging::-moz-range-thumb {
+  transform: scale(1.06);
+  animation: bb-bp-thumb-pulse 0.85s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-webkit-slider-runnable-track,
+  body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-moz-range-track {
+    animation: none;
+    -webkit-filter: none;
+    filter: none;
+  }
+  body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-webkit-slider-thumb,
+  body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider::-moz-range-thumb {
+    animation: none;
+  }
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row--signals-locked .bb-brand-partner-slider {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row--signals-locked .bb-brand-partner-slider::-webkit-slider-runnable-track,
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row--signals-locked .bb-brand-partner-slider::-moz-range-track {
+  animation: none;
+  box-shadow: none;
+  -webkit-filter: none;
+  filter: none;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row--signals-locked .bb-brand-partner-slider::-webkit-slider-thumb,
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row--signals-locked .bb-brand-partner-slider::-moz-range-thumb {
+  animation: none;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-readout {
+  margin: 0;
+  font: 600 12px/1.3 Inter, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text) !important;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row--signals-locked .bb-brand-partner-readout {
+  color: var(--bb-plat-dash-muted) !important;
+}
+
+/* Elevated only (row not --off). Intensity 0–1 from JS: --bb-bp-pulse-t on the row (inherited by logo). */
+@keyframes bb-bp-logo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: scale(calc(1 + var(--bb-bp-pulse-t, 0) * 0.09));
+    filter: brightness(calc(1 + var(--bb-bp-pulse-t, 0) * 0.08))
+      drop-shadow(
+        0 0 calc(2px + var(--bb-bp-pulse-t, 0) * 11px) rgba(99, 91, 255, calc(0.1 + var(--bb-bp-pulse-t, 0) * 0.38))
+      );
+  }
+}
+
+/* Dark surfaces: brighter halo + inner violet so the pulse reads on navy panels */
+@keyframes bb-bp-logo-breathe-dk {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 0 transparent) drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    transform: scale(calc(1 + var(--bb-bp-pulse-t, 0) * 0.1));
+    filter: brightness(calc(1 + var(--bb-bp-pulse-t, 0) * 0.14))
+      drop-shadow(
+        0 0 calc(2px + var(--bb-bp-pulse-t, 0) * 7px) rgba(255, 255, 255, calc(0.16 + var(--bb-bp-pulse-t, 0) * 0.38))
+      )
+      drop-shadow(
+        0 0 calc(4px + var(--bb-bp-pulse-t, 0) * 17px) rgba(167, 160, 255, calc(0.32 + var(--bb-bp-pulse-t, 0) * 0.38))
+      )
+      drop-shadow(
+        0 0 calc(2px + var(--bb-bp-pulse-t, 0) * 10px) rgba(99, 91, 255, calc(0.38 + var(--bb-bp-pulse-t, 0) * 0.32))
+      );
+  }
+}
+
+body.bb-platforms-page.bb-brand-partners-admin
+  .bb-brand-partner-row:not(.bb-plat-platform-row--off) {
+  --bb-bp-pulse-t: 0;
+}
+
+body.bb-platforms-page.bb-brand-partners-admin
+  .bb-brand-partner-row:not(.bb-plat-platform-row--off)
+  .bb-plat-platform-logo {
+  transform-origin: 50% 50%;
+  animation-name: bb-bp-logo-breathe;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-duration: calc(2.85s - var(--bb-bp-pulse-t, 0) * 1.35s);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-platforms-page.bb-brand-theme-settings.bb-brand-partners-admin:not(.dark-mode)
+    .bb-brand-partner-row:not(.bb-plat-platform-row--off)
+    .bb-plat-platform-logo {
+    animation-name: bb-bp-logo-breathe-dk;
+  }
+}
+
+body.dark-mode.bb-platforms-page.bb-brand-theme-settings.bb-brand-partners-admin
+  .bb-brand-partner-row:not(.bb-plat-platform-row--off)
+  .bb-plat-platform-logo {
+  animation-name: bb-bp-logo-breathe-dk;
+}
+
+/* iframe admin: parent dashboard theme (fixes OS-light + dark host missing the pulse). */
+html.bb-embedded.bb-embed-host-dark
+  body.bb-platforms-page.bb-brand-theme-settings.bb-brand-partners-admin
+  .bb-brand-partner-row:not(.bb-plat-platform-row--off)
+  .bb-plat-platform-logo {
+  animation-name: bb-bp-logo-breathe-dk;
+}
+
+html.bb-embedded.bb-embed-host-light
+  body.bb-platforms-page.bb-brand-theme-settings.bb-brand-partners-admin
+  .bb-brand-partner-row:not(.bb-plat-platform-row--off)
+  .bb-plat-platform-logo {
+  animation-name: bb-bp-logo-breathe;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-row .bb-plat-platform-logo {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body.bb-platforms-page.bb-brand-partners-admin .bb-brand-partner-slider-labels {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}

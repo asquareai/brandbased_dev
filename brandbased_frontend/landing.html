@@ -1,0 +1,591 @@
+<script>
+    const token = localStorage.getItem("auth_token");
+
+    if (!token) {
+        window.location.href = "index.html";
+    }
+</script>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>brandbased</title>
+
+  <meta name="description" content="brandbased — the biggest evolution in brand and brand-commerce since brands were invented">
+  <meta name="keywords" content="brand based">
+  <meta name="author" content="brandbased">
+  <meta name="robots" content="index, follow">
+
+  <!-- Favicons -->
+  <link rel="icon" href="./assets/favicons/favicon.ico" sizes="any">
+  <link rel="icon" href="./assets/favicons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./assets/favicons/apple-touch-icon.png">
+  <link rel="manifest" href="./assets/favicons/manifest.webmanifest">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./assets/css/main-styles.css">
+  <link rel="stylesheet" href="./assets/css/animate.css">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+    rel="stylesheet">
+
+  <!-- JS -->
+  <script src="./assets/js/app-config.js"></script>
+  <script src="./assets/js/jquery-3.7.1.min.js"></script>
+  <script src="./assets/js/main-js.js"></script>
+</head>
+
+<body>
+
+  <!-- Screen 0 Splash Screen -->
+  <div class="screen-splash" id="screen0">
+    <div class="logo animate__animated animate__zoomIn">
+      <img src="./assets/images/splash-logo-white1.svg" width="100%" height="100%" alt="Brandbased Logo">
+    </div>
+  </div>
+
+  <!-- App Interface -->
+  <div class="app-interface">
+
+    <!-- Screen 1 -->
+    <div class="screen visible" id="screen1">
+      <div class="blue-theme animate__animated animate__fadeInUp"></div>
+
+      <div class="video-background">
+        <video src="./assets/videos/space.mp4" autoplay muted loop playsinline></video>
+      </div>
+
+      <div class="header animate__animated animate__slideInDown">
+        <img src="./assets/images/splash-logo-white1.svg" width="100%" height="100%" alt="Brandbased Logo">
+      </div>
+
+      <div class="text animate__animated animate__fadeInUp" id="slogan">
+        <span class="shine-text">
+          Come join a <span style="font-style: italic; font-weight: 900;">brand</span> new movement.
+        </span>
+      </div>
+
+      <!-- Start Signup Form -->
+      <div id="join-form" style="display:none">
+        <div id="screen-1-inputs-signup" class="animate__animated animate__slideInUp animate__faster">
+          <div class="join-text animate__animated animate__flipInX">
+            <h2>Sign Up</h2>
+          </div>
+
+          <div class="logo-form animate__animated animate__bounceIn animate__delay-1s">
+            <img src="./assets/images/b-white.svg" width="100%" height="100%" alt="Brand Icon">
+          </div>
+
+          <div class="close-join-form" onclick="ClosenJoinForm()">✕</div>
+
+          <form method="POST">
+            <div class="form-group">
+              <input type="text" name="brand" placeholder="Brand Name" required>
+              <input type="email" name="email" placeholder="Email" required>
+              <button type="submit" id="submit-button" onclick="ShowOTPPopup()">Continue</button>
+            </div>
+          </form>
+
+          <p style="font-weight: 500;">
+            Already have an account?
+            <span id="popup-link" onclick="SwapToLoginForm()"> Log In</span>
+          </p>
+
+          <p id="terms">
+            By signing up, you're cool with our <a href="#"> Terms</a> and how we use your data.
+          </p>
+        </div>
+      </div>
+      <!-- End Signup Form -->
+
+      <!-- Start Login Form -->
+      <div id="login-form" style="display:none">
+        <div id="screen-1-inputs-login" class="animate__animated animate__slideInUp animate__faster">
+          <div class="join-text animate__animated animate__flipInX">
+            <h2>Authenticate</h2>
+          </div>
+
+          <div class="logo-form animate__animated animate__bounceIn animate__delay-1s">
+            <img src="./assets/images/b-white.svg" width="100%" height="100%" alt="Brand Icon">
+          </div>
+
+          <div class="close-join-form" onclick="CloseLoginForm()">✕</div>
+
+          <div id="pin-login-section">
+
+            <div id="hide-popup-link">
+              <p style="font-weight: 500;">Enter Your PIN to Continue</p>
+            </div>
+
+            <div id="login">
+
+            <form>
+              <div class="form-group">
+
+                <div class="password-wrapper" style="position: relative;">
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter Your 6-Digit PIN"
+                    required
+                    inputmode="numeric"
+                    pattern="\d{6}"
+                    maxlength="6"
+                    autocomplete="current-password"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                  >
+
+                  <span class="toggle-password">
+                    <img src="./assets/images/eye-password-icon-open.svg" class="eye-icon eye-default" alt="Show Password">
+                    <img src="./assets/images/eye-password-icon.svg" class="eye-icon eye-show hidden" alt="Hide Password">
+                  </span>
+                </div>
+
+                <div id="pin-error" class="pin-error-toast">
+                  <span id="pin-error-text"></span>
+                  <span class="pin-error-close" onclick="closePinError()">✕</span>
+                </div>
+
+                <button type="button" id="submit-button" onclick="verifyPinAndOpenConsole()">Continue</button>
+
+                <p style="font-weight: 500;">
+                  Can't remember your PIN?
+                  <span id="popup-link" onclick="showResetPinStep()"> Reset Your PIN</span>
+                </p>
+
+              </div>
+            </form>
+
+          </div>
+          </div>
+          <div id="reset-pin-flow" style="display:none;">
+            <div class="form-group">
+
+              <p style="text-align:center; font-weight: 500;">Reset your PIN</p>
+
+              <!-- Step 1 -->
+              <div id="reset-email-step">
+                <input type="email" id="reset-email" placeholder="Enter your email">
+                <button type="button" id="submit-button" onclick="sendResetOtp()">Send OTP</button>
+              </div>
+
+              <!-- Step 2 -->
+              <div id="reset-otp-step" style="display:none;">
+                <input type="text" id="reset-otp" placeholder="Enter OTP" maxlength="6" inputmode="numeric">
+                <button type="button" id="submit-button" onclick="verifyResetOtp()">Verify OTP</button>
+              </div>
+
+              <!-- Step 3 -->
+              <div id="reset-new-pin-step" style="display:none;">
+                <input type="password" id="new-pin" placeholder="New 6-Digit PIN" maxlength="6" inputmode="numeric">
+                <input type="password" id="confirm-new-pin" placeholder="Confirm 6-Digit PIN" maxlength="6" inputmode="numeric">
+                <button type="button" id="submit-button" onclick="updateNewPin()">Update PIN</button>
+              </div>
+
+              <p style="font-weight: 500; text-align:center; margin-top: 10px;">
+                Remembered your PIN?
+                <span id="popup-link" onclick="showPinLoginStep()"> Back to PIN Login</span>
+              </p>
+
+            </div>
+          </div>
+
+          <div class="get-app" style="display: none;">
+            <div class="app-icons">
+              <div class="app-icon apple-app">
+                <img src="./assets/images/apple-app.svg" alt="Apple App Store">
+              </div>
+              <div class="app-icon google-play-app">
+                <img src="./assets/images/android-app.svg" alt="Google Play Store">
+              </div>
+            </div>
+            <p id="app-store-heading">Find us in your favorite app stores</p>
+          </div>
+
+        </div>
+      </div>
+      <!-- End Login Form -->
+
+      <!-- Buttons -->
+      <div class="button-holder animate__animated animate__fadeInUp animate__delay-1s" style="z-index: -1;">
+        <div class="login-button" onclick="launchBrandConsole()">Launch Brand Console</div>
+        <div class="join-button">Upgrade to Premium</div>
+      </div>
+
+      <p class="fade-in-delay" id="footer-tag" style="color: rgba(255, 255, 255, 0.541); font-size: 10px;margin-bottom: 0;"></p>
+    </div>
+  </div>
+
+  <!-- Show eye on password input -->
+  <script>
+    document.querySelectorAll('.password-wrapper').forEach(wrapper => {
+      const input = wrapper.querySelector('input');
+      const toggleContainer = wrapper.querySelector('.toggle-password');
+      const eyeDefault = wrapper.querySelector('.eye-default');
+      const eyeShow = wrapper.querySelector('.eye-show');
+
+      toggleContainer.addEventListener('click', () => {
+        const isHidden = input.type === 'password';
+
+        input.type = isHidden ? 'text' : 'password';
+
+        eyeDefault.style.display = isHidden ? 'none' : 'inline';
+        eyeShow.style.display = isHidden ? 'inline' : 'none';
+      });
+    });
+  </script>
+
+  <!-- Light shine logo icon -->
+  <script>
+    const whiteIcon = document.getElementById('white-icon');
+
+    function triggerDoubleShine() {
+      if (!whiteIcon) return;
+      whiteIcon.classList.remove('shine-double');
+      void whiteIcon.offsetWidth;
+      whiteIcon.classList.add('shine-double');
+    }
+
+    triggerDoubleShine();
+    setInterval(triggerDoubleShine, 30000);
+  </script>
+
+  <!-- Theme script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const checkbox = document.getElementById("theme-switch");
+      const label = document.getElementById("theme-label");
+
+      if (!checkbox || !label) return;
+
+      const STORAGE_KEY = "theme";
+      const DARK_CLASS = "light-mode";
+
+      function applyTheme(isLight) {
+        document.body.classList.toggle(DARK_CLASS, isLight);
+      }
+
+      function getDesiredTheme() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (saved === "light") return true;
+        if (saved === "dark") return false;
+
+        return !window.matchMedia("(prefers-color-scheme: dark)").matches;
+      }
+
+      function updateUI() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (saved === "light") {
+          checkbox.checked = true;
+          label.textContent = "Theme Light";
+        } else if (saved === "dark") {
+          checkbox.checked = false;
+          label.textContent = "Theme Dark";
+        } else {
+          const isSystemLight = !window.matchMedia("(prefers-color-scheme: dark)").matches;
+          checkbox.checked = isSystemLight;
+          label.textContent = "Theme: System";
+        }
+      }
+
+      checkbox.addEventListener("change", () => {
+        const wantsLight = checkbox.checked;
+
+        if (wantsLight) {
+          localStorage.setItem(STORAGE_KEY, "light");
+        } else {
+          localStorage.setItem(STORAGE_KEY, "dark");
+        }
+
+        applyTheme(wantsLight);
+        updateUI();
+      });
+
+      const media = window.matchMedia("(prefers-color-scheme: dark)");
+      media.addEventListener("change", (e) => {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          const isLightNow = !e.matches;
+          applyTheme(isLightNow);
+          updateUI();
+        }
+      });
+
+      const shouldBeLight = getDesiredTheme();
+      applyTheme(shouldBeLight);
+      updateUI();
+    });
+  </script>
+
+<script>
+  const API_BASE_URL = BB_APP.apiBaseUrl;
+  const ROUTES = BB_APP.routes;
+
+  async function launchBrandConsole() {
+    const token = localStorage.getItem("auth_token");
+
+    if (!token) {
+      window.location.href = ROUTES.login;
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        }
+      });
+
+      const data = await res.json();
+
+      if (!data.status) {
+        localStorage.clear();
+        window.location.href = ROUTES.login;
+        return;
+      }
+
+      if (data.account.has_pin) {
+        OpenLoginForm();
+      } else {
+        window.location.href = ROUTES.console;
+      }
+
+    } catch (error) {
+      console.error(error);
+      alert("Unable to verify account. Please try again.");
+    }
+  }
+
+  async function verifyPinAndOpenConsole() {
+  const token = localStorage.getItem("auth_token");
+  const pinInput = document.querySelector('#login-form input[name="password"]');
+  const pin = pinInput?.value.trim();
+  const errorBox = document.getElementById("pin-error");
+
+  function showPinError(message) {
+    const box = document.getElementById("pin-error");
+    const text = document.getElementById("pin-error-text");
+
+    if (!box || !text) return;
+
+    text.textContent = message;
+    box.classList.add("show");
+
+    // auto hide after 3 sec
+    setTimeout(() => {
+      box.classList.remove("show");
+    }, 3000);
+  }
+
+  function closePinError() {
+    const box = document.getElementById("pin-error");
+    if (box) box.classList.remove("show");
+  }
+
+
+
+  if (!pin) {
+    showPinError("Please enter your PIN.");
+    return;
+  }
+
+  if (!/^\d{6}$/.test(pin)) {
+    showPinError("PIN must be 6 digits.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/verify-pin`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ pin_code: pin })
+    });
+
+    const data = await res.json();
+
+    if (!data.status) {
+      showPinError(data.message || "Invalid PIN.");
+      return;
+    }
+
+    window.location.href = ROUTES.console;
+
+  } catch (error) {
+    console.error(error);
+    showPinError("Unable to verify PIN. Please try again.");
+  }
+}
+
+function showResetPinStep() {
+  document.getElementById("pin-login-section").style.display = "none";
+  document.getElementById("reset-pin-flow").style.display = "block";
+
+  showResetStep("email");
+
+  const account = JSON.parse(localStorage.getItem("account") || "{}");
+
+  if (account.email) {
+    document.getElementById("reset-email").value = account.email;
+  }
+}
+
+function showPinLoginStep() {
+  document.getElementById("reset-pin-flow").style.display = "none";
+  document.getElementById("pin-login-section").style.display = "block";
+
+  showResetStep("email");
+}
+
+function showResetStep(step) {
+  document.getElementById("reset-email-step").style.display = "none";
+  document.getElementById("reset-otp-step").style.display = "none";
+  document.getElementById("reset-new-pin-step").style.display = "none";
+
+  if (step === "email") {
+    document.getElementById("reset-email-step").style.display = "block";
+  }
+
+  if (step === "otp") {
+    document.getElementById("reset-otp-step").style.display = "block";
+  }
+
+  if (step === "pin") {
+    document.getElementById("reset-new-pin-step").style.display = "block";
+  }
+}
+
+async function sendResetOtp() {
+  const email = document.getElementById("reset-email").value.trim();
+
+  if (!email) {
+    showPinError("Enter email");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/reset-pin/send-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+
+    if (!data.status) {
+      showPinError(data.message || "Unable to send OTP.");
+      return;
+    }
+
+    console.log("Reset PIN OTP:", data.otp);
+
+    showResetStep("otp");
+
+  } catch (error) {
+    console.error(error);
+    showPinError("Server error. Please try again.");
+  }
+}
+
+async function verifyResetOtp() {
+  const email = document.getElementById("reset-email").value.trim();
+  const otp = document.getElementById("reset-otp").value.trim();
+
+  if (!otp) {
+    showPinError("Enter OTP");
+    return;
+  }
+
+  if (!/^\d{6}$/.test(otp)) {
+    showPinError("OTP must be 6 digits.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/reset-pin/verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ email, otp })
+    });
+
+    const data = await res.json();
+
+    if (!data.status) {
+      showPinError(data.message || "Invalid OTP.");
+      return;
+    }
+
+    showResetStep("pin");
+
+  } catch (error) {
+    console.error(error);
+    showPinError("Server error. Please try again.");
+  }
+}
+
+async function updateNewPin() {
+  const email = document.getElementById("reset-email").value.trim();
+  const pin = document.getElementById("new-pin").value.trim();
+  const confirm = document.getElementById("confirm-new-pin").value.trim();
+
+  if (!pin || !confirm) {
+    showPinError("Enter PIN and confirm PIN.");
+    return;
+  }
+
+  if (!/^\d{6}$/.test(pin)) {
+    showPinError("PIN must be 6 digits.");
+    return;
+  }
+
+  if (pin !== confirm) {
+    showPinError("PIN mismatch.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/auth/reset-pin/update`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify({ email, pin_code: pin })
+    });
+
+    const data = await res.json();
+
+    if (!data.status) {
+      showPinError(data.message || "Unable to update PIN.");
+      return;
+    }
+
+    showPinLoginStep();
+    showPinError("PIN updated successfully. Please login with new PIN.");
+
+  } catch (error) {
+    console.error(error);
+    showPinError("Server error. Please try again.");
+  }
+}
+
+</script>
+</body>
+</html>

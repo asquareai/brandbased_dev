@@ -1,0 +1,35 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.cursor/
+*.log
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# PHP / Laravel (brandbased-api)
+brandbased-api/vendor/
+brandbased-api/node_modules/
+brandbased-api/public/build/
+brandbased-api/public/hot/
+brandbased-api/public/storage/
+brandbased-api/storage/*.key
+brandbased-api/storage/pail/
+brandbased-api/.phpunit.cache/
+brandbased-api/.phpunit.result.cache/
+brandbased-api/auth.json
+
+# Python (brandbased_py_processor)
+brandbased_py_processor/venv/
+brandbased_py_processor/__pycache__/
+brandbased_py_processor/**/__pycache__/
+brandbased_py_processor/.pytest_cache/
+brandbased_py_processor/temp/
+
+# Python local env in frontend bundle (client smart-size server)
+brandbased_frontend/**/.venv/
+brandbased_frontend/**/__pycache__/

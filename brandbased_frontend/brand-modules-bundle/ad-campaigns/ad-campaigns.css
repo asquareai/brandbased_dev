@@ -1,0 +1,570 @@
+/* Ad Campaigns page — overrides on top of platforms.css + hotspots.css.
+   Body class includes `bb-platforms-page bb-hotspots-page` so panel chrome inherits. */
+
+/* Allow vertical page scroll when stacked panels are taller than the viewport. */
+html:has(body.bb-ad-campaigns-page),
+body.bb-ad-campaigns-page {
+  height: auto !important;
+  min-height: 100%;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+}
+
+body.bb-ad-campaigns-page .bb-theme-shell,
+body.bb-ad-campaigns-page .bb-bts-layout.bb-hotspots-dash-layout,
+body.bb-ad-campaigns-page .bb-hotspots-center {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body.bb-ad-campaigns-page .bb-theme-shell {
+  width: min(1320px, 100%);
+  max-width: 100%;
+}
+
+body.bb-ad-campaigns-page .bb-hotspots-center {
+  width: 100%;
+  max-width: min(1109px, 96vw);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Shared content width for header + every panel. */
+body.bb-ad-campaigns-page .bb-module-head,
+body.bb-ad-campaigns-page .bb-module-head h1,
+body.bb-ad-campaigns-page .bb-plat-dash-panel.bb-adc-panel,
+body.bb-ad-campaigns-page .bb-adc-connect-cta {
+  width: 100%;
+  max-width: min(1109px, 96vw);
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center;
+  box-sizing: border-box;
+}
+
+body.bb-ad-campaigns-page .bb-module-head h1 {
+  text-align: left;
+  margin: 0 0 15px 0;
+}
+
+/* Panel base. */
+body.bb-ad-campaigns-page .bb-plat-dash-panel.bb-adc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: clamp(20px, 3vw, 32px);
+  min-height: 0 !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* ========== Intro: paired pulsing chips (BrandBased × Google AdSense) ========== */
+body.bb-ad-campaigns-page .bb-adc-icons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+body.bb-ad-campaigns-page .bb-adc-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: #ffffff;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  animation: bb-adc-icon-pulse 1.6s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, box-shadow;
+}
+
+body.bb-ad-campaigns-page .bb-adc-icon--logo {
+  padding: 6px;
+}
+body.bb-ad-campaigns-page .bb-adc-icon--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+body.bb-ad-campaigns-page .bb-adc-icon--google {
+  animation-delay: -0.4s;
+  padding: 8px;
+}
+body.bb-ad-campaigns-page .bb-adc-icon--google svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+body.bb-ad-campaigns-page .bb-adc-icon-x {
+  font: 700 22px/1 Roboto, system-ui, sans-serif;
+  color: rgba(15, 15, 18, 0.45);
+}
+
+@keyframes bb-adc-icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      0 0 0 0 rgba(99, 91, 255, 0.45);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 18px 4px rgba(99, 91, 255, 0.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-ad-campaigns-page .bb-adc-icon {
+    animation-duration: 3s;
+  }
+}
+
+/* ========== Top row: Intro + Ad Preview side-by-side on desktop ========== */
+body.bb-ad-campaigns-page .bb-adc-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  width: 100%;
+  max-width: min(1109px, 96vw);
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center;
+  box-sizing: border-box;
+}
+
+body.bb-ad-campaigns-page .bb-adc-top-row > .bb-adc-panel {
+  /* Each panel inside the row should fill its half-column, not the page-wide max. */
+  max-width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 880px) {
+  body.bb-ad-campaigns-page .bb-adc-top-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== Ad Preview block ========== */
+body.bb-ad-campaigns-page .bb-adc-preview {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+body.bb-ad-campaigns-page .bb-adc-preview-frame {
+  position: relative;
+  width: 100%;
+  max-width: 728px;
+  aspect-ratio: 728 / 90;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0a0a0e;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.22),
+    0 2px 6px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+body.bb-ad-campaigns-page .bb-adc-preview-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #0a0a0e;
+}
+
+body.bb-ad-campaigns-page .bb-adc-preview-pill {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  font: 800 10px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: rgba(15, 15, 18, 0.78);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+body.bb-ad-campaigns-page .bb-adc-preview-caption {
+  margin: 2px 0 0;
+  width: 100%;
+  max-width: 728px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font: 600 12px/1.4 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text);
+}
+
+body.bb-ad-campaigns-page .bb-adc-preview-by {
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+@media (max-width: 600px) {
+  body.bb-ad-campaigns-page .bb-adc-preview-caption {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* ========== Where Your Ads Appear: 2-up grid ========== */
+body.bb-ad-campaigns-page .bb-adc-where-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 4px;
+}
+
+@media (max-width: 720px) {
+  body.bb-ad-campaigns-page .bb-adc-where-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.bb-ad-campaigns-page .bb-adc-where-card {
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  border-radius: 14px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+body.bb-ad-campaigns-page .bb-adc-where-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.bb-ad-campaigns-page .bb-adc-where-card-head h3 {
+  margin: 0;
+  font: 800 15px/1.2 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text);
+  flex: 1 1 auto;
+}
+
+body.bb-ad-campaigns-page .bb-adc-where-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(99, 91, 255, 0.12);
+  color: #635bff;
+  flex: 0 0 auto;
+}
+
+body.bb-ad-campaigns-page .bb-adc-where-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+body.bb-ad-campaigns-page .bb-adc-where-pill {
+  font: 800 11px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e6fff1;
+  color: #0c7a3a;
+  border: 1px solid rgba(12, 122, 58, 0.2);
+}
+
+body.bb-ad-campaigns-page .bb-adc-where-card p {
+  margin: 0;
+  font: 400 13px/1.55 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text);
+}
+
+/* iOS-style toggle (in the opt-in card). */
+body.bb-ad-campaigns-page .bb-adc-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 26px;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+body.bb-ad-campaigns-page .bb-adc-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+body.bb-ad-campaigns-page .bb-adc-toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(15, 15, 18, 0.18);
+  transition: background 0.18s ease;
+}
+
+body.bb-ad-campaigns-page .bb-adc-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.18s ease;
+}
+
+body.bb-ad-campaigns-page .bb-adc-toggle input:checked + .bb-adc-toggle-track {
+  background: #635bff;
+}
+
+body.bb-ad-campaigns-page .bb-adc-toggle input:checked + .bb-adc-toggle-track .bb-adc-toggle-thumb {
+  transform: translateX(18px);
+}
+
+body.bb-ad-campaigns-page .bb-adc-toggle input:focus-visible + .bb-adc-toggle-track {
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.35);
+}
+
+/* ========== Setup steps ========== */
+body.bb-ad-campaigns-page .bb-adc-steps {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body.bb-ad-campaigns-page .bb-adc-steps li {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+body.bb-ad-campaigns-page .bb-adc-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #635bff;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+}
+
+body.bb-ad-campaigns-page .bb-adc-steps h4 {
+  margin: 0 0 4px;
+  font: 800 14px/1.25 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text);
+}
+
+body.bb-ad-campaigns-page .bb-adc-steps p {
+  margin: 0;
+  font: 400 13px/1.55 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text);
+}
+
+body.bb-ad-campaigns-page .bb-adc-steps a {
+  color: #635bff;
+  text-decoration: underline;
+}
+
+/* Content compliance note. */
+body.bb-ad-campaigns-page .bb-adc-policy-note {
+  margin-top: 6px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: rgba(255, 196, 0, 0.08);
+  border: 1px solid rgba(255, 159, 0, 0.25);
+  border-left: 4px solid #ff9f00;
+  border-radius: 10px;
+}
+
+body.bb-ad-campaigns-page .bb-adc-policy-icon {
+  font: 700 18px/1 system-ui;
+  color: #b35900;
+  flex: 0 0 auto;
+}
+
+body.bb-ad-campaigns-page .bb-adc-policy-note p {
+  margin: 0;
+  font: 400 13px/1.5 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text);
+}
+
+body.bb-ad-campaigns-page .bb-adc-policy-note strong {
+  font-weight: 800;
+}
+
+/* ========== Connect AdSense purple CTA ========== */
+body.bb-ad-campaigns-page .bb-adc-connect-cta {
+  padding: 18px;
+  border-radius: 12px;
+}
+
+body.bb-ad-campaigns-page .bb-adc-connect-cta h2 {
+  margin: 0 0 8px;
+  font: 900 16px/1.15 Roboto, system-ui, sans-serif;
+  color: #fff;
+}
+
+body.bb-ad-campaigns-page .bb-adc-connect-cta .bb-bts-help {
+  margin: 0 0 6px;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: #fff !important;
+}
+
+body.bb-ad-campaigns-page .bb-adc-connect-cta .bb-bts-cta-actions {
+  margin-top: 14px;
+  justify-content: flex-start;
+}
+
+body.bb-ad-campaigns-page .bb-adc-connect-cta .bb-bts-cta-btn {
+  width: 100%;
+  max-width: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+}
+
+/* Mobile: tighter padding inside panels. */
+@media (max-width: 600px) {
+  body.bb-ad-campaigns-page .bb-module-head h1 {
+    margin-bottom: -20px;
+  }
+  body.bb-ad-campaigns-page .bb-plat-dash-panel.bb-adc-panel {
+    padding: 18px;
+    gap: 12px;
+  }
+}
+
+/* ========== Dark-mode accent fixes ==========
+   Vendor CSS forces all text to white in dark mode (`body, body * { color:#fff!important }`),
+   so any light-coloured background with originally-dark text becomes invisible. These rules
+   re-skin the small accent surfaces so labels stay readable. */
+
+/* Helper mixin block — applied to BOTH OS dark and the manual `.dark-mode` toggle. */
+@media (prefers-color-scheme: dark) {
+  body.bb-ad-campaigns-page .bb-adc-where-card {
+    background: rgba(0, 0, 0, 0.32) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+  }
+  body.bb-ad-campaigns-page .bb-adc-where-icon {
+    background: rgba(99, 91, 255, 0.22) !important;
+    color: #c7c2ff !important;
+  }
+  body.bb-ad-campaigns-page .bb-adc-where-pill {
+    background: rgba(12, 122, 58, 0.32) !important;
+    border-color: rgba(110, 231, 183, 0.45) !important;
+    color: #a7f3d0 !important;
+  }
+  body.bb-ad-campaigns-page .bb-adc-preview-pill {
+    background: rgba(8, 11, 26, 0.78) !important;
+    color: rgba(255, 255, 255, 0.94) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+  }
+  body.bb-ad-campaigns-page .bb-adc-policy-note {
+    background: rgba(255, 159, 0, 0.10) !important;
+    border-color: rgba(255, 159, 0, 0.28) !important;
+    border-left-color: #ffb04a !important;
+  }
+  body.bb-ad-campaigns-page .bb-adc-policy-icon {
+    color: #ffb04a !important;
+  }
+  body.bb-ad-campaigns-page .bb-adc-steps a {
+    color: #b1aaff !important;
+  }
+}
+
+body.dark-mode.bb-ad-campaigns-page .bb-adc-where-card {
+  background: rgba(0, 0, 0, 0.32) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+body.dark-mode.bb-ad-campaigns-page .bb-adc-where-icon {
+  background: rgba(99, 91, 255, 0.22) !important;
+  color: #c7c2ff !important;
+}
+body.dark-mode.bb-ad-campaigns-page .bb-adc-where-pill {
+  background: rgba(12, 122, 58, 0.32) !important;
+  border-color: rgba(110, 231, 183, 0.45) !important;
+  color: #a7f3d0 !important;
+}
+body.dark-mode.bb-ad-campaigns-page .bb-adc-preview-pill {
+  background: rgba(8, 11, 26, 0.78) !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+}
+body.dark-mode.bb-ad-campaigns-page .bb-adc-policy-note {
+  background: rgba(255, 159, 0, 0.10) !important;
+  border-color: rgba(255, 159, 0, 0.28) !important;
+  border-left-color: #ffb04a !important;
+}
+body.dark-mode.bb-ad-campaigns-page .bb-adc-policy-icon {
+  color: #ffb04a !important;
+}
+body.dark-mode.bb-ad-campaigns-page .bb-adc-steps a {
+  color: #b1aaff !important;
+}
+
+/* Toggle: off-state track is barely visible on the dark navy card — bump it to a
+   readable mid-grey so the user can tell the toggle is off. Checked (purple) is unchanged. */
+@media (prefers-color-scheme: dark) {
+  body.bb-ad-campaigns-page .bb-adc-toggle input:not(:checked) + .bb-adc-toggle-track {
+    background: rgba(180, 184, 196, 0.55) !important;
+  }
+}
+body.dark-mode.bb-ad-campaigns-page .bb-adc-toggle input:not(:checked) + .bb-adc-toggle-track {
+  background: rgba(180, 184, 196, 0.55) !important;
+}
+
+/* Dashboard iframe scroll cushion: keep Campaigns scrolling like a
+   normal page and add enough bottom room so the final panel is not
+   hidden behind the dashboard footer/chrome on desktop. */
+html,
+body.bb-ad-campaigns-page {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+}
+
+body.bb-ad-campaigns-page .bb-theme-shell {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 220px !important;
+}

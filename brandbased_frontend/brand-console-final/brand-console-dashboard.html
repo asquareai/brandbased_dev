@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>brandbased - Brand Console</title>
+  
+  <meta name="description"
+    content="brandbased — the biggest evolution in brand and brand-commerce since brands were invented">
+  <meta name="keywords" content="brand based">
+  <meta name="author" content="brandbased">
+  <meta name="robots" content="index, follow">
+
+  <!---Favicons---->
+  <link rel="icon" href="./favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="./favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="./favicons/manifest.webmanifest" />
+
+  <!---Styles---->
+  <link rel="stylesheet" href="./css/animate.css">
+  <!-- Shared Sync popup styling — used at the dashboard level when
+       a module iframe forwards a bbShowSyncPopup() call up to us. -->
+  <link rel="stylesheet" href="../brand-modules-bundle/_shared/sync-popup.css?v=confirm-6">
+  <link rel="stylesheet" href="../brand-modules-bundle/metrics/metrics-insight-popup.css?v=insight-4">
+  <!-- Brand console chrome — load *last* so footer-grid SVG <img> locks win. -->
+  <link rel="stylesheet" href="./css/brand-console-styles.css?v=nav-white-14">
+
+  <!---Fonts---->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+    rel="stylesheet">
+
+   
+
+    <!-- JS -->
+    <script src="js/main-js.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    
+    <!--- jQuery -->
+    <script src="js/jquery-3.7.1.min.js"></script>   
+   
+
+
+
+</head>
+
+<body class="bb-dash-loading">
+
+
+
+
+
+     <!------------------------ Home App Screen  --------------------------->
+     <div class="screen hidden" id="screen2" style="display: flex;">
+
+
+
+
+
+
+
+
+    <!---------- Header --------------->
+    <div class="header-nav">
+    <div class="header-logo animate__animated animate__slideInDown" id="header-logo-mobile"><img src="./images/BB-TYPEFACE-LOGO-white.svg" width="100%" height="100%"></div>
+      <div class="header-logo-desktop animate__animated animate__fadeInLeft" id="header-icon-desktop">
+        <img src="./images/b-white.svg" width="100%" height="100%" id="white-icon">
+        <img src="./images/b-white.svg" width="100%" height="100%" id="blue-icon">
+      </div>
+<div class="bb-typeface animate__animated animate__slideInDown"><img src="./images/BB-TYPEFACE-LOGO-white.svg" width="100%" height="100%"></div>
+      <!---Account dropdown (Subscription / Preferences / Theme / Log Out) — frosted glass matches `.bb-sync-popup` / Brands action menus.---->
+      <div id="account-popup">
+
+        <!-- New: Subscription + Preferences glass menu items.
+             Clicking Preferences opens the #bbAccountPrefsBackdrop
+             modal further down for editing email + password. -->
+        <button type="button" class="bb-account-menu-item" id="bbAccountSubscription">Subscriptions</button>
+        <button type="button" class="bb-account-menu-item" id="bbAccountPreferences">Preferences</button>
+        <div class="bb-account-menu-divider" aria-hidden="true"></div>
+
+        <div class="theme-toggle-container">
+          <span class="theme-label" id="theme-label">Theme Dark</span>
+          <label class="theme-button">
+            <input type="checkbox" class="checkbox" id="theme-switch">
+            <div class="knobs"></div>
+            <div class="layer"></div>
+          </label>
+        </div>
+       <div class="logout-button">Log Out</div>
+      <script>
+         document.querySelector('.logout-button').addEventListener('click', () => {
+      window.location.href = "../signout.html";
+      });
+      </script>
+    </div>
+    
+    <div class="account">
+      <p id="account-title">Account<span class="account-title__subs"> &amp; Subscriptions</span></p>
+      <img src="./images/account-placeholder.svg" alt="Account Icon" style="filter: brightness(0.7);">
+    </div>
+    <div class="get-premium">Get Premium</div>
+
+    <!-- Animated blue accent line under the header. Styles + the
+         `headerColorFlow` keyframes live in brand-console-styles.css
+         (and main-styles.css / admin-console-styles.css for the
+         other dashboards), so this single element is all the markup
+         that's needed. -->
+    <div id="animate-header-line"></div>
+    </div>
+  
+     <!---------- Sidebar  --------------->
+     
+      <div class="nav-container">
+        <div class="nav-item" id="start" data-route="start">
+          <img src="./images/start-icon.svg" alt="start">
+          <p>Start Now</p>
+        </div>
+
+       <div class="nav-item" id="brands" data-route="brands">
+          <img src="./images/brands.svg" alt="brands">
+          <p>Brands</p>
+        </div>
+        
+      <div class="nav-item" id="brand-settings" data-route="brand-settings">
+          <img src="./images/settings.svg" alt="brand-settings">
+          <p>Brand Settings</p>
+        </div>
+      
+      <div class="nav-item" id="theme-design" data-route="theme-design">
+          <img src="./images/theme-design.svg" alt="theme-design">
+          <p>Theme Styles</p>
+        </div>
+
+      <div class="nav-item" id="productsd" data-route="products">
+          <img src="./images/products.svg" alt="products">
+          <p>Products</p>
+      </div>
+
+      <div class="nav-item" id="scheduling" data-route="scheduling">
+        <img src="./images/product-scheduling.svg" alt="products">
+        <p>Scheduling</p>
+    </div>
+
+      
+      
+      <div class="nav-item" id="payments" data-route="payments">
+        <img src="./images/payments.svg" alt="payments">
+        <p>Payments</p>
+      </div>
+
+      <div class="nav-item" id="onboard-platform" data-route="platforms">
+        <img src="./images/platforms.svg" alt="platforms">
+        <p>Platforms</p>
+      </div>
+      
+      <div class="nav-item" id="hotspots" data-route="hotspots">
+        <img src="./images/hotspots.svg" alt="hotspots">
+        <p>Hotspots</p>
+      </div>
+      <div class="nav-item" id="ai-logic" data-route="ai-logic">
+        <img src="./images/ai-logic.svg" alt="ai-logic" id="custom-ai-logic-size">
+        <p>AI-Logic</p>
+      </div>
+     
+      <div class="nav-item" id="campaigns" data-route="campaigns">
+        <img src="./images/campaigns.svg" alt="campaigns">
+        <p>Ad Campaigns</p>
+      </div>
+      <div class="nav-item" id="metrics" data-route="metrics">
+        <img src="./images/Metrics.svg" alt="metrics">
+        <p>Metricks</p>
+      </div>
+    </div>
+  
+
+<!-- NEW MOBILE FOOTER -->
+<footer class="mobile-footer-nav">
+
+  <div class="close-mobile-nav"><img src="images/close-nav-icon.svg"></div>
+
+ 
+  <div class="footer-grid">
+    <div class="footer-item" id="start-mobile" data-route="start">
+      <img src="./images/start-icon-mobile.svg" alt="Start">
+      <p>Start Now</p>
+    </div>
+   
+
+    <div class="footer-item" id="brands-mobile" data-route="brands">
+      <img src="./images/brands-blue-mobile-footer.svg" alt="Brands">
+      <p>Brands</p>
+    </div>
+
+
+    <div class="footer-item" id="brand-settings-mobile" data-route="brand-settings">
+      <img src="./images/settings-blue-mobile-footer.svg" alt="Settings">
+      <p>Brand Settings</p>
+    </div>
+
+    <div class="footer-item" id="theme-design-mobile" data-route="theme-design">
+      <img src="./images/theme-design.svg" alt="Settings">
+      <p>Theme Styles</p>
+    </div>
+
+    <div class="footer-item" id="products-mobile" data-route="products">
+      <img src="./images/products-mobile.svg" alt="Products">
+      <p>Products</p>
+    </div>
+
+    <div class="footer-item" id="scheduling-mobile" data-route="scheduling">
+      <img src="./images/product-scheduling-mobile.svg" alt="Products">
+      <p>Scheduling</p>
+    </div>
+      
+    
+    
+    <div class="footer-item" id="payments-mobile" data-route="payments">
+      <img src="./images/payments.svg" alt="Payments">
+      <p>Payments</p>
+    </div>
+
+
+    
+
+    <div class="footer-item" id="onboard-platform-mobile" data-route="platforms">
+      <img src="./images/platforms.svg" alt="Platforms">
+      <p>Platforms</p>
+    </div>
+
+ 
+
+
+    <div class="footer-item" id="hotspots-mobile" data-route="hotspots">
+      <img src="./images/hotspots.svg" alt="Hotspots">
+      <p>Hotspots</p>
+    </div>
+
+    <div class="footer-item" id="ai-logic-mobile" data-route="ai-logic">
+      <img src="./images/ai-logic.svg" alt="AI Logic">
+      <p>AI Logic</p>
+    </div>
+
+    <div class="footer-item" id="campaigns-mobile" data-route="campaigns">
+      <img src="./images/campaigns.svg" alt="Campaigns">
+      <p>Ad Campaigns</p>
+    </div>
+
+    <div class="footer-item" id="metrics-mobile" data-route="metrics">
+      <img src="./images/Metrics.svg" alt="Metrics">
+      <p>Metrics</p>
+    </div>
+
+   
+   
+
+  </div>
+</footer>
+
+<div class="mobile-footer-bar">
+  <div class="mobile-footer-bar-item" id="brand-elements" data-route="brands">
+    <img src="./images/brands-blue-mobile-footer.svg">
+   
+  </div>
+
+  <div class="mobile-footer-bar-item" id="open-footer-nav">
+    <img src="./images/ai-logic.svg"  width="40px" height="40px">
+  
+  </div>
+
+  <div class="mobile-footer-bar-item" id="brand-settings" data-route="brand-settings">
+    <img src="./images/settings-blue-mobile-footer.svg">
+   
+  </div>
+</div>
+
+
+
+
+
+    <div class="content-block">
+
+   <h2 id="content-heading">Brand Console</h2>
+   <video class="video-bg-content-header" autoplay muted loop playsinline>
+    <source src="videos/BB-background-video-theme.mp4" type="video/mp4">
+</video>
+
+   <!-- Module iframe (the dashboard router swaps src when the user
+        picks a sidebar item). The full-viewport load overlay lives
+        outside this container so it can blur the *entire* dashboard
+        chrome, not just the iframe. -->
+   <div class="bb-dash-frame-wrap">
+     <iframe
+       id="bbDashFrame"
+       class="bb-dash-frame"
+       title="Brand Console module"
+       referrerpolicy="no-referrer"
+       allow="clipboard-read; clipboard-write"></iframe>
+   </div>
+    </div>
+
+    <!-- Dev-only Premium paywall overlay. Lives INSIDE `.screen` (a
+         sibling of the dashboard loader) so it shares the chrome's
+         stacking context: chrome (header / sidebar / mobile footer)
+         still paints above the blur, exactly like the shared sync
+         popups. Toggled by `localStorage.bbDevDashSimulateFreemium`
+         from dev/export-settings.html. Excluded on routes whose
+         pathname contains `/freemium/` or matches Start Now. -->
+    <div
+      id="bbDevFreemiumGate"
+      class="bb-dev-freemium-gate"
+      aria-hidden="true"
+      hidden
+    >
+      <div class="bb-dev-freemium-gate-dialog" role="dialog" aria-modal="true" aria-labelledby="bbDevFreemiumGateTitle">
+        <div class="bb-dev-freemium-gate-mark" aria-hidden="true">
+          <img src="./images/b-white.svg" alt="" />
+        </div>
+        <h3 id="bbDevFreemiumGateTitle" class="bb-dev-freemium-gate-title">
+          <span class="bb-dev-freemium-gate-title-shine">Unlock&nbsp;Premium</span>
+        </h3>
+        <p class="bb-dev-freemium-gate-body">
+          Upgrade to Premium to unlock Pro features for your BrandBased
+          account, including AI-driven Content Commerce, intelligent
+          automation, advanced metrics, and more.
+        </p>
+        <button type="button" class="bb-dev-freemium-gate-cta" id="bbDevFreemiumGateUpgrade">
+          Upgrade
+        </button>
+        <p class="bb-dev-freemium-gate-hint">
+          By upgrading to Premium, you agree to BrandBased
+          <a href="#" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>.
+        </p>
+      </div>
+    </div>
+  
+ 
+
+
+<div id="loading"><img src="./images/loading-icon.svg" width="100%" height="100%"></div>
+
+
+ 
+
+    <!-- Full-viewport dashboard load overlay. Placed INSIDE .screen so
+         it shares the chrome's stacking context — chrome elements
+         (header-nav, nav-container, mobile-footer-bar) at z-index
+         100001 then paint *above* the loader's 99999 blur, while the
+         loader still covers the iframe in the middle of the viewport.
+         The router toggles `body.bb-dash-loading` to show / hide. -->
+    <div class="bb-dash-loader" aria-hidden="true" role="status" aria-live="polite">
+      <div class="bb-dash-loader-popup">
+        <div class="bb-dash-loader-logo">
+          <img src="./images/b-white.svg" alt="" />
+        </div>
+        <p class="bb-dash-loader-label">Loading</p>
+        <div class="bb-dash-loader-bar" aria-hidden="true">
+          <div class="bb-dash-loader-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <div class="footer-bar-brand-console" id="console-desktop-footer-bar">
+    <div class="footer-left">
+      <div class="footer-b-icon">
+        <img src="images/b-white.svg" width="17" height="17">
+      </div>
+      <h5>
+        © 2026 BrandBased · 
+        <a href="/ai-commerce">AI Commerce Platform</a> · 
+        <a href="/brand-support">Brand Support</a>
+      </h5>
+    </div>
+    <div class="footer-right">
+      <h5>
+        <a href="/privacy">Privacy</a> · 
+        <a href="/terms">Terms</a> · 
+        <a href="/contact">Contact</a>
+      </h5>
+    </div>
+  </div>
+ <!------------------------ Base Light More gradient light behind UI ----------------------> 
+ <div class="light-shard-ui-base">
+  <div class="light-shard-ui-theme"></div>
+  <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+  <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+</div>
+
+<!-- =============================================================
+     Account → Preferences modal. Glass styling matches the Brands
+     Delete-confirm dialog. Sits as a sibling of .screen so the
+     backdrop + dialog paint above the dashboard chrome (this is an
+     interactive form, not an informational popup). Toggled by the
+     inline `bb-account-menu` script below. -->
+<div id="bbAccountPrefsBackdrop" class="bb-account-prefs-backdrop" aria-hidden="true">
+  <div class="bb-account-prefs-dialog" role="dialog" aria-modal="true" aria-labelledby="bbAccountPrefsTitle">
+    <div class="bb-account-prefs-mark" aria-hidden="true">
+      <img src="./images/b-white.svg" alt="" />
+    </div>
+    <h3 id="bbAccountPrefsTitle" class="bb-account-prefs-title">Preferences</h3>
+    <p class="bb-account-prefs-body">Update your account email and password.</p>
+    <!-- Current subscription tier — the FREEMIUM / PREMIUM pill is
+         swapped by CSS based on `body.bb-dev-freemium-mode` so it
+         stays in sync with the dev toggle (and any future real
+         plan-tier flag wired to the same body class). -->
+    <p class="bb-account-prefs-sub">
+      Your Subscription type:
+      <span class="bb-account-prefs-sub__tier bb-account-prefs-sub__tier--premium">PREMIUM</span>
+      <span class="bb-account-prefs-sub__tier bb-account-prefs-sub__tier--freemium">FREEMIUM</span>
+    </p>
+    <form class="bb-account-prefs-form" id="bbAccountPrefsForm" autocomplete="off">
+      <label class="bb-account-prefs-field">
+        <span>Account Email</span>
+        <input type="email" name="email" autocomplete="email" placeholder="you@brand.com" />
+      </label>
+      <label class="bb-account-prefs-field">
+        <span>Password</span>
+        <input type="password" name="password" autocomplete="new-password" placeholder="••••••••" />
+      </label>
+      <label class="bb-account-prefs-field">
+        <span>Confirm Password</span>
+        <input type="password" name="confirmPassword" autocomplete="new-password" placeholder="••••••••" />
+      </label>
+      <div class="bb-account-prefs-actions">
+        <button type="button" class="bb-account-prefs-btn" id="bbAccountPrefsCancel">Cancel</button>
+        <button type="submit" class="bb-account-prefs-btn bb-account-prefs-btn--primary">Save</button>
+      </div>
+    </form>
+    <!-- Destructive account action. Sits as a subtle text link
+         beneath the Save / Cancel row; click triggers the dashboard's
+         shared danger-style confirm popup (bbShowConfirmPopup). -->
+    <button
+      type="button"
+      class="bb-account-prefs-delete"
+      id="bbAccountPrefsDelete"
+    >Delete Account?</button>
+  </div>
+</div>
+
+<!-- =============================================================
+     Brand Support info modal — opens when the user clicks the
+     "Brand Support" link in the desktop footer. Plain informational
+     popup (same glass family as Preferences / Stripe verify); no
+     dev toggle, no form. Primary action opens the support mailto. -->
+<div id="bbBrandSupportBackdrop" class="bb-account-prefs-backdrop bb-account-prefs-backdrop--support" aria-hidden="true">
+  <div class="bb-account-prefs-dialog bb-account-prefs-dialog--support" role="dialog" aria-modal="true" aria-labelledby="bbBrandSupportTitle">
+    <div class="bb-account-prefs-mark bb-account-prefs-mark--support" aria-hidden="true">
+      <img src="./images/b-white.svg" alt="" />
+    </div>
+    <h3 id="bbBrandSupportTitle" class="bb-account-prefs-title">Brand Support</h3>
+    <p class="bb-account-prefs-body">Need help? Contact BrandBased Support for assistance with your account or brand setup.</p>
+    <p class="bb-account-prefs-body bb-account-prefs-body--email">
+      <a class="bb-support-link" href="mailto:support@brandbased.ai">support@brandbased.ai</a>
+    </p>
+    <div class="bb-account-prefs-actions bb-account-prefs-actions--single">
+      <button type="button" class="bb-account-prefs-btn bb-account-prefs-btn--primary" id="bbBrandSupportClose">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- =============================================================
+     Stripe Purchase Verify modal — Premium upgrade flow asks the
+     user to confirm their email before handing off to Stripe.
+     Reuses the Preferences glass styling (.bb-account-prefs-*)
+     with a `--stripe` modifier for the brand-coloured icon.
+     Toggled from `dev/export-settings.html` via
+     localStorage["bbDevStripeVerifyOpen"], and reacts to
+     `storage` events so the dev tab can open/close it live. -->
+<div id="bbStripeVerifyBackdrop" class="bb-account-prefs-backdrop bb-account-prefs-backdrop--stripe" aria-hidden="true">
+  <div class="bb-account-prefs-dialog bb-account-prefs-dialog--stripe" role="dialog" aria-modal="true" aria-labelledby="bbStripeVerifyTitle">
+    <div class="bb-account-prefs-mark bb-account-prefs-mark--stripe" aria-hidden="true">
+      <img src="./images/b-white.svg" alt="" />
+    </div>
+    <h3 id="bbStripeVerifyTitle" class="bb-account-prefs-title">Stripe purchase verify</h3>
+    <p class="bb-account-prefs-body">BrandBased needs to verify your email to confirm your purchase through Stripe.</p>
+    <form class="bb-account-prefs-form" id="bbStripeVerifyForm" autocomplete="off" novalidate>
+      <label class="bb-account-prefs-field">
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" placeholder="you@brand.com" required />
+      </label>
+      <label class="bb-account-prefs-field">
+        <span>Confirm Email</span>
+        <input type="email" name="confirmEmail" autocomplete="email" placeholder="you@brand.com" required />
+      </label>
+      <div class="bb-account-prefs-actions">
+        <button type="button" class="bb-account-prefs-btn" id="bbStripeVerifyCancel">Cancel</button>
+        <button type="submit" class="bb-account-prefs-btn bb-account-prefs-btn--primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+<!-----show eye on password input------->
+<script>
+  document.querySelectorAll('.password-wrapper').forEach(wrapper => {
+    const input = wrapper.querySelector('input');
+    const toggleContainer = wrapper.querySelector('.toggle-password');
+    const eyeDefault = wrapper.querySelector('.eye-default');
+    const eyeShow = wrapper.querySelector('.eye-show');
+
+    // Attach click event to the span container (not the individual images)
+    toggleContainer.addEventListener('click', () => {
+      const isHidden = input.type === 'password';
+
+      // Toggle the password visibility
+      input.type = isHidden ? 'text' : 'password';
+
+      // Toggle visibility of the eye icons
+      eyeDefault.style.display = isHidden ? 'none' : 'inline';
+      eyeShow.style.display = isHidden ? 'inline' : 'none';
+    });
+  });
+</script>
+
+
+
+<script>
+  //light shine logo icon
+const whiteIcon = document.getElementById('white-icon');
+
+function triggerDoubleShine() {
+  whiteIcon.classList.remove('shine-double');
+  void whiteIcon.offsetWidth; // force reflow to restart animation
+  whiteIcon.classList.add('shine-double');
+}
+
+triggerDoubleShine(); // Initial trigger
+setInterval(triggerDoubleShine, 30000);
+
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const checkbox = document.getElementById("theme-switch");
+    const label    = document.getElementById("theme-label");
+  
+    const STORAGE_KEY = "theme";           // "light", "dark" or null (= auto/system)
+    const DARK_CLASS  = "light-mode";      // your existing class name (inverted logic)
+  
+    // ── Apply the correct class right now ────────────────────────────────
+    function applyTheme(isLight) {
+      document.body.classList.toggle(DARK_CLASS, isLight);
+    }
+  
+    // ── What theme should we use? ────────────────────────────────────────
+    function getDesiredTheme() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+  
+      if (saved === "light") return true;   // light-mode = on
+      if (saved === "dark")  return false;  // light-mode = off
+  
+      // auto → follow system
+      return !window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+  
+    // ── Update checkbox & label to match current state ───────────────────
+    function updateUI() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+  
+      if (saved === "light") {
+        checkbox.checked = true;
+        label.textContent = "Theme Light";
+      } else if (saved === "dark") {
+        checkbox.checked = false;
+        label.textContent = "Theme Dark";
+      } else {
+        // auto / system
+        const isSystemLight = !window.matchMedia("(prefers-color-scheme: dark)").matches;
+        checkbox.checked = isSystemLight;   // visual hint only
+        label.textContent = "Theme: System";
+      }
+    }
+  
+    // ── When user toggles the switch ─────────────────────────────────────
+    checkbox.addEventListener("change", () => {
+      const wantsLight = checkbox.checked;
+  
+      if (wantsLight) {
+        localStorage.setItem(STORAGE_KEY, "light");
+      } else {
+        localStorage.setItem(STORAGE_KEY, "dark");
+      }
+  
+      applyTheme(wantsLight);
+      updateUI();
+    });
+  
+    // ── Listen to system theme changes ───────────────────────────────────
+    // The dashboard's dark/light switch should always reflect the OS
+    // appearance, so when macOS / Windows flips between dark and light
+    // we flick the switch (and apply the matching theme) regardless of
+    // any prior manual toggle. We also write the new state back to
+    // localStorage so the next page load starts from the OS-synced
+    // value rather than a stale manual override. The user can still
+    // flip the switch by hand any time after an OS change.
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    media.addEventListener("change", (e) => {
+      const isLightNow = !e.matches;
+      localStorage.setItem(STORAGE_KEY, isLightNow ? "light" : "dark");
+      applyTheme(isLightNow);
+      updateUI();
+    });
+  
+    // ── First load ───────────────────────────────────────────────────────
+    const shouldBeLight = getDesiredTheme();
+    applyTheme(shouldBeLight);
+    updateUI();
+  });
+  </script>
+
+<!-- Account dropdown + Preferences modal wiring.
+     Tap `.account` to toggle the glass dropdown; tap Subscription to
+     simply dismiss; tap Preferences to dismiss + open the Preferences
+     modal (#bbAccountPrefsBackdrop). Backdrop click, Cancel button or
+     form submit closes the modal. -->
+<script>
+  (function () {
+    const account     = document.querySelector('.account');
+    const popup       = document.getElementById('account-popup');
+    const subscription = document.getElementById('bbAccountSubscription');
+    const preferences = document.getElementById('bbAccountPreferences');
+    const backdrop    = document.getElementById('bbAccountPrefsBackdrop');
+    const cancel      = document.getElementById('bbAccountPrefsCancel');
+    const form        = document.getElementById('bbAccountPrefsForm');
+
+    function closePopup() {
+      if (popup) popup.classList.remove('account-popup--open');
+    }
+    function togglePopup() {
+      if (popup) popup.classList.toggle('account-popup--open');
+    }
+    function openPrefs() {
+      closePopup();
+      if (backdrop) {
+        backdrop.classList.add('bb-account-prefs-backdrop--open');
+        backdrop.setAttribute('aria-hidden', 'false');
+      }
+    }
+    function closePrefs() {
+      if (backdrop) {
+        backdrop.classList.remove('bb-account-prefs-backdrop--open');
+        backdrop.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    /* Clicks inside the module iframe never bubble to the parent
+       document, so the outside-click handler below cannot see them.
+       Two complementary fallbacks:
+
+       1. Same-origin iframes: bind pointerdown/touchstart on the
+          iframe document directly. Re-bound on every iframe `load`
+          (a new document replaces the old one).
+       2. Cross-origin OR same-origin: when the user clicks into the
+          iframe, the parent window loses focus and focus moves to
+          the iframe element. We poll `document.activeElement` from
+          a window-level `blur` to detect that and close the menu.
+          Works regardless of origin. */
+    const dashFrame = document.getElementById('bbDashFrame');
+    function attachIframePointerClose() {
+      if (!dashFrame) return;
+      try {
+        const idoc = dashFrame.contentDocument
+          || (dashFrame.contentWindow && dashFrame.contentWindow.document);
+        if (!idoc || !idoc.documentElement) return;
+        if (idoc.documentElement.getAttribute('data-bb-account-close-bound') === '1') return;
+        idoc.documentElement.setAttribute('data-bb-account-close-bound', '1');
+        const onPointer = function () {
+          closePopup();
+        };
+        idoc.addEventListener('pointerdown', onPointer, true);
+        idoc.addEventListener('mousedown', onPointer, true);
+        idoc.addEventListener('touchstart', onPointer, { capture: true, passive: true });
+      } catch (_e) {
+        /* cross-origin: focus-based fallback below covers it */
+      }
+    }
+    if (dashFrame) {
+      dashFrame.addEventListener('load', attachIframePointerClose);
+      if (dashFrame.contentDocument && dashFrame.contentDocument.readyState === 'complete') {
+        attachIframePointerClose();
+      }
+    }
+
+    /* Focus-shift fallback — fires on any click into any iframe on
+       the page, regardless of origin. setTimeout lets the browser
+       finish moving focus before we sample activeElement. */
+    window.addEventListener('blur', function () {
+      if (!popup || !popup.classList.contains('account-popup--open')) return;
+      window.setTimeout(function () {
+        const ae = document.activeElement;
+        if (ae && ae.tagName === 'IFRAME') closePopup();
+      }, 0);
+    });
+    /* Dismiss the account menu on any pointer/click whose target is not
+       inside #account-popup (the glass panel itself) and not on the
+       .account chip (which toggles the menu). Capture phase so this
+       runs before inner controls; idempotent closePopup is safe. */
+    function isInsideAccountPopup(target) {
+      return !!(target && target.closest && target.closest('#account-popup'));
+    }
+    function isAccountTrigger(target) {
+      return !!(account && target && target.closest && target.closest('.account'));
+    }
+    function onPointerOutsideAccountMenu(ev) {
+      if (!popup || !popup.classList.contains('account-popup--open')) return;
+      const t = ev.target;
+      if (isInsideAccountPopup(t)) return;
+      if (isAccountTrigger(t)) return;
+      closePopup();
+    }
+    document.addEventListener('pointerdown', onPointerOutsideAccountMenu, true);
+    document.addEventListener('click', onPointerOutsideAccountMenu, true);
+
+    if (account) {
+      account.style.cursor = 'pointer';
+      account.addEventListener('click', function (e) {
+        e.stopPropagation();
+        togglePopup();
+      });
+    }
+
+    /* Subscriptions menu item: closes the dropdown, and — when the
+       dev Freemium simulation flag is on — surfaces the Unlock
+       Premium gate (same one used by the dev preview overlay).
+       Outside dev Freemium mode this is a plain dismiss, since there
+       is no real Subscriptions screen wired up in this demo yet. */
+    if (subscription) subscription.addEventListener('click', function () {
+      closePopup();
+      try {
+        if (typeof window.bbDevForceShowUpgradeGate === 'function') {
+          window.bbDevForceShowUpgradeGate();
+        }
+      } catch (_e) { /* ignore */ }
+    });
+
+    /* Preferences → Delete Account: closes the Preferences modal and
+       opens the dashboard's shared danger confirm popup (red B icon,
+       red halo). This is demo wiring — the actual delete call is
+       owned by the backend; here we just acknowledge the user's
+       intent. */
+    const deleteAccountBtn = document.getElementById('bbAccountPrefsDelete');
+    if (deleteAccountBtn) {
+      deleteAccountBtn.addEventListener('click', function () {
+        if (typeof window.bbShowConfirmPopup !== 'function') return;
+        closePrefs();
+        window.bbShowConfirmPopup({
+          title: 'Delete your account?',
+          body: 'If you delete your account you\u2019ll lose all current data, and any active subscription billing will be cancelled. This action can\u2019t be undone.',
+          confirmLabel: 'Delete account',
+          cancelLabel:  'Keep account',
+          danger: true,
+        }).then(function (confirmed) {
+          if (!confirmed) return;
+          /* Demo only — log the intent. Hook your real account-delete
+             endpoint here in production. */
+          try { console.info('[bb] account delete confirmed'); } catch (_e) {}
+        });
+      });
+    }
+
+    /* Header Get Premium CTA: same upgrade gate as the Subscriptions
+       menu item. The button itself is hidden via CSS unless
+       `body.bb-dev-freemium-mode` is on, so the click can only fire
+       for Freemium users; the safety call here is a no-op otherwise. */
+    const getPremium = document.querySelector('.get-premium');
+    if (getPremium) {
+      getPremium.setAttribute('role', 'button');
+      getPremium.setAttribute('tabindex', '0');
+      const openUpgrade = function () {
+        try {
+          if (typeof window.bbDevForceShowUpgradeGate === 'function') {
+            window.bbDevForceShowUpgradeGate();
+          }
+        } catch (_e) { /* ignore */ }
+      };
+      getPremium.addEventListener('click', openUpgrade);
+      getPremium.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openUpgrade();
+        }
+      });
+    }
+    if (preferences)  preferences.addEventListener('click', openPrefs);
+    if (cancel)       cancel.addEventListener('click', closePrefs);
+    if (backdrop) backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) closePrefs();
+    });
+    if (form) form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      /* Demo-only password-match guard: if a password is being changed,
+         require the confirm field to match. Backend wiring lives
+         elsewhere. */
+      const pw      = form.querySelector('input[name="password"]');
+      const confirm = form.querySelector('input[name="confirmPassword"]');
+      const pwVal   = pw ? pw.value : '';
+      const cfVal   = confirm ? confirm.value : '';
+      if (pwVal || cfVal) {
+        if (pwVal !== cfVal) {
+          if (confirm) {
+            confirm.focus();
+            confirm.setCustomValidity('Passwords do not match');
+            confirm.reportValidity();
+            confirm.addEventListener('input', function clear() {
+              confirm.setCustomValidity('');
+              confirm.removeEventListener('input', clear);
+            });
+          }
+          return;
+        }
+      }
+      closePrefs();
+      form.reset();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { closePopup(); closePrefs(); }
+    });
+  })();
+</script>
+
+<!-- Stripe Purchase Verify modal — wiring.
+     Reuses the Preferences modal's open/close glass behaviour; adds
+     a `storage` listener so the dev tab can toggle it via
+     localStorage["bbDevStripeVerifyOpen"]. -->
+<script>
+  (function () {
+    const LS_DEV_STRIPE = 'bbDevStripeVerifyOpen';
+    const backdrop = document.getElementById('bbStripeVerifyBackdrop');
+    const cancel   = document.getElementById('bbStripeVerifyCancel');
+    const form     = document.getElementById('bbStripeVerifyForm');
+    if (!backdrop || !form) return;
+
+    function open() {
+      backdrop.classList.add('bb-account-prefs-backdrop--open');
+      backdrop.setAttribute('aria-hidden', 'false');
+      /* Focus the first input so keyboard users land in the form. */
+      const first = form.querySelector('input[name="email"]');
+      if (first) try { first.focus({ preventScroll: true }); } catch (_e) {}
+    }
+    function close() {
+      backdrop.classList.remove('bb-account-prefs-backdrop--open');
+      backdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    /* Public helpers for console / future call-sites. */
+    window.bbOpenStripeVerify  = open;
+    window.bbCloseStripeVerify = close;
+
+    if (cancel) cancel.addEventListener('click', close);
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) close();
+    });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const emailEl   = form.querySelector('input[name="email"]');
+      const confirmEl = form.querySelector('input[name="confirmEmail"]');
+      const a = emailEl ? emailEl.value.trim() : '';
+      const b = confirmEl ? confirmEl.value.trim() : '';
+      if (!a || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(a)) {
+        if (emailEl) {
+          emailEl.focus();
+          emailEl.setCustomValidity('Please enter a valid email address');
+          emailEl.reportValidity();
+          emailEl.addEventListener('input', function clr() {
+            emailEl.setCustomValidity('');
+            emailEl.removeEventListener('input', clr);
+          });
+        }
+        return;
+      }
+      if (a !== b) {
+        if (confirmEl) {
+          confirmEl.focus();
+          confirmEl.setCustomValidity('Emails do not match');
+          confirmEl.reportValidity();
+          confirmEl.addEventListener('input', function clr() {
+            confirmEl.setCustomValidity('');
+            confirmEl.removeEventListener('input', clr);
+          });
+        }
+        return;
+      }
+      close();
+      form.reset();
+      /* Clear the dev flag so flipping the toggle off->on reopens it. */
+      try { localStorage.removeItem(LS_DEV_STRIPE); } catch (_e) {}
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && backdrop.classList.contains('bb-account-prefs-backdrop--open')) {
+        close();
+      }
+    });
+
+    /* Dev toggle: opens / closes the modal when the dev page sets
+       the flag. `storage` events only fire in OTHER documents on
+       the same origin, which is exactly the dev tab → dashboard tab
+       case we want. */
+    function applyDevFlag() {
+      let on = false;
+      try { on = localStorage.getItem(LS_DEV_STRIPE) === '1'; } catch (_e) {}
+      if (on) open();
+      else close();
+    }
+    window.addEventListener('storage', function (e) {
+      if (!e || e.key === null || e.key === LS_DEV_STRIPE) applyDevFlag();
+    });
+    /* Honour the flag on first load too, so reopening the dashboard
+       after toggling shows the modal immediately. */
+    applyDevFlag();
+  })();
+</script>
+
+<!-- Brand Support modal wiring — opens on click of any
+     `[href="/brand-support"]` link (currently just the desktop
+     footer). Plain informational popup; no dev toggle. -->
+<script>
+  (function () {
+    const backdrop = document.getElementById('bbBrandSupportBackdrop');
+    const closeBtn = document.getElementById('bbBrandSupportClose');
+    if (!backdrop) return;
+
+    function open() {
+      backdrop.classList.add('bb-account-prefs-backdrop--open');
+      backdrop.setAttribute('aria-hidden', 'false');
+      if (closeBtn) try { closeBtn.focus({ preventScroll: true }); } catch (_e) {}
+    }
+    function close() {
+      backdrop.classList.remove('bb-account-prefs-backdrop--open');
+      backdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    window.bbOpenBrandSupport  = open;
+    window.bbCloseBrandSupport = close;
+
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && backdrop.classList.contains('bb-account-prefs-backdrop--open')) {
+        close();
+      }
+    });
+
+    /* Delegate: any link pointing at "/brand-support" (or carrying
+       a data-bb-brand-support attribute) opens this modal instead
+       of navigating. Catches the footer link today and any future
+       call-sites without re-wiring each one. */
+    document.addEventListener('click', function (e) {
+      const a = e.target && e.target.closest
+        ? e.target.closest('a[href="/brand-support"], [data-bb-brand-support]')
+        : null;
+      if (!a) return;
+      e.preventDefault();
+      e.stopPropagation();
+      open();
+    }, true);
+  })();
+</script>
+
+<!-- Shared sync-popup module — installs window.bbShowSyncPopup at
+     the dashboard level so the router can render iframe-forwarded
+     popups here instead of inside the iframe. Loaded BEFORE the
+     dashboard-router so the router's message handler can call it. -->
+<script src="../brand-modules-bundle/_shared/sync-popup.js?v=confirm-3"></script>
+
+<!-- Dashboard router: swaps the .content-block iframe based on which
+     sidebar / footer item the user clicks, listens for the iframe's
+     postMessage signals so internal nav inside a module page still
+     updates the sidebar highlight, and forwards Sync/Publish/Verify
+     popup calls from iframes to render at the dashboard level. -->
+<script src="js/dashboard-router.js?v=router-33"></script>
+<script src="js/bb-dev-freemium-gate.js?v=devgate-6"></script>
+
+</body>
+</html>

@@ -1,0 +1,282 @@
+/* AI Logic page — overrides on top of platforms.css + hotspots.css.
+   Body class includes `bb-platforms-page bb-hotspots-page` so panel chrome inherits. */
+
+/* Allow vertical page scroll when the stacked panels are taller than the viewport.
+   Inherited platforms/hotspots/theme rules try to cap the layout to viewport height on
+   wide screens — clear those for AI Logic so the page just grows downward and the
+   browser scrollbar handles overflow. */
+html:has(body.bb-ailogic-page),
+body.bb-ailogic-page {
+  height: auto !important;
+  min-height: 100%;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+}
+
+body.bb-ailogic-page .bb-theme-shell,
+body.bb-ailogic-page .bb-bts-layout.bb-hotspots-dash-layout,
+body.bb-ailogic-page .bb-hotspots-center {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body.bb-ailogic-page .bb-theme-shell {
+  width: min(1320px, 100%);
+  max-width: 100%;
+}
+
+body.bb-ailogic-page .bb-hotspots-center {
+  width: 100%;
+  max-width: min(1109px, 96vw);
+}
+
+/* Shared max-width for the heading row + every panel, so headings sit naturally on the left
+   of a wide block while the whole stack stays horizontally centered on the page.
+   1109px = 1584px (previous) × 0.7 (30% less wide on desktop). */
+body.bb-ailogic-page .bb-module-head,
+body.bb-ailogic-page .bb-module-head h1,
+body.bb-ailogic-page .bb-plat-dash-panel.bb-ailogic-panel,
+body.bb-ailogic-page .bb-ailogic-ads-cta {
+  width: 100%;
+  max-width: min(1109px, 96vw);
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center;
+  box-sizing: border-box;
+}
+
+/* Override the theme's centered h1 so "AI Logic" sits flush-left, lined up with the
+   left edge of the panels below. */
+body.bb-ailogic-page .bb-module-head h1 {
+  text-align: left;
+  margin: 0 0 15px 0;
+}
+
+/* Panel: comfy padding; collapse the inherited fixed-height rules so it sizes to content. */
+body.bb-ailogic-page .bb-plat-dash-panel.bb-ailogic-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(20px, 3vw, 32px);
+  min-height: 0 !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Secondary CTA: matches Hotspots' Enable-AI-Logic purple panel, but uses the wider shared width above. */
+body.bb-ailogic-page .bb-ailogic-ads-cta {
+  padding: 18px;
+  border-radius: 12px;
+}
+
+body.bb-ailogic-page .bb-ailogic-ads-cta h2 {
+  margin: 0 0 8px;
+  font: 900 16px/1.15 Roboto, system-ui, sans-serif;
+  color: #fff;
+}
+
+body.bb-ailogic-page .bb-ailogic-ads-cta .bb-bts-help {
+  margin: 0 0 6px;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: #fff !important;
+}
+
+body.bb-ailogic-page .bb-ailogic-ads-cta .bb-bts-cta-actions {
+  margin-top: 14px;
+  justify-content: flex-start;
+}
+
+body.bb-ailogic-page .bb-ailogic-ads-cta .bb-bts-cta-btn {
+  width: 100%;
+  max-width: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+}
+
+/* Textarea wrap: positioning context for the floating icon chips. */
+body.bb-ailogic-page .bb-ailogic-textarea-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* Two pulsing chips, inside the top-left of the textarea field. */
+body.bb-ailogic-page .bb-ailogic-icons {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+body.bb-ailogic-page .bb-ailogic-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  animation: bb-ailogic-icon-pulse 1.6s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, box-shadow;
+}
+
+/* Brain chip: brand purple bubble, white stroke icon. */
+body.bb-ailogic-page .bb-ailogic-icon--brain {
+  background: #102ff5;
+  color: #ffffff;
+  /* Slight phase offset so the two chips don't pulse in perfect lockstep. */
+  animation-delay: -0.4s;
+}
+
+body.bb-ailogic-page .bb-ailogic-icon--brain svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* BrandBased logo chip: white bubble, logo inside. */
+body.bb-ailogic-page .bb-ailogic-icon--logo {
+  background: #ffffff;
+  padding: 5px;
+}
+
+body.bb-ailogic-page .bb-ailogic-icon--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@keyframes bb-ailogic-icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      0 0 0 0 rgba(99, 91, 255, 0.55);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 18px 4px rgba(99, 91, 255, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-ailogic-page .bb-ailogic-icon {
+    animation-duration: 3s;
+  }
+}
+
+/* The textarea itself — base on Products `.bb-products-textarea` but bigger and with
+   top-left padding to clear the floating icon chips. */
+body.bb-ailogic-page .bb-ailogic-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  padding: 60px 16px 16px;
+  font: 500 14px/1.55 Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  color: rgba(15, 15, 18, 0.92);
+  resize: vertical;
+  min-height: 220px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.bb-ailogic-page .bb-ailogic-textarea:focus {
+  border-color: rgba(99, 91, 255, 0.55);
+  box-shadow: 0 0 0 3px rgba(99, 91, 255, 0.18);
+}
+
+body.bb-ailogic-page .bb-ailogic-textarea::placeholder {
+  color: rgba(15, 15, 18, 0.42);
+}
+
+/* Tiny helper text below the textarea, e.g. character count or hint. */
+body.bb-ailogic-page .bb-ailogic-hint {
+  margin: 0;
+  font: 500 12px/1.4 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-muted);
+}
+
+/* Save button: same brand-purple Sync style. */
+body.bb-ailogic-page .bb-plat-sync-btn.bb-ailogic-save-btn {
+  width: 100%;
+  --bb-plat-sync-bg: #635bff;
+  --bb-plat-sync-bg-hover: #5249e8;
+  background: var(--bb-plat-sync-bg);
+  font-size: 18px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  letter-spacing: 0.01em;
+}
+
+body.bb-ailogic-page .bb-plat-sync-btn.bb-ailogic-save-btn:hover {
+  background: var(--bb-plat-sync-bg-hover);
+}
+
+/* Dark mode: mirror Products textarea palette so the field stays legible on the dark theme. */
+@media (prefers-color-scheme: dark) {
+  body.bb-ailogic-page .bb-ailogic-textarea {
+    background: rgba(69, 69, 69, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  body.bb-ailogic-page .bb-ailogic-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.52);
+  }
+}
+
+body.dark-mode.bb-ailogic-page .bb-ailogic-textarea {
+  background: rgba(69, 69, 69, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+body.dark-mode.bb-ailogic-page .bb-ailogic-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.52);
+}
+
+/* Mobile: tighter padding inside the panel. */
+@media (max-width: 600px) {
+  body.bb-ailogic-page .bb-module-head h1 {
+    margin-bottom: -20px;
+  }
+  body.bb-ailogic-page .bb-plat-dash-panel.bb-ailogic-panel {
+    padding: 18px;
+    gap: 14px;
+  }
+  body.bb-ailogic-page .bb-ailogic-textarea {
+    min-height: 180px;
+  }
+}
+
+/* Dashboard iframe scroll cushion: this page is short enough on desktop
+   that the bottom CTA can sit behind dashboard chrome. Let the document
+   scroll normally and add extra room after the last panel. */
+html,
+body.bb-ailogic-page {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+}
+
+body.bb-ailogic-page .bb-theme-shell {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 220px !important;
+}

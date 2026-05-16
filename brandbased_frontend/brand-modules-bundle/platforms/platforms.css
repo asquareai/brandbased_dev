@@ -1,0 +1,1205 @@
+/* Platforms module — scoped to body.bb-platforms-page only */
+@import url("../products/products.theme-design.css?v=platforms-bundle-1");
+
+body.bb-platforms-page .bb-bts-left::before,
+body.bb-platforms-page .bb-bts-left::after {
+  display: none !important;
+  content: none !important;
+}
+
+body.bb-platforms-page .bb-bts-layout.bb-plat-dash-layout {
+  padding-top: calc(clamp(6px, 1.5vh, 20px) + 30px);
+  align-items: stretch;
+  /* Narrower than theme’s 240px so the partners column breathes; not as tight as 64px (felt oversized with a wide shell) */
+  --bb-col-gap: 112px;
+  /* Left column (URLs + hotspots): unchanged track; partners panel uses --bb-plat-partners-panel-max */
+  --bb-bts-left-col-max: 680px;
+  --bb-bts-left-col-min: 460px;
+}
+
+/* Desktop: no left-gutter / no left-column scrollbar (theme adds padding + scroll on .bb-bts-left) */
+@media (min-width: 1351px) {
+  body.bb-platforms-page .bb-bts-left {
+    padding-left: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    direction: ltr !important;
+  }
+}
+
+body.bb-platforms-page .bb-module-head {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 0;
+}
+
+body.bb-platforms-page .bb-module-head h1 {
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: calc(-22px + 30px) 0 4px 0;
+}
+
+/* Match Products page shell (Roboto 18px / 1.6 — products.theme-design.css .bb-theme-shell) */
+body.bb-platforms-page .bb-theme-shell {
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* Desktop: modestly wider than theme 1400px so Platform Partners isn’t cramped; keep below ultrawide */
+@media (min-width: 1351px) {
+  body.bb-platforms-page .bb-theme-shell {
+    width: min(1480px, 100%);
+    max-width: 100%;
+  }
+}
+
+/* Dashboard panels — light: match Payments cards; dark OS / body.dark-mode: navy dashboard */
+body.bb-platforms-page.bb-brand-theme-settings {
+  --bb-plat-dash-bg: #ffffff;
+  --bb-plat-dash-border: #e1e3e5;
+  --bb-plat-dash-panel-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  --bb-plat-dash-text: #202223;
+  --bb-plat-dash-muted: #6d7175;
+  --bb-plat-dash-highlight: rgba(20, 184, 166, 0.28);
+  --bb-plat-dash-highlight-text: #0f766e;
+  --bb-plat-sync-bg: #635bff;
+  --bb-plat-sync-bg-hover: #5249e8;
+  --bb-plat-input-bg: #ffffff;
+  --bb-plat-input-border: #e1e3e5;
+  --bb-plat-input-text: #000;
+  /* URL pill inputs — glass “cut-through” (fallback solid: --bb-plat-input-bg); light = silver frosted */
+  --bb-plat-url-pill-bg: rgba(186, 198, 214, 0.52);
+  --bb-plat-url-pill-border: rgba(148, 163, 184, 0.55);
+  --bb-plat-url-pill-inner-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.72), inset 0 -1px 1px rgba(71, 85, 105, 0.12);
+  --bb-plat-url-pill-blur: 12px;
+  --bb-plat-url-pill-autofill-cover: rgba(226, 232, 240, 0.94);
+  --bb-plat-url-pill-text: #000000;
+  --bb-plat-url-filled-base: #635bff;
+  --bb-plat-url-filled-highlight: #ddd6fe;
+  --bb-plat-url-placeholder-color: #000000;
+  --bb-plat-url-placeholder-shine-base: #0f172a;
+  --bb-plat-url-placeholder-shine-highlight: #cbd5e1;
+  --bb-plat-toggle-on: #635bff;
+  --bb-plat-toggle-track-off: rgba(15, 23, 42, 0.18);
+  --bb-plat-toggle-row-muted: rgba(109, 113, 117, 0.95);
+  --bb-plat-platform-name-off: #9ca3af;
+  --bb-plat-row-line: #e1e3e5;
+  --bb-plat-add-icon-filter: none;
+  --bb-plat-scrollbar-thumb: rgba(15, 23, 42, 0.22);
+  /* Partners list scroll region */
+  --bb-plat-scroll-region-max: min(calc(380px * 0.7), calc(52vh * 0.7));
+  /* Right “Platform Partners” card — desktop max width */
+  --bb-plat-partners-panel-max: 1320px;
+  /* Left “Excluded URLs” card — default height (drag handle can resize); URL rows scroll inside */
+  --bb-plat-excluded-panel-height: 425px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-platforms-page.bb-brand-theme-settings:not(.dark-mode) {
+    --bb-plat-dash-bg: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%);
+    --bb-plat-dash-border: rgba(255, 255, 255, 0.14);
+    --bb-plat-dash-panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+    --bb-plat-dash-text: rgba(255, 255, 255, 0.96);
+    --bb-plat-dash-muted: rgba(255, 255, 255, 0.78);
+    --bb-plat-dash-highlight: rgba(34, 211, 238, 0.42);
+    --bb-plat-dash-highlight-text: #ecfeff;
+    --bb-plat-input-bg: #e8eaef;
+    --bb-plat-input-border: transparent;
+    --bb-plat-url-pill-bg: rgba(255, 255, 255, 0.16);
+    --bb-plat-url-pill-border: rgba(255, 255, 255, 0.34);
+    --bb-plat-url-pill-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+    --bb-plat-url-pill-blur: 16px;
+    --bb-plat-url-pill-autofill-cover: rgba(30, 41, 59, 0.92);
+    --bb-plat-url-pill-text: #ffffff;
+    --bb-plat-url-filled-base: #635bff;
+    --bb-plat-url-filled-highlight: #ddd6fe;
+    --bb-plat-toggle-on: #1e40af;
+    --bb-plat-toggle-track-off: rgba(255, 255, 255, 0.18);
+    --bb-plat-toggle-row-muted: rgba(255, 255, 255, 0.42);
+    --bb-plat-platform-name-off: rgba(255, 255, 255, 0.48);
+    --bb-plat-row-line: rgba(255, 255, 255, 0.18);
+    --bb-plat-add-icon-filter: brightness(0) invert(1);
+    --bb-plat-scrollbar-thumb: rgba(255, 255, 255, 0.28);
+    --bb-plat-url-placeholder-color: #ffffff;
+    /* Shine: solid white copy + moving brand purple band */
+    --bb-plat-url-placeholder-shine-base: #ffffff;
+    --bb-plat-url-placeholder-shine-highlight: #a78bfa;
+  }
+}
+
+body.dark-mode.bb-platforms-page.bb-brand-theme-settings {
+  --bb-plat-dash-bg: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%);
+  --bb-plat-dash-border: rgba(255, 255, 255, 0.14);
+  --bb-plat-dash-panel-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  --bb-plat-dash-text: rgba(255, 255, 255, 0.96);
+  --bb-plat-dash-muted: rgba(255, 255, 255, 0.78);
+  --bb-plat-dash-highlight: rgba(34, 211, 238, 0.42);
+  --bb-plat-dash-highlight-text: #ecfeff;
+  --bb-plat-input-bg: #e8eaef;
+  --bb-plat-input-border: transparent;
+  --bb-plat-url-pill-bg: rgba(255, 255, 255, 0.16);
+  --bb-plat-url-pill-border: rgba(255, 255, 255, 0.34);
+  --bb-plat-url-pill-inner-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48), inset 0 -1px 0 rgba(0, 0, 0, 0.22);
+  --bb-plat-url-pill-blur: 16px;
+  --bb-plat-url-pill-autofill-cover: rgba(30, 41, 59, 0.92);
+  --bb-plat-url-pill-text: #ffffff;
+  --bb-plat-url-filled-base: #635bff;
+  --bb-plat-url-filled-highlight: #ddd6fe;
+  --bb-plat-toggle-on: #1e40af;
+  --bb-plat-toggle-track-off: rgba(255, 255, 255, 0.18);
+  --bb-plat-toggle-row-muted: rgba(255, 255, 255, 0.42);
+  --bb-plat-platform-name-off: rgba(255, 255, 255, 0.48);
+  --bb-plat-row-line: rgba(255, 255, 255, 0.18);
+  --bb-plat-add-icon-filter: brightness(0) invert(1);
+  --bb-plat-scrollbar-thumb: rgba(255, 255, 255, 0.28);
+  --bb-plat-url-placeholder-color: #ffffff;
+  --bb-plat-url-placeholder-shine-base: #ffffff;
+  --bb-plat-url-placeholder-shine-highlight: #a78bfa;
+}
+
+body.bb-platforms-page .bb-plat-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body.bb-platforms-page .bb-plat-dash-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+body.bb-platforms-page .bb-plat-left-stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+body.bb-platforms-page .bb-bts-right.bb-bts-right--platforms {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 1351px) {
+  /* Top-align both columns; sticky offset was visually dropping the partners panel vs left stack */
+  body.bb-platforms-page .bb-bts-layout.bb-plat-dash-layout {
+    align-items: start;
+  }
+
+  body.bb-platforms-page .bb-bts-right.bb-bts-right--platforms {
+    width: 90%;
+  }
+
+  body.bb-platforms-page .bb-bts-layout .bb-bts-right--platforms {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1351px) {
+  body.bb-platforms-page .bb-plat-dash-panel.bb-plat-dash-panel--global {
+    max-width: min(var(--bb-plat-partners-panel-max, 1320px), 100%);
+    width: 100%;
+    align-self: flex-start;
+  }
+
+  body.bb-platforms-page .bb-plat-dash-panel:not(.bb-plat-dash-panel--global) {
+    max-width: min(var(--bb-bts-left-col-max, 631px), 100%);
+    width: 100%;
+    align-self: flex-start;
+  }
+}
+
+body.bb-platforms-page .bb-plat-dash-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 20px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--bb-plat-dash-border);
+  background: var(--bb-plat-dash-bg);
+  box-shadow: var(--bb-plat-dash-panel-shadow);
+  color: var(--bb-plat-dash-text);
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 1351px) {
+  body.bb-platforms-page .bb-plat-dash-panel:not(.bb-plat-dash-panel--excluded) {
+    min-height: min(590px, calc(100vh - 170px));
+  }
+}
+
+/* Viewports ≤1650px only: Platform Partners column slightly lower;
+   global partners card + list region ~76px taller than base. No effect >1650px. */
+@media (max-width: 1650px) {
+  body.bb-platforms-page .bb-bts-right.bb-bts-right--platforms {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 1650px) and (min-width: 1351px) {
+  body.bb-platforms-page .bb-plat-dash-panel.bb-plat-dash-panel--global {
+    min-height: min(calc(590px + 76px), calc((100vh - 170px) + 76px));
+  }
+
+  body.bb-platforms-page .bb-plat-global-scroll {
+    min-height: calc(380px + 76px);
+    max-height: min(calc(380px * 0.7 + 76px), calc(52vh * 0.7 + 76px));
+  }
+}
+
+/* ≤1550px two-column: partners card/list 40px shorter than ≤1650 sizing. */
+@media (max-width: 1550px) and (min-width: 1351px) {
+  body.bb-platforms-page .bb-plat-dash-panel.bb-plat-dash-panel--global {
+    min-height: min(calc(590px + 36px), calc((100vh - 170px) + 36px));
+  }
+
+  body.bb-platforms-page .bb-plat-global-scroll {
+    min-height: calc(380px + 36px);
+    max-height: min(calc(380px * 0.7 + 36px), calc(52vh * 0.7 + 36px));
+  }
+}
+
+/* Excluded URLs — fixed height (default 425px; resize handle updates --bb-plat-excluded-panel-height) */
+body.bb-platforms-page .bb-plat-dash-panel.bb-plat-dash-panel--excluded {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  --bb-plat-excluded-panel-height: 425px;
+  height: min(var(--bb-plat-excluded-panel-height), 90vh);
+  max-height: min(var(--bb-plat-excluded-panel-height), 90vh);
+  min-height: 0 !important;
+  overflow: hidden;
+}
+
+body.bb-platforms-page .bb-plat-excluded-collapse--dock {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+body.bb-platforms-page.bb-brand-theme-settings:not(.dark-mode) .bb-plat-excluded-collapse--dock {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-platforms-page.bb-brand-theme-settings:not(.dark-mode) .bb-plat-excluded-collapse--dock {
+    background: rgba(30, 41, 59, 0.85);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+}
+
+body.dark-mode.bb-platforms-page .bb-plat-excluded-collapse--dock {
+  background: rgba(30, 41, 59, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+body.bb-platforms-page .bb-plat-excluded-resize-handle {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 18px;
+  margin: 6px 0 10px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bb-plat-dash-muted);
+  transition: background 0.15s ease;
+}
+
+body.bb-platforms-page .bb-plat-excluded-collapse {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--bb-plat-dash-border);
+  border-radius: 8px;
+  background: rgba(99, 91, 255, 0.06);
+  color: var(--bb-plat-dash-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+body.bb-platforms-page .bb-plat-excluded-collapse:hover {
+  background: rgba(99, 91, 255, 0.12);
+  color: var(--bb-plat-dash-text);
+  border-color: rgba(99, 91, 255, 0.35);
+}
+
+body.bb-platforms-page .bb-plat-excluded-collapse:active {
+  background: rgba(99, 91, 255, 0.18);
+}
+
+body.bb-platforms-page .bb-plat-excluded-collapse:focus-visible {
+  outline: 2px solid rgba(99, 91, 255, 0.55);
+  outline-offset: 2px;
+}
+
+body.bb-platforms-page .bb-plat-excluded-collapse svg {
+  display: block;
+}
+
+body.bb-platforms-page .bb-plat-excluded-resize-handle:hover {
+  background: rgba(99, 91, 255, 0.08);
+}
+
+body.bb-platforms-page .bb-plat-excluded-resize-handle:active {
+  background: rgba(99, 91, 255, 0.14);
+}
+
+body.bb-platforms-page .bb-plat-excluded-resize-handle:focus-visible {
+  outline: 2px solid rgba(99, 91, 255, 0.55);
+  outline-offset: 2px;
+}
+
+body.bb-platforms-page .bb-plat-excluded-resize-handle__grip {
+  display: block;
+  width: 40px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--bb-plat-dash-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Purple CTA — match Payments “Select Platforms” card */
+body.bb-platforms-page .bb-plat-hotspots-cta {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+body.bb-platforms-page .bb-plat-hotspots-cta h2 {
+  margin: 0 0 8px;
+  font: 900 16px/1.15 Roboto, system-ui, sans-serif;
+  color: #fff;
+}
+
+body.bb-platforms-page .bb-plat-hotspots-cta .bb-plat-hotspots-cta__help {
+  margin: 0 0 6px;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: #fff !important;
+}
+
+body.bb-platforms-page .bb-plat-hotspots-cta .bb-bts-cta-actions {
+  margin-top: 14px;
+  justify-content: flex-start;
+}
+
+body.bb-platforms-page .bb-plat-hotspots-cta .bb-bts-cta-btn {
+  width: 100%;
+  max-width: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+}
+
+@media (min-width: 1351px) {
+  body.bb-platforms-page .bb-plat-left-stack > .bb-plat-dash-panel,
+  body.bb-platforms-page .bb-plat-left-stack > .bb-plat-hotspots-cta {
+    max-width: min(var(--bb-bts-left-col-max, 631px), 100%);
+    width: 100%;
+    align-self: flex-start;
+    box-sizing: border-box;
+  }
+
+  body.bb-platforms-page .bb-plat-left-stack > .bb-plat-excluded-resize-handle {
+    max-width: min(var(--bb-bts-left-col-max, 631px), 100%);
+    align-self: flex-start;
+  }
+}
+
+body.bb-platforms-page .bb-plat-dash-panel--excluded .bb-plat-dash-title,
+body.bb-platforms-page .bb-plat-dash-panel--excluded .bb-plat-dash-copy,
+body.bb-platforms-page .bb-plat-dash-panel--excluded .bb-plat-add-url {
+  flex-shrink: 0;
+}
+
+body.bb-platforms-page .bb-plat-dash-title--excluded-lockup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+body.bb-platforms-page .bb-plat-dash-title-icon--excluded {
+  flex-shrink: 0;
+  width: 52px;
+  height: auto;
+  max-height: 58px;
+  object-fit: contain;
+  object-position: center;
+}
+
+body.bb-platforms-page .bb-plat-dash-title-label {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+body.bb-platforms-page .bb-plat-dash-title {
+  margin: 0;
+  text-align: center;
+  font: 700 17px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--bb-plat-dash-text);
+}
+
+body.bb-platforms-page .bb-plat-dash-title--with-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+body.bb-platforms-page .bb-plat-dash-title-typeface {
+  display: block;
+  height: 26px;
+  width: auto;
+  max-width: min(200px, 72vw);
+  object-fit: contain;
+  object-position: center;
+}
+
+/* Keep BrandBased wordmark at brand blue (#1030f5 in SVG); do not invert to white on dark dashboard */
+@media (prefers-color-scheme: dark) {
+  body.bb-platforms-page.bb-brand-theme-settings:not(.dark-mode) .bb-plat-dash-title-typeface {
+    filter: none;
+  }
+}
+
+body.dark-mode.bb-platforms-page.bb-brand-theme-settings .bb-plat-dash-title-typeface {
+  filter: none;
+}
+
+body.bb-platforms-page .bb-plat-dash-title-text {
+  display: block;
+  font: 700 17px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--bb-plat-dash-text);
+}
+
+body.bb-platforms-page .bb-plat-dash-copy {
+  /* Match Products card body: .bb-bts-help (theme) */
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-muted);
+}
+
+body.bb-platforms-page .bb-plat-dash-copy p {
+  margin: 0 0 10px;
+}
+
+body.bb-platforms-page .bb-plat-dash-copy p:last-child {
+  margin-bottom: 0;
+}
+
+body.bb-platforms-page .bb-plat-dash-copy-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+body.bb-platforms-page .bb-plat-dash-lede {
+  margin: 0;
+  text-align: center;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-muted);
+}
+
+body.bb-platforms-page .bb-plat-dash-highlight {
+  display: inline;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bb-plat-dash-highlight);
+  color: var(--bb-plat-dash-highlight-text);
+  font-weight: 500;
+}
+
+body.bb-platforms-page .bb-plat-info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+  line-height: 0;
+}
+
+body.bb-platforms-page .bb-plat-info-btn img {
+  display: block;
+  opacity: 0.92;
+}
+
+body.bb-platforms-page .bb-plat-info-btn:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.95);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+body.bb-platforms-page .bb-plat-info-btn--inline {
+  margin-left: 2px;
+}
+
+body.bb-platforms-page .bb-plat-excluded-urls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding-top: 10px;
+}
+
+body.bb-platforms-page .bb-plat-url-field {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+body.bb-platforms-page .bb-plat-url-field-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body.bb-platforms-page .bb-plat-url-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+/* Narrow oscillation — wide sweeps sample empty padding and glyphs vanish when clipped to text */
+@keyframes bb-plat-url-placeholder-shine {
+  0% {
+    background-position: 56% center;
+  }
+
+  100% {
+    background-position: 44% center;
+  }
+}
+
+@keyframes bb-plat-url-filled-text-shine {
+  0% {
+    background-position: 68% center, center;
+  }
+
+  100% {
+    background-position: 32% center, center;
+  }
+}
+
+body.bb-platforms-page button.bb-plat-url-remove {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  margin-top: 2px;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #b91c1c;
+  border-radius: 10px;
+  background: #dc2626;
+  background-color: #dc2626;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  font: 600 18px/1 Inter, system-ui, sans-serif;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+body.bb-platforms-page button.bb-plat-url-remove:hover {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  background: #b91c1c;
+  background-color: #b91c1c;
+  border-color: #991b1b;
+}
+
+body.bb-platforms-page button.bb-plat-url-remove:focus-visible {
+  outline: 2px solid rgba(220, 38, 38, 0.75);
+  outline-offset: 2px;
+}
+
+@keyframes bb-plat-url-filled-pulse {
+  0%,
+  100% {
+    box-shadow:
+      var(--bb-plat-url-pill-inner-shadow),
+      inset 0 1px 2px rgba(15, 23, 42, 0.06),
+      0 0 0 2px rgba(59, 130, 246, 0.85);
+  }
+  50% {
+    box-shadow:
+      var(--bb-plat-url-pill-inner-shadow),
+      inset 0 1px 2px rgba(15, 23, 42, 0.06),
+      0 0 0 4px rgba(96, 165, 250, 0.55),
+      0 0 18px 3px rgba(59, 130, 246, 0.35);
+  }
+}
+
+body.bb-platforms-page .bb-plat-url-input {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--bb-plat-url-pill-border, rgba(255, 255, 255, 0.72));
+  border-radius: 30px;
+  padding: 14px 48px 14px 16px;
+  font: 600 13px/1.35 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-url-pill-text, var(--bb-plat-input-text, #000000));
+  -webkit-text-fill-color: var(--bb-plat-url-pill-text, var(--bb-plat-input-text, #000000));
+  background: var(--bb-plat-url-pill-bg);
+  box-shadow: var(--bb-plat-url-pill-inner-shadow);
+  backdrop-filter: blur(var(--bb-plat-url-pill-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--bb-plat-url-pill-blur, 12px));
+  caret-color: var(--bb-plat-url-pill-text, var(--bb-plat-input-text, #000000));
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body.bb-platforms-page .bb-plat-url-input {
+    background: var(--bb-plat-input-bg);
+    border: 1px solid var(--bb-plat-input-border);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  @keyframes bb-plat-url-filled-pulse {
+    0%,
+    100% {
+      box-shadow:
+        inset 0 1px 2px rgba(15, 23, 42, 0.08),
+        0 0 0 2px rgba(59, 130, 246, 0.85);
+    }
+    50% {
+      box-shadow:
+        inset 0 1px 2px rgba(15, 23, 42, 0.08),
+        0 0 0 4px rgba(96, 165, 250, 0.55),
+        0 0 18px 3px rgba(59, 130, 246, 0.35);
+    }
+  }
+}
+
+body.bb-platforms-page .bb-plat-url-input::placeholder {
+  color: var(--bb-plat-url-placeholder-color, #000000);
+  opacity: 1;
+}
+
+body.bb-platforms-page .bb-plat-url-input::-webkit-input-placeholder {
+  color: var(--bb-plat-url-placeholder-color, #000000);
+  opacity: 1;
+}
+
+body.bb-platforms-page .bb-plat-url-input::-moz-placeholder {
+  color: var(--bb-plat-url-placeholder-color, #000000);
+  opacity: 1;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  body.bb-platforms-page .bb-plat-url-input:placeholder-shown::placeholder,
+  body.bb-platforms-page .bb-plat-url-input:placeholder-shown::-webkit-input-placeholder,
+  body.bb-platforms-page .bb-plat-url-input:placeholder-shown::-moz-placeholder {
+    color: transparent;
+    opacity: 1;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(
+      95deg,
+      var(--bb-plat-url-placeholder-shine-base, #0f172a) 0%,
+      var(--bb-plat-url-placeholder-shine-base, #0f172a) 40%,
+      var(--bb-plat-url-placeholder-shine-highlight, #cbd5e1) 50%,
+      var(--bb-plat-url-placeholder-shine-base, #0f172a) 60%,
+      var(--bb-plat-url-placeholder-shine-base, #0f172a) 100%
+    );
+    background-size: 200% 100%;
+    background-position: 50% center;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: bb-plat-url-placeholder-shine 3.2s ease-in-out infinite alternate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.bb-platforms-page .bb-plat-url-input:placeholder-shown::placeholder,
+    body.bb-platforms-page .bb-plat-url-input:placeholder-shown::-webkit-input-placeholder,
+    body.bb-platforms-page .bb-plat-url-input:placeholder-shown::-moz-placeholder {
+      animation: none;
+      background-image: none;
+      color: var(--bb-plat-url-placeholder-color, #000000);
+      -webkit-text-fill-color: var(--bb-plat-url-placeholder-color, #000000);
+    }
+  }
+}
+
+/* Typed URL value — brand purple; shine layered via @supports below */
+body.bb-platforms-page .bb-plat-url-input:not(:placeholder-shown) {
+  outline: none;
+  color: var(--bb-plat-url-filled-base, #635bff);
+  -webkit-text-fill-color: var(--bb-plat-url-filled-base, #635bff);
+  caret-color: var(--bb-plat-url-filled-base, #635bff);
+  animation: bb-plat-url-filled-pulse 2.2s ease-in-out infinite;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  body.bb-platforms-page .bb-plat-url-input:not(:placeholder-shown) {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    caret-color: var(--bb-plat-url-filled-base, #635bff);
+    background-color: transparent;
+    background-image:
+      linear-gradient(
+        95deg,
+        var(--bb-plat-url-filled-base, #635bff) 0%,
+        var(--bb-plat-url-filled-base, #635bff) 38%,
+        var(--bb-plat-url-filled-highlight, #ddd6fe) 50%,
+        var(--bb-plat-url-filled-base, #635bff) 62%,
+        var(--bb-plat-url-filled-base, #635bff) 100%
+      ),
+      linear-gradient(0deg, var(--bb-plat-url-pill-bg), var(--bb-plat-url-pill-bg));
+    background-size: 260% 100%, 100% 100%;
+    background-position: 50% center, center;
+    background-repeat: no-repeat, no-repeat;
+    -webkit-background-clip: text, padding-box;
+    background-clip: text, padding-box;
+    animation-name: bb-plat-url-filled-pulse, bb-plat-url-filled-text-shine;
+    animation-duration: 2.2s, 2.6s;
+    animation-timing-function: ease-in-out, ease-in-out;
+    animation-iteration-count: infinite, infinite;
+    animation-direction: normal, alternate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.bb-platforms-page .bb-plat-url-input:not(:placeholder-shown) {
+      animation-name: bb-plat-url-filled-pulse;
+      animation-duration: 2.2s;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-direction: normal;
+      color: var(--bb-plat-url-filled-base, #635bff);
+      -webkit-text-fill-color: var(--bb-plat-url-filled-base, #635bff);
+      background: var(--bb-plat-url-pill-bg);
+      background-image: none;
+      -webkit-background-clip: border-box;
+      background-clip: border-box;
+    }
+  }
+}
+
+body.bb-platforms-page .bb-plat-url-input:-webkit-autofill,
+body.bb-platforms-page .bb-plat-url-input:-webkit-autofill:hover,
+body.bb-platforms-page .bb-plat-url-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--bb-plat-url-pill-text, var(--bb-plat-input-text, #000000));
+  border-radius: 30px;
+  box-shadow: 0 0 0 1000px var(--bb-plat-url-pill-autofill-cover, var(--bb-plat-input-bg)) inset;
+}
+
+body.bb-platforms-page .bb-plat-url-input:-webkit-autofill:not(:placeholder-shown) {
+  -webkit-text-fill-color: var(--bb-plat-url-filled-base, #635bff);
+  animation: bb-plat-url-filled-pulse 2.2s ease-in-out infinite;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  body.bb-platforms-page .bb-plat-url-input:-webkit-autofill:not(:placeholder-shown) {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    background-color: transparent;
+    background-image:
+      linear-gradient(
+        95deg,
+        var(--bb-plat-url-filled-base, #635bff) 0%,
+        var(--bb-plat-url-filled-base, #635bff) 38%,
+        var(--bb-plat-url-filled-highlight, #ddd6fe) 50%,
+        var(--bb-plat-url-filled-base, #635bff) 62%,
+        var(--bb-plat-url-filled-base, #635bff) 100%
+      ),
+      linear-gradient(0deg, var(--bb-plat-url-pill-bg), var(--bb-plat-url-pill-bg));
+    background-size: 260% 100%, 100% 100%;
+    background-position: 50% center, center;
+    background-repeat: no-repeat, no-repeat;
+    -webkit-background-clip: text, padding-box;
+    background-clip: text, padding-box;
+    animation-name: bb-plat-url-filled-pulse, bb-plat-url-filled-text-shine;
+    animation-duration: 2.2s, 2.6s;
+    animation-timing-function: ease-in-out, ease-in-out;
+    animation-iteration-count: infinite, infinite;
+    animation-direction: normal, alternate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.bb-platforms-page .bb-plat-url-input:-webkit-autofill:not(:placeholder-shown) {
+      animation-name: bb-plat-url-filled-pulse;
+      animation-duration: 2.2s;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-direction: normal;
+      color: var(--bb-plat-url-filled-base, #635bff);
+      -webkit-text-fill-color: var(--bb-plat-url-filled-base, #635bff);
+      background: var(--bb-plat-url-pill-bg);
+      background-image: none;
+      -webkit-background-clip: border-box;
+      background-clip: border-box;
+    }
+  }
+}
+
+body.bb-platforms-page .bb-plat-url-input:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.65);
+  outline-offset: 0;
+}
+
+body.bb-platforms-page .bb-plat-url-input:focus:not(:placeholder-shown) {
+  outline: none;
+}
+
+body.bb-platforms-page .bb-plat-url-input-globe {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  pointer-events: none;
+  opacity: 0.95;
+}
+
+body.bb-platforms-page .bb-plat-add-url {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: 600 13px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+body.bb-platforms-page .bb-plat-add-url:hover {
+  text-decoration: underline;
+}
+
+body.bb-platforms-page .bb-plat-add-url:hover .bb-plat-add-url__icon {
+  opacity: 0.95;
+  transform: scale(1.06);
+}
+
+body.bb-platforms-page .bb-plat-add-url__icon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: var(--bb-plat-add-icon-filter);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+@media (min-width: 1351px) {
+  body.bb-platforms-page .bb-plat-add-url__icon {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+body.bb-platforms-page .bb-plat-add-url__label {
+  line-height: 1.25;
+}
+
+body.bb-platforms-page .bb-plat-sync-btn {
+  margin-top: auto;
+  appearance: none;
+  box-sizing: border-box;
+  width: 100%;
+  cursor: pointer;
+  border: none;
+  border-radius: 30px;
+  padding: 14px 22px;
+  font: 700 15px/1.2 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: #fff;
+  background: var(--bb-plat-sync-bg);
+  box-shadow: 0 8px 24px rgba(99, 91, 255, 0.38);
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+
+body.bb-platforms-page .bb-plat-dash-panel--excluded .bb-plat-sync-btn {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+body.bb-platforms-page .bb-plat-sync-btn:hover {
+  background: var(--bb-plat-sync-bg-hover);
+}
+
+body.bb-platforms-page .bb-plat-sync-btn:active {
+  transform: translateY(1px);
+}
+
+body.bb-platforms-page .bb-plat-sync-btn:focus-visible {
+  outline: 2px solid rgba(167, 139, 250, 0.95);
+  outline-offset: 3px;
+}
+
+/* Scrollable regions — partners list; excluded list fills 400px card and scrolls with a thin bar */
+body.bb-platforms-page .bb-plat-global-scroll {
+  min-height: 380px;
+  max-height: var(--bb-plat-scroll-region-max);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 4px -6px 0;
+  padding: 0 6px;
+  border-top: 1px solid var(--bb-plat-row-line);
+  border-bottom: 1px solid var(--bb-plat-row-line);
+  scrollbar-width: thin;
+  scrollbar-color: var(--bb-plat-scrollbar-thumb) transparent;
+}
+
+body.bb-platforms-page .bb-plat-excluded-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  margin: 4px 0 0;
+  padding: 0 4px;
+  border-top: 1px solid var(--bb-plat-row-line);
+  border-bottom: 1px solid var(--bb-plat-row-line);
+  scrollbar-width: thin;
+  scrollbar-color: var(--bb-plat-scrollbar-thumb) transparent;
+}
+
+body.bb-platforms-page .bb-plat-excluded-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+body.bb-platforms-page .bb-plat-excluded-scroll::-webkit-scrollbar-thumb {
+  background: var(--bb-plat-scrollbar-thumb);
+  border-radius: 999px;
+}
+
+body.bb-platforms-page .bb-plat-global-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+body.bb-platforms-page .bb-plat-global-scroll::-webkit-scrollbar-thumb {
+  background: var(--bb-plat-scrollbar-thumb);
+  border-radius: 999px;
+}
+
+body.bb-platforms-page .bb-plat-platform-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+body.bb-platforms-page .bb-plat-platform-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--bb-plat-row-line);
+}
+
+body.bb-platforms-page .bb-plat-platform-row:last-child {
+  border-bottom: none;
+}
+
+body.bb-platforms-page .bb-plat-platform-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--bb-plat-dash-border);
+  padding: 6px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+body.bb-platforms-page .bb-plat-platform-row--off .bb-plat-platform-logo {
+  filter: grayscale(1);
+  opacity: 0.65;
+}
+
+/* !important: vendor-bb-shared-ui forces `body * { color: #fff !important }` in dark OS — keep row labels on-token */
+body.bb-platforms-page .bb-plat-platform-name {
+  font: 600 14px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-text) !important;
+  min-width: 0;
+  transition: color 0.2s ease;
+}
+
+body.bb-platforms-page .bb-plat-platform-row--off .bb-plat-platform-name {
+  color: var(--bb-plat-platform-name-off) !important;
+}
+
+/* Toggle: Hidden [switch] Visible */
+body.bb-platforms-page .bb-plat-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+body.bb-platforms-page .bb-plat-toggle__label {
+  font: 600 11px/1.2 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--bb-plat-dash-muted);
+  text-transform: none;
+}
+
+body.bb-platforms-page .bb-plat-toggle__switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+body.bb-platforms-page .bb-plat-toggle__input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+body.bb-platforms-page .bb-plat-toggle__track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--bb-plat-toggle-track-off);
+  transition: background 0.2s ease;
+}
+
+body.bb-platforms-page .bb-plat-toggle__track::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+body.bb-platforms-page .bb-plat-toggle__input:checked + .bb-plat-toggle__track {
+  background: var(--bb-plat-toggle-on);
+}
+
+body.bb-platforms-page .bb-plat-toggle__input:checked + .bb-plat-toggle__track::after {
+  transform: translateX(20px);
+}
+
+body.bb-platforms-page .bb-plat-toggle__input:focus-visible + .bb-plat-toggle__track {
+  outline: 2px solid rgba(147, 197, 253, 0.95);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  body.bb-platforms-page .bb-plat-toggle__label--left,
+  body.bb-platforms-page .bb-plat-toggle__label--right {
+    display: none;
+  }
+
+  body.bb-platforms-page .bb-plat-toggle {
+    gap: 0;
+  }
+}
+
+@media (max-width: 1350px) {
+  body.bb-platforms-page .bb-plat-dash-panel {
+    max-width: 100%;
+  }
+}
+
+@media not (prefers-color-scheme: dark) {
+  body.bb-platforms-page.bb-brand-theme-settings:not(.dark-mode) .bb-plat-dash-panel {
+    background: #f2f3f896 !important;
+  }
+
+  body.bb-platforms-page.bb-brand-theme-settings:not(.dark-mode) .bb-plat-dash-panel--excluded {
+    background: #fafafc !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Allow the Platforms page to scroll like a normal document inside
+   the dashboard iframe (admin + brand console): grow with content,
+   bottom cushion past the partners panel / CTAs.
+   ------------------------------------------------------------------ */
+html,
+body.bb-platforms-page {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 100% !important;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+}
+
+body.bb-platforms-page .bb-theme-shell {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 140px !important;
+}
+
+body.bb-platforms-page .bb-bts-layout.bb-plat-dash-layout {
+  height: auto;
+  min-height: 0;
+  margin-top: -45px;
+  overflow: visible;
+}

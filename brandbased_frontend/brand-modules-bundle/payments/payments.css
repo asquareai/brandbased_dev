@@ -1,0 +1,545 @@
+/* Payments module — load shared shell tokens/layout only; all additions scoped to body.bb-payments-page */
+@import url("../products/products.theme-design.css?v=payments-bundle-1");
+
+/* ---- Layout: no left-column scroll fades; push columns below header (Shopify admin–like breathing room) ---- */
+body.bb-payments-page .bb-bts-left::before,
+body.bb-payments-page .bb-bts-left::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Tighter gap below title + extra vertical offset for columns */
+body.bb-payments-page .bb-bts-layout {
+  padding-top: calc(clamp(6px, 1.5vh, 20px) + 30px);
+}
+
+body.bb-payments-page .bb-module-head {
+  width: 100%;
+  max-width: 100%;
+  /* Pull the layout grid up under the heading so the page sits tighter
+     to the title. Negative bottom margin requested by design. */
+  margin-bottom: -30px;
+}
+
+body.bb-payments-page .bb-module-head h1 {
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  /* Relative to theme: pull-up (-22px) + requested offset (+30px) */
+  margin: calc(-22px + 30px) 0 4px 0;
+}
+
+/* `.bb-bts-left` adds `padding-left: 10px` on desktop (for the
+   left-side scrollbar gutter) so the left card sits 10px in from
+   the grid track. Match that on the page title so they share a
+   vertical edge — but ONLY on desktop. Below 1351px the shared
+   theme collapses the layout to a single column with no scrollbar
+   gutter, so the title should sit flush left like it did before. */
+@media (min-width: 1351px) {
+  body.bb-payments-page .bb-module-head h1 {
+    padding-left: 10px;
+  }
+}
+
+/* Middle vertical divider (the shared `.bb-bts-layout::before` pill
+   that separates the left form column from the right preview column
+   on desktop) — Payments wants it 20% shorter than the theme default.
+   Base rule: `top: 5%; height: 90%;` → spans 5%→95%. We shrink height
+   90% × 0.8 = 72% and centre it by setting `top: 14%` so the divider
+   loses equal height off the top and bottom. Scoped to Payments only
+   so other pages that share `products.theme-design.css` are untouched. */
+@media (min-width: 1351px) {
+  body.bb-payments-page .bb-bts-layout::before {
+    top: 14% !important;
+    height: 72% !important;
+  }
+}
+
+/* Shopify-inspired admin tokens (scoped — never affects other bundle pages) */
+body.bb-payments-page.bb-brand-theme-settings {
+  --bb-pay-shopify-green: #008060;
+  --bb-pay-shopify-green-hover: #006e52;
+  --bb-pay-shopify-surface: #f6f6f7;
+  --bb-pay-muted: #6d7175;
+  --bb-pay-ink: #202223;
+  --bb-pay-card-border: #e1e3e5;
+  --bb-pay-card-bg: #ffffff;
+  --bb-pay-card-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Match Products page shell typography (products.theme-design.css .bb-theme-shell) */
+body.bb-payments-page .bb-theme-shell {
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* ---- Payments page: isolate layout chrome from Products preview column ---- */
+body.bb-payments-page .bb-bts-right.bb-bts-right--payouts {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1351px) {
+  body.bb-payments-page .bb-bts-layout .bb-bts-right--payouts {
+    position: sticky;
+    top: 16px;
+    align-self: start;
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 15, 18, 0.22) transparent;
+  }
+  body.bb-payments-page .bb-bts-layout .bb-bts-right--payouts::-webkit-scrollbar {
+    width: 10px;
+  }
+  body.bb-payments-page .bb-bts-layout .bb-bts-right--payouts::-webkit-scrollbar-thumb {
+    background: rgba(15, 15, 18, 0.22);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+}
+
+/* Cancel Products preview column lift in mid-width desktop band */
+@media (min-width: 1480px) and (max-width: 1650px) {
+  body.bb-payments-page .bb-bts-layout .bb-bts-right--payouts {
+    transform: none !important;
+    top: 16px !important;
+  }
+  body.bb-payments-page .bb-pay-column-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+}
+
+/* BrandBased + “Powered by” + Stripe (left column) */
+body.bb-payments-page .bb-pay-powered-lockup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 2px 0 14px 0;
+  width: 100%;
+}
+
+body.bb-payments-page .bb-pay-brand-typeface {
+  display: block;
+  height: 26px;
+  width: auto;
+  max-width: min(168px, 52vw);
+  object-fit: contain;
+  object-position: left center;
+}
+
+body.bb-payments-page .bb-pay-powered-by-text {
+  font: 600 12px/1.35 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--bb-pay-muted);
+  letter-spacing: 0.02em;
+}
+
+/* Stripe wordmark */
+body.bb-payments-page .bb-pay-stripe-logo {
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+body.bb-payments-page .bb-pay-stripe-logo--lockup {
+  width: 72px;
+  flex-shrink: 0;
+}
+
+body.bb-payments-page .bb-pay-stripe-logo--hero {
+  width: 78px;
+  flex-shrink: 0;
+}
+
+body.bb-payments-page .bb-pay-payouts-lockup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 18px;
+  width: 100%;
+}
+
+body.bb-payments-page .bb-pay-payouts-brand-icon {
+  display: block;
+  height: calc(32px * 1.21);
+  width: auto;
+  max-width: min(154px, 42vw);
+  object-fit: contain;
+}
+
+body.bb-payments-page .bb-pay-payouts-arrow {
+  display: block;
+  height: 22px;
+  width: auto;
+  flex-shrink: 0;
+  opacity: 0.72;
+}
+
+body.bb-payments-page .bb-bts-right--payouts .bb-bts-cta h2 {
+  color: #fff;
+}
+
+body.bb-payments-page .bb-pay-platforms-cta .bb-pay-platforms-cta__help {
+  color: #fff !important;
+}
+
+/* Same track width as left column cards — desktop 2-col only; stacked layout stays full width */
+@media (min-width: 1351px) {
+  body.bb-payments-page .bb-bts-right--payouts > .bb-pay-payouts-head,
+  body.bb-payments-page .bb-bts-right--payouts > .bb-pay-payouts-card,
+  body.bb-payments-page .bb-bts-right--payouts > .bb-pay-platforms-cta {
+    max-width: min(var(--bb-bts-left-col-max, 631px), 100%);
+    width: 100%;
+    align-self: flex-start;
+    box-sizing: border-box;
+  }
+}
+
+body.bb-payments-page .bb-pay-platforms-cta {
+  padding: 18px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+body.bb-payments-page .bb-pay-platforms-cta .bb-bts-cta-actions {
+  justify-content: flex-start;
+}
+
+body.bb-payments-page .bb-pay-platforms-cta .bb-bts-cta-btn {
+  width: 100%;
+  max-width: none;
+}
+
+body.bb-payments-page .bb-pay-payouts-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+body.bb-payments-page .bb-pay-column-title {
+  text-align: center;
+  font: 600 22px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--bb-pay-ink);
+}
+
+body.bb-payments-page .bb-pay-shopify-section-title {
+  margin: 0 0 8px 0;
+  font: 600 18px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--bb-pay-ink);
+}
+
+body.bb-payments-page .bb-pay-shopify-section-title--compact {
+  font-size: 16px;
+}
+
+body.bb-payments-page .bb-pay-shopify-lede {
+  margin: 0 0 16px 0;
+  /* Match Products / theme card body: .bb-bts-help */
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: var(--bb-pay-muted);
+}
+
+body.bb-payments-page .bb-pay-shopify-lede--tight {
+  margin-bottom: 12px;
+}
+
+body.bb-payments-page .bb-pay-shopify-footnote {
+  margin: 14px 0 0;
+  font: 400 13px/1.35 Roboto, system-ui, sans-serif;
+  color: var(--bb-pay-muted);
+}
+
+body.bb-payments-page .bb-pay-shopify-primary-btn {
+  appearance: none;
+  box-sizing: border-box;
+  width: 100%;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 18px;
+  font: 600 14px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: #fff;
+  background: var(--bb-pay-shopify-green);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+
+body.bb-payments-page .bb-pay-shopify-primary-btn:hover {
+  background: var(--bb-pay-shopify-green-hover);
+}
+
+body.bb-payments-page .bb-pay-shopify-primary-btn:active {
+  transform: translateY(1px);
+}
+
+body.bb-payments-page .bb-pay-shopify-primary-btn:focus-visible {
+  outline: 2px solid var(--bb-pay-shopify-green);
+  outline-offset: 2px;
+}
+
+/* Shopify-like flat cards on this page only */
+body.bb-payments-page .bb-bts-left > .bb-bts-card {
+  padding: 18px;
+}
+
+body.bb-payments-page .bb-pay-settings-card,
+body.bb-payments-page .bb-pay-setup-card,
+body.bb-payments-page .bb-pay-payouts-card {
+  background: var(--bb-pay-card-bg);
+  border: 1px solid var(--bb-pay-card-border);
+  border-radius: 12px;
+  box-shadow: var(--bb-pay-card-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body.bb-payments-page .bb-pay-payouts-card {
+  padding: 18px;
+}
+
+body.bb-payments-page .bb-pay-settings-card + .bb-pay-setup-card {
+  margin-top: 14px;
+}
+
+/* Nested sections — flatter, Shopify admin–style insets (overrides glassy theme panels) */
+body.bb-payments-page .bb-pay-setup-card .bb-bts-panel,
+body.bb-payments-page .bb-pay-payouts-card .bb-bts-panel {
+  background: var(--bb-pay-card-bg);
+  border: 1px solid var(--bb-pay-card-border);
+  border-radius: 8px;
+  box-shadow: none;
+  padding: 14px;
+}
+
+body.bb-payments-page .bb-bts-help {
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: var(--bb-pay-muted) !important;
+}
+
+/* Form controls — bb-pay-* only */
+body.bb-payments-page .bb-pay-setup-card .bb-pay-shopify-section-title--compact:first-child {
+  margin-top: 0;
+}
+
+body.bb-payments-page .bb-pay-help-flush {
+  margin-top: 0;
+}
+
+body.bb-payments-page .bb-pay-methods-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin: 10px 0 0 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 720px) {
+  body.bb-payments-page .bb-pay-methods-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+body.bb-payments-page .bb-pay-method-tile {
+  position: relative;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid var(--bb-pay-card-border);
+  border-radius: 10px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+}
+
+body.bb-payments-page .bb-pay-method-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body.bb-payments-page .bb-pay-method-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: calc(28px * 1.2);
+  object-fit: contain;
+  object-position: center;
+  border-radius: 4px;
+}
+
+body.bb-payments-page .bb-pay-fields--after-methods {
+  margin-top: 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--bb-pay-card-border);
+}
+
+body.bb-payments-page .bb-pay-panel > h3 {
+  margin: 0 0 6px 0;
+  font: 600 14px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: var(--bb-pay-ink);
+}
+
+body.bb-payments-page .bb-pay-panel + .bb-pay-panel {
+  margin-top: 10px;
+}
+
+body.bb-payments-page .bb-pay-input,
+body.bb-payments-page .bb-pay-select,
+body.bb-payments-page .bb-pay-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid var(--bb-pay-card-border);
+  background: var(--bb-pay-card-bg);
+  padding: 10px 12px;
+  font: 400 13px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--bb-pay-ink);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+}
+
+body.bb-payments-page .bb-pay-textarea {
+  resize: vertical;
+  min-height: 92px;
+}
+
+body.bb-payments-page .bb-pay-label {
+  font: 600 12px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--bb-pay-muted);
+}
+
+body.bb-payments-page .bb-pay-fields {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+
+body.bb-payments-page .bb-pay-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+body.bb-payments-page .bb-pay-field--wide {
+  grid-column: 1 / -1;
+}
+
+body.bb-payments-page .bb-pay-payouts-view-btn {
+  appearance: none;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 6px;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 18px;
+  font: 600 14px/1.25 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  color: #fff;
+  background: #635bff;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+  transition: background 0.15s ease, transform 0.08s ease;
+}
+
+body.bb-payments-page .bb-pay-payouts-view-btn:hover {
+  background: #5249e8;
+}
+
+body.bb-payments-page .bb-pay-payouts-view-btn:active {
+  transform: translateY(1px);
+}
+
+body.bb-payments-page .bb-pay-payouts-view-btn:focus-visible {
+  outline: 2px solid #635bff;
+  outline-offset: 2px;
+}
+
+body.bb-payments-page .bb-pay-divider {
+  height: 1px;
+  margin: 18px 0 14px;
+  background: var(--bb-pay-card-border);
+  border: 0;
+}
+
+body.dark-mode.bb-payments-page.bb-brand-theme-settings {
+  --bb-pay-muted: rgba(255, 255, 255, 0.62);
+  --bb-pay-ink: rgba(255, 255, 255, 0.94);
+  --bb-pay-card-border: rgba(255, 255, 255, 0.14);
+  --bb-pay-card-bg: rgba(28, 28, 32, 0.92);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) {
+    --bb-pay-muted: rgba(255, 255, 255, 0.62);
+    --bb-pay-ink: rgba(255, 255, 255, 0.94);
+    --bb-pay-card-border: rgba(255, 255, 255, 0.14);
+    --bb-pay-card-bg: rgba(28, 28, 32, 0.92);
+  }
+}
+
+body.dark-mode.bb-payments-page.bb-brand-theme-settings .bb-pay-input,
+body.dark-mode.bb-payments-page.bb-brand-theme-settings .bb-pay-select,
+body.dark-mode.bb-payments-page.bb-brand-theme-settings .bb-pay-textarea {
+  border-color: var(--bb-pay-card-border);
+  background: rgba(18, 18, 22, 0.65);
+  color: var(--bb-pay-ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-input,
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-select,
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-textarea {
+    border-color: var(--bb-pay-card-border);
+    background: rgba(18, 18, 22, 0.65);
+    color: var(--bb-pay-ink);
+  }
+}
+
+body.dark-mode.bb-payments-page.bb-brand-theme-settings .bb-pay-payouts-arrow {
+  opacity: 1;
+  filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-payouts-arrow {
+    opacity: 1;
+    filter: invert(1);
+  }
+}
+
+@media not (prefers-color-scheme: dark) {
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-settings-card,
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-setup-card,
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-payouts-card,
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-setup-card .bb-bts-panel,
+  body.bb-payments-page.bb-brand-theme-settings:not(.dark-mode) .bb-pay-payouts-card .bb-bts-panel {
+    background: #f2f3f896 !important;
+  }
+}
+

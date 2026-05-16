@@ -1,0 +1,1319 @@
+/* Brands page — sits on top of platforms.css + hotspots.css base chrome.
+   The page reuses Platforms / Hotspots layout primitives and only adds
+   the brand-card grid + circular logo bubbles. */
+
+/* ========================================================================
+   Page-level: behave like the other long-form info pages (scroll, centred).
+   ======================================================================== */
+
+html:has(body.bb-brands-page),
+body.bb-brands-page {
+  height: auto !important;
+  min-height: 100%;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+}
+
+body.bb-brands-page .bb-theme-shell,
+body.bb-brands-page .bb-bts-layout.bb-hotspots-dash-layout,
+body.bb-brands-page .bb-hotspots-center {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Widened from the previous 1109px cap so 6 brand cards fit
+   comfortably across on desktops. Heading + grid container share
+   the same width so the page title stays aligned with the cards. */
+body.bb-brands-page .bb-hotspots-center {
+  width: min(85vw, 1320px);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+body.bb-brands-page .bb-module-head,
+body.bb-brands-page .bb-module-head h1 {
+  width: min(85vw, 1320px);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.bb-brands-page .bb-module-head h1 {
+  text-align: left;
+  margin: 0 0 16px 0;
+}
+
+@media (max-width: 900px) {
+  body.bb-brands-page .bb-hotspots-center,
+  body.bb-brands-page .bb-module-head,
+  body.bb-brands-page .bb-module-head h1 {
+    width: 100%;
+  }
+}
+
+/* Match hotspots.css: `.bb-bts-layout.bb-hotspots-dash-layout` gets
+   horizontal padding at ≤600px, but `.bb-module-head` is a sibling
+   above the layout — without the same inset the "Brands" title sits
+   flush left while the grid is guttered (obvious in the dashboard
+   iframe on narrow phones). */
+@media (max-width: 600px) {
+  body.bb-brands-page .bb-module-head {
+    box-sizing: border-box;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* ========================================================================
+   Brand grid
+   ======================================================================== */
+
+body.bb-brands-page .bb-brands-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+body.bb-brands-page .bb-brands-grid {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  /* `minmax(140px, 1fr)` lets up to **eight** columns sit inside the
+     widened 1320px container on desktop (8 × 140px + 7 × 18px gap ≈
+     1246px), while still flowing down to fewer columns on narrower
+     viewports via `auto-fill`. The card itself is capped at 200px so
+     the layout still reads tidy when columns stretch. */
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 28px 18px;
+  /* Start-align cards so the first column lines up with the page
+     title (left edge of the shared min(85vw, 1320px) column). */
+  justify-items: start;
+}
+
+@media (max-width: 720px) {
+  body.bb-brands-page .bb-brands-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 22px 14px;
+  }
+}
+
+body.bb-brands-page .bb-brands-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  max-width: 200px;
+  text-align: left;
+}
+
+/* The circular brand bubble — translucent glass surface with a crisp outline,
+   a deep cast shadow, and an infinite "breathing" loop. Each card is given a
+   per-position animation-delay further down so the row isn't in unison. */
+body.bb-brands-page .bb-brands-circle {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  padding: 2px;
+  border-radius: 50%;
+  /* Layered "glass" body, painted back-to-front:
+       1. Soft caustic glow at the bottom (refracted light)
+       2. Broad specular wash at the top-left (incoming light)
+       3. Translucent body — slightly cooler at the bottom for depth */
+  background:
+    radial-gradient(ellipse at 50% 95%, rgba(255, 255, 255, 0.22), transparent 58%),
+    radial-gradient(ellipse at 32% 18%, rgba(255, 255, 255, 0.34), transparent 55%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(198, 198, 198, 0.24) 55%,
+      rgba(0, 0, 0, 0.12) 100%
+    );
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  outline: 1px solid rgba(255, 255, 255, 0.34);
+  outline-offset: 2px;
+  box-shadow:
+    /* Outer cast — depth on the page */
+    0 30px 60px -10px rgba(0, 0, 0, 0.55),
+    0 18px 32px rgba(0, 0, 0, 0.32),
+    /* Extra outer bloom so the white rim feels like thick glass, not paint */
+    0 0 0 1px rgba(255, 255, 255, 0.30),
+    0 0 18px rgba(255, 255, 255, 0.14),
+    /* Hairline highlight along the very top — light catching the rim */
+    inset 0 2px 1px rgba(255, 255, 255, 0.40),
+    /* Bright inner bevel just inside the border */
+    inset 0 0 0 2px rgba(255, 255, 255, 0.22),
+    /* Soft inner shading at the bottom — gives the orb volume */
+    inset 0 -10px 18px rgba(0, 0, 0, 0.12),
+    /* Whisper of inner glow on the upper inside edge */
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    /* A tiny dark contact line at the bottom inside edge */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+          backdrop-filter: blur(28px) saturate(160%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  box-sizing: border-box;
+}
+
+/* Wrap that holds the circle + the verification badge. The breathe/pulse
+   animations live on the wrap (not the circle) so the badge moves in sync
+   with the orb. The wrap itself never clips, so the badge can sit on the
+   rim of the circle without being cut off. */
+body.bb-brands-page .bb-brands-circle-wrap {
+  position: relative;
+  width: 116px;
+  height: 116px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+  will-change: transform;
+  animation: bb-brands-breathe 5s ease-in-out infinite;
+  animation-delay: var(--bb-brands-breathe-delay, 0s);
+}
+
+/* NB: only `transform` is animated so the per-theme `box-shadow` (set on
+   `.bb-brands-circle` itself or by the light-mode override) remains the
+   source of truth and stays correct in both colour schemes. */
+@keyframes bb-brands-breathe {
+  0%, 100% { transform: translateY(0)    scale(1);     }
+  50%      { transform: translateY(-3px) scale(1.022); }
+}
+
+/* Per-card breathing-phase stagger so the row of circles feels alive,
+   not synchronised. Pick negative delays so all are mid-cycle at load. */
+body.bb-brands-page .bb-brands-card:nth-child(1) .bb-brands-circle-wrap { --bb-brands-breathe-delay: -0.0s; }
+body.bb-brands-page .bb-brands-card:nth-child(2) .bb-brands-circle-wrap { --bb-brands-breathe-delay: -1.3s; }
+body.bb-brands-page .bb-brands-card:nth-child(3) .bb-brands-circle-wrap { --bb-brands-breathe-delay: -2.6s; }
+body.bb-brands-page .bb-brands-card:nth-child(4) .bb-brands-circle-wrap { --bb-brands-breathe-delay: -3.9s; }
+body.bb-brands-page .bb-brands-card:nth-child(5) .bb-brands-circle-wrap { --bb-brands-breathe-delay: -1.7s; }
+
+/* Hover: faster, more pronounced pulse — overrides the calm breathe. */
+body.bb-brands-page .bb-brands-card:hover .bb-brands-circle-wrap,
+body.bb-brands-page .bb-brands-card:focus-within .bb-brands-circle-wrap {
+  animation: bb-brands-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes bb-brands-pulse {
+  0%, 100% { transform: translateY(-2px) scale(1.06); }
+  50%      { transform: translateY(-5px) scale(1.10); }
+}
+
+/* Status badge — small frosted-glass sticker pinned to the top-right of the
+   circle, sat partly on the rim. The icon SVG is a coloured ring on a
+   transparent background, so the badge surface itself is translucent glass
+   (matches the orb aesthetic) rather than a solid white pad.
+
+   HIDDEN BY DEFAULT now — only shown when the dev "Brand Verification"
+   toggle in dev/export-settings.html is flipped to "Not Verified"
+   (localStorage["bbDevVerifyState"] === "fail"), which adds the
+   `bb-brands-verify-failed` class to the body. Markup lives on every
+   real brand card so the toggle paints the badge across all of them. */
+body.bb-brands-page .bb-brands-badge {
+  position: absolute;
+  /* Float the badge off the orb's top-right rim with visible breathing room
+     between badge and glass surface, rather than overlapping the rim. */
+  top: -8px;
+  right: -8px;
+  left: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.10);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+          backdrop-filter: blur(10px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  padding: 2px;
+  box-sizing: border-box;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.32),
+    0 1px 2px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  z-index: 4;
+  display: none;
+  pointer-events: none;
+  object-fit: contain;
+}
+body.bb-brands-page.bb-brands-verify-failed .bb-brands-badge--unverified {
+  display: block;
+}
+@media (max-width: 720px) {
+  body.bb-brands-page .bb-brands-badge {
+    width: 22px;
+    height: 22px;
+    top: -6px;
+    right: -6px;
+    left: auto;
+  }
+}
+
+/* Light mode: same glass treatment, but with darker rim/shadow tones so
+   the badge stays visible on the pale background. */
+@media (prefers-color-scheme: light) {
+  body.bb-brands-page:not(.dark-mode) .bb-brands-badge {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: rgba(0, 0, 0, 0.18);
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.16),
+      0 1px 2px rgba(0, 0, 0, 0.10),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  }
+}
+body.bb-brands-page.light-mode .bb-brands-badge {
+  background: rgba(255, 255, 255, 0.45);
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.16),
+    0 1px 2px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* ----------------------------------------------------------------
+   Plan-tier preview pill — small glass pill sat on the top-left rim
+   of the brand circle, mirroring the verification badge on the
+   right. Used to preview at-a-glance whether a brand is on a
+   Premium plan. HIDDEN BY DEFAULT — toggled on via the
+   `bb-brands-show-plan` body class, which `brands-page.js` syncs
+   from `localStorage["bbDevShowPlanTier"]`. (The dev page
+   `dev/export-settings.html` flips that flag.)
+   The star silhouette is `premium-start.svg` painted via
+   `mask-image` so we control the colour from CSS.
+   ---------------------------------------------------------------- */
+body.bb-brands-page .bb-brands-plan-pill {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: auto;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 9px 0 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7a73ff 0%, #635bff 100%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 6px 14px rgba(99, 91, 255, 0.48),
+    0 1px 2px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  color: #ffffff;
+  font: 700 9.5px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  z-index: 5;
+  pointer-events: none;
+}
+body.bb-brands-page.bb-brands-show-plan .bb-brands-plan-pill {
+  display: inline-flex;
+}
+
+/* Inline-SVG star — always white in both themes. We keep `fill="#fff"`
+   on the polygon AND set `fill: #fff` here so the colour is locked in
+   regardless of any cascade-level `currentColor` rules elsewhere on
+   the page. (Previously we used `mask-image: url(premium-start.svg)`
+   on a span, which silently rendered black in some browsers when the
+   page was loaded inside the dashboard iframe.) */
+body.bb-brands-page .bb-brands-plan-pill__star {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 auto;
+  display: inline-block;
+  fill: #ffffff;
+  /* Tiny drop shadow lifts the star off the purple body of the pill
+     so it reads crisply against the gradient. */
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.22));
+}
+body.bb-brands-page .bb-brands-plan-pill__star polygon {
+  fill: #ffffff;
+}
+
+body.bb-brands-page .bb-brands-plan-pill__label {
+  display: inline-block;
+}
+
+@media (max-width: 720px) {
+  body.bb-brands-page .bb-brands-plan-pill {
+    top: -6px;
+    left: -6px;
+    height: 20px;
+    padding: 0 8px 0 6px;
+    font-size: 9px;
+  }
+  body.bb-brands-page .bb-brands-plan-pill__star {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* Light-mode tweak: keep the same purple fill but bump the rim and
+   bottom shadow so the pill doesn't drown against the pale page. */
+@media (prefers-color-scheme: light) {
+  body.bb-brands-page:not(.dark-mode) .bb-brands-plan-pill {
+    border-color: rgba(255, 255, 255, 0.92);
+    box-shadow:
+      0 6px 14px rgba(99, 91, 255, 0.36),
+      0 1px 2px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  }
+}
+body.bb-brands-page.light-mode .bb-brands-plan-pill {
+  border-color: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 6px 14px rgba(99, 91, 255, 0.36),
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+}
+
+/* Specular catch-light — a sharp, slightly elliptical white highlight
+   pinned near the top-left, the way a real glass orb reflects a key light.
+   `mix-blend-mode: screen` keeps the brand mark readable beneath. */
+body.bb-brands-page .bb-brands-circle::before {
+  content: "";
+  position: absolute;
+  top: 6%;
+  left: 14%;
+  width: 38%;
+  height: 18%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0.35) 45%,
+    transparent 75%
+  );
+  filter: blur(2px);
+  mix-blend-mode: screen;
+  z-index: 2;
+  transform: rotate(-12deg);
+}
+
+/* Dark mode only: tone the catch-light down so it reads as ambient sheen
+   instead of a hard bright pin-spot. Halved again on user request — should
+   feel like a whisper of light on the surface. Light mode keeps its
+   stronger highlight (defined further down) for legibility on pale bg. */
+@media (prefers-color-scheme: dark) {
+  body.bb-brands-page:not(.light-mode) .bb-brands-circle::before {
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0.09) 45%,
+      transparent 75%
+    );
+    filter: blur(3px);
+  }
+}
+body.bb-brands-page.dark-mode .bb-brands-circle::before {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.25),
+    rgba(255, 255, 255, 0.09) 45%,
+    transparent 75%
+  );
+  filter: blur(3px);
+}
+
+/* Dark mode only: halve the orb's body gradient so the glass surface itself
+   reads quieter / less dramatic. All three layers (bottom caustic, top
+   specular wash, body linear-gradient) and the bottom-shading insets are
+   reduced ~50% from their base values. Light mode is unaffected. */
+@media (prefers-color-scheme: dark) {
+  body.bb-brands-page:not(.light-mode) .bb-brands-circle {
+    background:
+      radial-gradient(ellipse at 50% 95%, rgba(255, 255, 255, 0.11), transparent 58%),
+      radial-gradient(ellipse at 32% 18%, rgba(255, 255, 255, 0.17), transparent 55%),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(198, 198, 198, 0.12) 55%,
+        rgba(0, 0, 0, 0.06) 100%
+      );
+    box-shadow:
+      0 30px 60px -10px rgba(0, 0, 0, 0.55),
+      0 18px 32px rgba(0, 0, 0, 0.32),
+      0 0 0 1px rgba(255, 255, 255, 0.30),
+      0 0 18px rgba(255, 255, 255, 0.14),
+      inset 0 2px 1px rgba(255, 255, 255, 0.20),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.11),
+      inset 0 -10px 18px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.07);
+  }
+}
+body.bb-brands-page.dark-mode .bb-brands-circle {
+  background:
+    radial-gradient(ellipse at 50% 95%, rgba(255, 255, 255, 0.11), transparent 58%),
+    radial-gradient(ellipse at 32% 18%, rgba(255, 255, 255, 0.17), transparent 55%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(198, 198, 198, 0.12) 55%,
+      rgba(0, 0, 0, 0.06) 100%
+    );
+  box-shadow:
+    0 30px 60px -10px rgba(0, 0, 0, 0.55),
+    0 18px 32px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.30),
+    0 0 18px rgba(255, 255, 255, 0.14),
+    inset 0 2px 1px rgba(255, 255, 255, 0.20),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.11),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.07);
+}
+
+/* Circle shine — a soft bright arc that orbits around the rim of each
+   circle forever, like a polished glass orb catching a moving light source.
+   Built with a conic gradient (one bright wedge in an otherwise transparent
+   ring) masked to a thin annulus so the highlight sits on the rim only. */
+body.bb-brands-page .bb-brands-circle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    transparent 30deg,
+    rgba(255, 255, 255, 0.55) 55deg,
+    transparent 80deg,
+    transparent 360deg
+  );
+  /* Restrict the gradient to a thin band hugging the inside of the rim. */
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 0%,
+    transparent 60%,
+    #000 70%,
+    #000 100%
+  );
+          mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent 0%,
+    transparent 60%,
+    #000 70%,
+    #000 100%
+  );
+  mix-blend-mode: screen;
+  will-change: transform;
+  animation: bb-brands-circle-shine 6s linear infinite;
+  animation-delay: var(--bb-brands-circle-shine-delay, 0s);
+}
+
+@keyframes bb-brands-circle-shine {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+/* Stagger the orbit per card — pick negative delays so each circle starts
+   the rotation at a different angle, the row never spins in unison. */
+body.bb-brands-page .bb-brands-card:nth-child(1) .bb-brands-circle::after { --bb-brands-circle-shine-delay: -0.0s; }
+body.bb-brands-page .bb-brands-card:nth-child(2) .bb-brands-circle::after { --bb-brands-circle-shine-delay: -1.7s; }
+body.bb-brands-page .bb-brands-card:nth-child(3) .bb-brands-circle::after { --bb-brands-circle-shine-delay: -3.4s; }
+body.bb-brands-page .bb-brands-card:nth-child(4) .bb-brands-circle::after { --bb-brands-circle-shine-delay: -1.0s; }
+body.bb-brands-page .bb-brands-card:nth-child(5) .bb-brands-circle::after { --bb-brands-circle-shine-delay: -2.6s; }
+
+/* The dashed "Add brand" tile shouldn't glint — it has no surface to shine. */
+body.bb-brands-page .bb-brands-circle--add::after,
+body.bb-brands-page .bb-brands-circle--add::before {
+  display: none;
+}
+
+body.bb-brands-page .bb-brands-logo {
+  position: relative;
+  z-index: 1;
+  width: 64%;
+  height: 64%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Force the imported Nike SVG (which is black) to render white inside the
+   dark circle. Works for any single-colour SVG. */
+body.bb-brands-page .bb-brands-logo--white {
+  filter: brightness(0) invert(1);
+}
+
+/* Letter-mark fallback used when there's no real brand SVG. */
+body.bb-brands-page .bb-brands-fallback {
+  position: relative;
+  z-index: 1;
+  font: 900 44px/1 Roboto, system-ui, sans-serif;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+body.bb-brands-page .bb-brands-fallback--red {
+  color: #e11d2c;
+}
+
+body.bb-brands-page .bb-brands-fallback--dark {
+  color: #111111;
+  font-size: 32px;
+  letter-spacing: 0.02em;
+}
+
+/* Brand name */
+body.bb-brands-page .bb-brands-name {
+  margin: 4px 0 0;
+  font: 700 14px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+}
+
+/* URL pill — translucent capsule with a subtle drop-shadow lifting it off
+   the page, plus an infinite shine sweep travelling left-to-right across it
+   forever (staggered per card). */
+body.bb-brands-page .bb-brands-url {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  outline: 1px solid rgba(255, 255, 255, 0.12);
+  outline-offset: 1px;
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  text-decoration: none;
+  font: 500 11px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  isolation: isolate;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.16),
+    0 6px 14px -4px rgba(0, 0, 0, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.20);
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.bb-brands-page .bb-brands-url::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: bb-brands-url-shine 3.4s linear infinite;
+  animation-delay: var(--bb-brands-shine-delay, 0s);
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+@keyframes bb-brands-url-shine {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(120%);  }
+}
+
+/* Stagger shine per card so the row twinkles rather than flashes in unison. */
+body.bb-brands-page .bb-brands-card:nth-child(1) .bb-brands-url::after { --bb-brands-shine-delay: -0.0s; }
+body.bb-brands-page .bb-brands-card:nth-child(2) .bb-brands-url::after { --bb-brands-shine-delay: -1.1s; }
+body.bb-brands-page .bb-brands-card:nth-child(3) .bb-brands-url::after { --bb-brands-shine-delay: -2.2s; }
+body.bb-brands-page .bb-brands-card:nth-child(4) .bb-brands-url::after { --bb-brands-shine-delay: -0.7s; }
+body.bb-brands-page .bb-brands-card:nth-child(5) .bb-brands-url::after { --bb-brands-shine-delay: -1.8s; }
+
+body.bb-brands-page .bb-brands-url:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 10px 20px -4px rgba(0, 0, 0, 0.42),
+    0 3px 6px rgba(0, 0, 0, 0.24);
+  text-decoration: none;
+}
+
+/* Publish / Unpublish affordance — compact glass square chip with a
+   chevron, sitting just beneath the URL pill. The menu itself is
+   injected by brands-page.js into <body> so it can open above nearby
+   cards without being clipped by the grid. */
+body.bb-brands-page .bb-brands-publish-menu {
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-start;
+  width: 100%;
+  margin-top: 2px;
+}
+
+body.bb-brands-page .bb-brands-publish-trigger {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 26px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  outline: 1px solid rgba(255, 255, 255, 0.14);
+  outline-offset: 1px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+          backdrop-filter: blur(14px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.40),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 4px 12px rgba(0, 0, 0, 0.24);
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+
+body.bb-brands-page .bb-brands-publish-trigger svg {
+  display: block;
+  width: 13px;
+  height: 13px;
+  opacity: 0.88;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.25));
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+body.bb-brands-page .bb-brands-publish-trigger:hover,
+body.bb-brands-page .bb-brands-publish-trigger:focus-visible,
+body.bb-brands-page .bb-brands-publish-trigger[aria-expanded="true"] {
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.14) 100%);
+  border-color: rgba(255, 255, 255, 0.72);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.50),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 8px 18px rgba(0, 0, 0, 0.28);
+}
+
+body.bb-brands-page .bb-brands-publish-trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+body.bb-brands-page .bb-brands-action-popover {
+  position: fixed;
+  z-index: 99990;
+  min-width: 180px;
+  padding: 10px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  outline: none;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+          backdrop-filter: blur(28px) saturate(1.2);
+  isolation: isolate;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+body.bb-brands-page .bb-brands-action-popover--open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+body.bb-brands-page .bb-brands-action-item {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: auto;
+  align-self: stretch;
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+body.bb-brands-page .bb-brands-action-item:hover,
+body.bb-brands-page .bb-brands-action-item:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
+}
+
+body.bb-brands-page .bb-brands-action-item--delete {
+  color: #ff9a9a;
+}
+
+body.bb-brands-page .bb-brands-action-divider {
+  height: 1px;
+  margin: 5px 4px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Add-brand tier menu — same glass pill as Publish/Unpublish; a touch
+   wider so "Freemium" / "Premium" read comfortably. */
+body.bb-brands-page .bb-brands-tier-popover {
+  min-width: 200px;
+}
+
+/* ----------------------------------------------------------------
+   Delete confirm dialog — matches the dropdown's glass language:
+   translucent body, bright bevel, big backdrop blur. Two buttons:
+   a danger-red "Yes, delete" and a quieter Cancel.
+   ---------------------------------------------------------------- */
+body.bb-brands-page .bb-brands-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99995;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 11, 26, 0.42);
+  -webkit-backdrop-filter: blur(4px);
+          backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+body.bb-brands-page .bb-brands-confirm-backdrop--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.bb-brands-page .bb-brands-confirm-dialog {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 22px 22px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  outline: none;
+  background: rgba(255, 255, 255, 0.18);
+  -webkit-backdrop-filter: blur(28px) saturate(1.2);
+          backdrop-filter: blur(28px) saturate(1.2);
+  isolation: isolate;
+  color: #ffffff;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+  transform: translateY(6px) scale(0.985);
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+body.bb-brands-page .bb-brands-confirm-backdrop--open .bb-brands-confirm-dialog {
+  transform: none;
+}
+
+body.bb-brands-page .bb-brands-confirm-title {
+  margin: 0 0 8px;
+  font: 800 16px/1.25 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.005em;
+}
+
+body.bb-brands-page .bb-brands-confirm-body {
+  margin: 0 0 18px;
+  font: 500 13.5px/1.5 Roboto, system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+body.bb-brands-page .bb-brands-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+body.bb-brands-page .bb-brands-confirm-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font: 700 13px/1 Roboto, system-ui, sans-serif;
+  padding: 10px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease,
+              box-shadow 160ms ease, color 160ms ease;
+}
+
+body.bb-brands-page .bb-brands-confirm-btn:hover,
+body.bb-brands-page .bb-brands-confirm-btn:focus-visible {
+  outline: none;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+body.bb-brands-page .bb-brands-confirm-btn--danger,
+body.bb-brands-page.light-mode .bb-brands-confirm-btn--danger,
+body.bb-brands-page.light-mode .bb-brands-confirm-btn.bb-brands-confirm-btn--danger {
+  background: linear-gradient(180deg, #ff6a5b 0%, #e74c3c 100%);
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+  box-shadow:
+    0 10px 22px rgba(231, 76, 60, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+}
+
+body.bb-brands-page .bb-brands-confirm-btn--danger:hover,
+body.bb-brands-page .bb-brands-confirm-btn--danger:focus-visible,
+body.bb-brands-page.light-mode .bb-brands-confirm-btn--danger:hover,
+body.bb-brands-page.light-mode .bb-brands-confirm-btn--danger:focus-visible {
+  background: linear-gradient(180deg, #ff7b6d 0%, #ee5a4b 100%);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #ffffff;
+  box-shadow:
+    0 14px 28px rgba(231, 76, 60, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.50),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.20);
+}
+
+@media (prefers-color-scheme: light) {
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-btn--danger {
+    background: linear-gradient(180deg, #ff6a5b 0%, #e74c3c 100%);
+    border-color: rgba(255, 255, 255, 0.95);
+    color: #ffffff;
+    box-shadow:
+      0 10px 22px rgba(231, 76, 60, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.42),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-btn--danger:hover,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-btn--danger:focus-visible {
+    background: linear-gradient(180deg, #ff7b6d 0%, #ee5a4b 100%);
+    border-color: rgba(255, 255, 255, 0.95);
+    color: #ffffff;
+    box-shadow:
+      0 14px 28px rgba(231, 76, 60, 0.52),
+      inset 0 1px 0 rgba(255, 255, 255, 0.50),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.20);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-dialog {
+    background: rgba(255, 255, 255, 0.42);
+    border-color: rgba(255, 255, 255, 0.72);
+    outline: none;
+    color: #1f2937;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-body {
+    color: rgba(40, 45, 60, 0.86);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-btn {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(0, 0, 0, 0.18);
+    color: #1f2937;
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-btn:hover,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-btn:focus-visible {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.32);
+    color: #1f2937;
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-confirm-btn--danger {
+    background: linear-gradient(180deg, #ff6a5b 0%, #e74c3c 100%);
+    border-color: rgba(255, 255, 255, 0.95);
+    color: #ffffff;
+  }
+}
+
+body.bb-brands-page.light-mode .bb-brands-confirm-dialog {
+  background: rgba(255, 255, 255, 0.42);
+  border-color: rgba(255, 255, 255, 0.72);
+  outline: none;
+  color: #1f2937;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+body.bb-brands-page.light-mode .bb-brands-confirm-body {
+  color: rgba(40, 45, 60, 0.86);
+}
+
+body.bb-brands-page.light-mode .bb-brands-confirm-btn {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(0, 0, 0, 0.18);
+  color: #1f2937;
+}
+
+body.bb-brands-page.light-mode .bb-brands-confirm-btn:hover,
+body.bb-brands-page.light-mode .bb-brands-confirm-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.32);
+  color: #1f2937;
+}
+
+body.bb-brands-page.light-mode .bb-brands-confirm-btn--danger {
+  background: linear-gradient(180deg, #ff6a5b 0%, #e74c3c 100%);
+  border-color: rgba(255, 255, 255, 0.95);
+  color: #ffffff;
+}
+
+@media (prefers-color-scheme: light) {
+  body.bb-brands-page:not(.dark-mode) .bb-brands-publish-trigger {
+    color: rgba(60, 60, 70, 0.78);
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(0, 0, 0, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.68),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-publish-trigger:hover,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-publish-trigger:focus-visible,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-publish-trigger[aria-expanded="true"] {
+    color: rgba(20, 20, 30, 0.95);
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.32);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-action-popover {
+    background: rgba(255, 255, 255, 0.42);
+    border-color: rgba(255, 255, 255, 0.72);
+    outline: none;
+    color: #1f2937;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-action-item:hover,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-action-item:focus-visible {
+    background: rgba(99, 91, 255, 0.10);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-action-divider {
+    background: rgba(0, 0, 0, 0.10);
+  }
+}
+
+body.bb-brands-page.light-mode .bb-brands-publish-trigger {
+  color: rgba(60, 60, 70, 0.78);
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+body.bb-brands-page.light-mode .bb-brands-publish-trigger:hover,
+body.bb-brands-page.light-mode .bb-brands-publish-trigger:focus-visible,
+body.bb-brands-page.light-mode .bb-brands-publish-trigger[aria-expanded="true"] {
+  color: rgba(20, 20, 30, 0.95);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.32);
+}
+
+body.bb-brands-page.light-mode .bb-brands-action-popover {
+  background: rgba(255, 255, 255, 0.42);
+  border-color: rgba(255, 255, 255, 0.72);
+  outline: none;
+  color: #1f2937;
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+body.bb-brands-page.light-mode .bb-brands-action-item:hover,
+body.bb-brands-page.light-mode .bb-brands-action-item:focus-visible {
+  background: rgba(99, 91, 255, 0.10);
+}
+
+body.bb-brands-page.light-mode .bb-brands-action-divider {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+/* ========================================================================
+   "Add brand" tile
+   ======================================================================== */
+
+body.bb-brands-page .bb-brands-card--add {
+  /* lay it out the same as a real card */
+}
+
+body.bb-brands-page .bb-brands-add-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+body.bb-brands-page .bb-brands-circle--add {
+  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.32);
+  outline: none;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.7);
+  transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+body.bb-brands-page .bb-brands-circle--add::before {
+  display: none;
+}
+
+body.bb-brands-page .bb-brands-add-btn:hover .bb-brands-circle--add,
+body.bb-brands-page .bb-brands-add-btn:focus-visible .bb-brands-circle--add {
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #ffffff;
+  transform: scale(1.03);
+}
+
+body.bb-brands-page .bb-brands-name--add {
+  opacity: 0.7;
+}
+body.bb-brands-page .bb-brands-add-btn:hover .bb-brands-name--add {
+  opacity: 1;
+}
+
+/* Click feedback bump — JS toggles this class so the dashed circle pops. */
+body.bb-brands-page .bb-brands-circle--add-bump {
+  animation: bb-brands-add-bump 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes bb-brands-add-bump {
+  0%   { transform: scale(1);    }
+  45%  { transform: scale(1.10); }
+  100% { transform: scale(1);    }
+}
+
+/* ========================================================================
+   Light mode tuning — vendor CSS forces white text in dark mode but the
+   page can also render in light mode. Keep readable in both.
+   ======================================================================== */
+
+@media (prefers-color-scheme: light) {
+  /* Light mode — match the same card-panel surface other modules use
+     (translucent white glass with a soft border + drop shadow). */
+  body.bb-brands-page:not(.dark-mode) .bb-brands-circle {
+    background:
+      radial-gradient(ellipse at 50% 95%, rgba(255, 255, 255, 0.55), transparent 55%),
+      radial-gradient(ellipse at 32% 18%, rgba(255, 255, 255, 0.65), transparent 55%),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.55) 0%,
+        rgba(220, 220, 220, 0.30) 55%,
+        rgba(120, 120, 120, 0.18) 100%
+      );
+    border-color: rgba(255, 255, 255, 0.96);
+    outline-color: rgba(255, 255, 255, 0.52);
+    box-shadow:
+      0 28px 56px -12px rgba(0, 0, 0, 0.22),
+      0 14px 28px rgba(0, 0, 0, 0.12),
+      0 0 0 1px rgba(255, 255, 255, 0.54),
+      0 0 16px rgba(255, 255, 255, 0.26),
+      inset 0 2px 1px rgba(255, 255, 255, 0.65),
+      inset 0 0 0 2px rgba(255, 255, 255, 0.38),
+      inset 0 -10px 18px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.34),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  }
+
+  body.bb-brands-page:not(.dark-mode) .bb-brands-url {
+    border-color: rgba(0, 0, 0, 0.20);
+    outline-color: rgba(255, 255, 255, 0.54);
+    background: rgba(255, 255, 255, 0.50);
+    color: #1a1a1a !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.68),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+      0 6px 14px -4px rgba(0, 0, 0, 0.14),
+      0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-url:hover,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-url:focus,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-url:active,
+  body.bb-brands-page:not(.dark-mode) .bb-brands-url:visited {
+    background: rgba(255, 255, 255, 0.80);
+    border-color: rgba(0, 0, 0, 0.40);
+    color: #1a1a1a !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.78),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+      0 10px 20px -4px rgba(0, 0, 0, 0.18);
+  }
+
+  body.bb-brands-page:not(.dark-mode) .bb-brands-circle--add {
+    border-color: rgba(0, 0, 0, 0.30);
+    background: rgba(0, 0, 0, 0.02);
+    color: rgba(0, 0, 0, 0.55);
+    box-shadow: none;
+  }
+  body.bb-brands-page:not(.dark-mode) .bb-brands-add-btn:hover .bb-brands-circle--add {
+    border-color: rgba(0, 0, 0, 0.55);
+    color: #1a1a1a;
+  }
+}
+
+body.bb-brands-page.light-mode .bb-brands-circle {
+  background:
+    radial-gradient(ellipse at 50% 95%, rgba(255, 255, 255, 0.55), transparent 55%),
+    radial-gradient(ellipse at 32% 18%, rgba(255, 255, 255, 0.65), transparent 55%),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(220, 220, 220, 0.30) 55%,
+      rgba(120, 120, 120, 0.18) 100%
+    );
+  border-color: rgba(255, 255, 255, 0.96);
+  outline-color: rgba(255, 255, 255, 0.52);
+  box-shadow:
+    0 28px 56px -12px rgba(0, 0, 0, 0.22),
+    0 14px 28px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.54),
+    0 0 16px rgba(255, 255, 255, 0.26),
+    inset 0 2px 1px rgba(255, 255, 255, 0.65),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.38),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+}
+body.bb-brands-page.light-mode .bb-brands-url,
+body.bb-brands-page.light-mode .bb-brands-url:hover,
+body.bb-brands-page.light-mode .bb-brands-url:focus,
+body.bb-brands-page.light-mode .bb-brands-url:active,
+body.bb-brands-page.light-mode .bb-brands-url:visited {
+  border-color: rgba(0, 0, 0, 0.20);
+  outline-color: rgba(255, 255, 255, 0.54);
+  background: rgba(255, 255, 255, 0.50);
+  color: #1a1a1a !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.68),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+    0 6px 14px -4px rgba(0, 0, 0, 0.14),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+}
+body.bb-brands-page.light-mode .bb-brands-url:hover {
+  background: rgba(255, 255, 255, 0.80);
+  border-color: rgba(0, 0, 0, 0.40);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10),
+    0 10px 20px -4px rgba(0, 0, 0, 0.18);
+}
+body.bb-brands-page.light-mode .bb-brands-circle--add {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.30);
+  color: rgba(0, 0, 0, 0.55);
+  box-shadow: none;
+}
+
+/* ========================================================================
+   Clickable brand cards — every real brand (not the "Add brand" CTA)
+   navigates to the Brand Verification page when its body is clicked.
+   The JS attaches role="link" + tabindex="0" so we get keyboard focus
+   for free; these rules just provide the visual affordance.
+   ======================================================================== */
+body.bb-brands-page .bb-brands-card[role="link"] {
+  cursor: pointer;
+  border-radius: 18px;
+  transition: transform 200ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+body.bb-brands-page .bb-brands-card[role="link"]:focus-visible {
+  outline: 3px solid rgba(99, 91, 255, 0.55);
+  outline-offset: 6px;
+}
+
+/* Single bounce on the brand circle when the card is activated, mirroring
+   the "Add brand" tile so taps feel responsive before the navigation. */
+body.bb-brands-page .bb-brands-circle--bump {
+  animation: bb-brands-circle-bump 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes bb-brands-circle-bump {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(0.92); }
+  100% { transform: scale(1.02); }
+}
+
+/* ========================================================================
+   Reduced motion
+   ======================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  body.bb-brands-page .bb-brands-card,
+  body.bb-brands-page .bb-brands-url,
+  body.bb-brands-page .bb-brands-circle--add {
+    transition: none !important;
+  }
+  body.bb-brands-page .bb-brands-circle-wrap,
+  body.bb-brands-page .bb-brands-card:hover .bb-brands-circle-wrap,
+  body.bb-brands-page .bb-brands-card:focus-within .bb-brands-circle-wrap,
+  body.bb-brands-page .bb-brands-circle::after,
+  body.bb-brands-page .bb-brands-url::after,
+  body.bb-brands-page .bb-brands-circle--add-bump,
+  body.bb-brands-page .bb-brands-circle--bump {
+    animation: none !important;
+    transform: none !important;
+  }
+}

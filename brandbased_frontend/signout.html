@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrandBased - Signed Out</title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            width:100%;
+            min-height:100vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-family:Arial, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(0,92,255,0.35), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(0,92,255,0.2), transparent 30%),
+                #020617;
+            overflow:hidden;
+        }
+
+        .signout-card{
+            width:420px;
+            max-width:92%;
+            padding:50px 40px;
+            border-radius:28px;
+            background:rgba(255,255,255,0.08);
+            backdrop-filter:blur(18px);
+            border:1px solid rgba(255,255,255,0.12);
+            text-align:center;
+            box-shadow:0 20px 60px rgba(0,0,0,0.35);
+        }
+
+        .brand-logo{
+            width:180px;
+            margin:0 auto 40px;
+        }
+
+        .brand-logo img{
+            width:100%;
+            display:block;
+        }
+
+        .check-icon{
+            width:90px;
+            height:90px;
+            margin:0 auto 30px;
+            border-radius:50%;
+            background:linear-gradient(135deg,#005cff,#4a8dff);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#fff;
+            font-size:42px;
+            font-weight:bold;
+            box-shadow:0 10px 30px rgba(0,92,255,0.45);
+        }
+
+        h1{
+            color:#fff;
+            font-size:34px;
+            margin-bottom:14px;
+            font-weight:800;
+        }
+
+        p{
+            color:rgba(255,255,255,0.78);
+            line-height:1.7;
+            font-size:15px;
+            margin-bottom:34px;
+        }
+
+        .login-btn{
+            width:100%;
+            height:52px;
+            border:none;
+            border-radius:999px;
+            background:#005cff;
+            color:#fff;
+            font-size:16px;
+            font-weight:700;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        .login-btn:hover{
+            transform:translateY(-2px);
+            background:#0d67ff;
+        }
+
+        @media(max-width:600px){
+
+            .signout-card{
+                padding:42px 24px;
+            }
+
+            h1{
+                font-size:28px;
+            }
+
+            .check-icon{
+                width:78px;
+                height:78px;
+                font-size:36px;
+            }
+
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="signout-card">
+
+        <div class="brand-logo">
+            <img src="./assets/images/BB-TYPEFACE-LOGO-white.svg" alt="BrandBased">
+        </div>
+
+        <div class="check-icon">
+            ✓
+        </div>
+
+        <h1>Signed Out</h1>
+
+        <p>
+            You have successfully signed out from your BrandBased account.
+        </p>
+
+        <button class="login-btn" onclick="goLogin()">
+            Return to Login
+        </button>
+
+    </div>
+
+    <script>
+
+        // clear all auth/session
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("account");
+        localStorage.removeItem("is_logged_in");
+        localStorage.removeItem("plan_type");
+        localStorage.removeItem("pin_verified");
+
+        function goLogin(){
+            window.location.href = "index.html";
+        }
+
+    </script>
+
+</body>
+</html>

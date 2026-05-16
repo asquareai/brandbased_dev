@@ -1,0 +1,2750 @@
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden; /* avoid horizontal scroll */
+            box-sizing: border-box;
+            width: 90%;
+            padding: 4%;
+            /* Room for the local dev control bar (optional) */
+            padding-bottom: 96px;
+            text-align: left;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        a {
+  text-decoration: none;
+  color: inherit; /* or set a specific default color */
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: white!important;
+}
+
+
+        .container {
+            box-shadow: 0 0 1rem 0 rgba(232, 232, 232, 0.26);
+        }
+       
+        .image-content {
+            width: 40%;
+        }
+
+
+        .image-content img {
+            width: 55%;
+            margin-top:-130px;
+            border-radius: 0px;
+            object-fit: cover;
+            clip-path: polygon(41% 0, 100% 0%, 100% 100%, 0% 100%);
+            margin-right: -2%;
+            right: 0;
+            padding-right: 0px;
+            position: absolute;
+            height: 100%;
+            transform: translateX(-30px);
+        }
+
+
+/*
+  BB SYSTEM SAFE PATCH
+
+  Keeps compatibility with:
+  - JS adding .bb-{brand}
+  - JS toggling .bb-enhanced
+  - JS triggering .slide-up
+  - Existing hover + animation expectations
+*/
+
+
+/* ============================= */
+/* BRAND TOKEN SYSTEM */
+/* ============================= */
+
+.bb-brandbased {
+  /* Default local demo asset */
+  --bb-logo: url(brandbased-logo.svg);
+  /* viewBox ratio (width/height) for glyph-like sizing */
+  --bb-ratio: 0.6976744186;
+}
+
+
+/* ============================= */
+/* BASE BRAND BEHAVIOUR (UNCHANGED) */
+/* ============================= */
+
+.brandbased {
+  display: inline-block;
+}
+
+
+/* IMPORTANT: KEEP THIS (your system depends on it) */
+.brandbased.bb-enhanced {
+  color: transparent;
+}
+
+
+/* ============================= */
+/* SLOT CONTAINER */
+/* ============================= */
+
+.brandbased-dynamic-logo-slot {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  /* Avoid baseline/descender gap without "floating" the mark. */
+  vertical-align: middle;
+  line-height: 1;
+
+  /* Smart sizing engine defaults (overridden by JS via API + cache) */
+  --bb-scale: 1;
+  --bb-offset-x: 0em;
+  --bb-offset-y: 0em;
+  --bb-size-mul: 1;
+  --bb-max-w-mul: 2;
+  /* User strict override in em (negative lifts logo up) */
+  --bb-user-offset-y-em: 0em;
+  /* User "strict rule" adjustment (px): shifts logo artwork upward */
+  --bb-user-offset-y-px: 0px;
+  /*
+    Glyph-like slot sizing (NO layout jump):
+    - Height tracks the current font size (em-based), clamped a bit.
+    - Width uses per-brand aspect ratio (--bb-ratio) and is capped.
+    JS/AI can still tweak --bb-scale / offsets, but shouldn't need to resize the slot.
+    --bb-place-* : optional manual panel (W/H/padding relative to the line’s font)
+  */
+  --bb-place-w-mul: 1;
+  --bb-place-h-mul: 1;
+  --bb-place-pad-l: 0em;
+  --bb-place-pad-r: 0em;
+  --bb-place-pad-t: 0em;
+  --bb-place-pad-b: 0em;
+  --bb-base-em: calc(clamp(0.96em, 1.02em, 1.08em) * var(--bb-size-mul));
+  --bb-slot-h: calc(var(--bb-base-em) * var(--bb-place-h-mul, 1));
+  --bb-slot-w: min(
+    calc(var(--bb-base-em) * var(--bb-place-w-mul, 1) * var(--bb-ratio, 1)),
+    calc(var(--bb-slot-h) * var(--bb-max-w-mul, 2))
+  );
+}
+
+
+/* ============================= */
+/* SIZE (viewBox-driven via --bb-slot-*) */
+/* ============================= */
+
+.brandbased-dynamic-logo-slot.bb-enhanced {
+  width: var(--bb-slot-w, 35px);
+  height: var(--bb-slot-h, 35px);
+  margin-left: var(--bb-place-pad-l, 0em);
+  margin-right: var(--bb-place-pad-r, 0em);
+  margin-top: var(--bb-place-pad-t, 0em);
+  margin-bottom: var(--bb-place-pad-b, 0em);
+  transition: width 220ms ease, height 220ms ease, margin 220ms ease;
+}
+
+/* Brand AI / OpenAI sizing: remove manual left/right padding. */
+.brandbased-dynamic-logo-slot.BB-AI-Size {
+  --bb-place-pad-l: 0em;
+  --bb-place-pad-r: 0em;
+  --bb-place-pad-t: 0em;
+  --bb-place-pad-b: 0em;
+}
+
+/* (Spin experiment removed — swap pulse is more reliable across browsers.) */
+
+
+/* ============================= */
+/* MAIN LOGO LAYER (UNCHANGED BEHAVIOUR) */
+/* ============================= */
+
+.brandbased-dynamic-logo-slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-image: var(--bb-logo);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center calc(50% - var(--bb-user-offset-y-px));
+
+  pointer-events: none;
+
+  opacity: 0;
+  transform:
+    translateX(var(--bb-offset-x))
+    translateY(calc(12px + var(--bb-offset-y) + var(--bb-user-offset-y-em)))
+    scale(var(--bb-scale));
+
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+/* Aggressive mode for very wide wordmarks: fill width to remove side whitespace. */
+/* (Aggressive fit removed — revert to contain renderer) */
+
+
+/* ============================= */
+/* ACTIVE STATE */
+/* ============================= */
+
+.brandbased-dynamic-logo-slot.bb-enhanced.slide-up::after {
+  opacity: 1;
+
+  transform:
+    translateX(var(--bb-offset-x))
+    translateY(calc(var(--bb-offset-y) + var(--bb-user-offset-y-em)))
+    scale(var(--bb-scale));
+}
+
+
+/* ============================= */
+/* HOVER STATE (RESTORED TO MATCH YOUR ORIGINAL SYSTEM) */
+/* ============================= */
+
+.brandbased-dynamic-logo-slot:hover::after {
+  animation: pulse-dynamic-logos 0.6s ease;
+  opacity: 1;
+}
+
+/* Simulate hover pulse on logo swap (Apply) */
+.brandbased-dynamic-logo-slot.bb-swap-pulse::after {
+  animation: pulse-dynamic-logos 0.6s ease;
+  opacity: 1;
+}
+
+/* ============================= */
+/* LIGHT SHARD UI BACKGROUND (shared) */
+/* ============================= */
+.light-shard-ui-base {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.light-shard-ui-theme {
+  --delay: 0s;
+  --size: 0.4;
+  --speed: 20s;
+
+  aspect-ratio: 1;
+  width: calc(150% * var(--size));
+  background: linear-gradient(259.53deg, #0A3FFF 6.53%, #F55F0A 95.34%);
+  filter: blur(10vw);
+  border-radius: 50%;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  animation: bb-light-shard-loop var(--speed) infinite linear;
+  animation-delay: var(--delay);
+  transform-origin: 50% 50%;
+  opacity: 0.6;
+}
+
+@keyframes bb-light-shard-loop {
+  0% { transform: translate3D(0%, 51%, 0) rotate(0deg); }
+  5% { transform: translate3D(8%, 31%, 0) rotate(18deg); }
+  10% { transform: translate3D(22%, 13%, 0) rotate(36deg); }
+  15% { transform: translate3D(40%, 2%, 0) rotate(54deg); }
+  20% { transform: translate3D(46%, 21%, 0) rotate(72deg); }
+  25% { transform: translate3D(50%, 47%, 0) rotate(90deg); }
+  30% { transform: translate3D(53%, 80%, 0) rotate(108deg); }
+  35% { transform: translate3D(59%, 98%, 0) rotate(125deg); }
+  40% { transform: translate3D(84%, 89%, 0) rotate(144deg); }
+  45% { transform: translate3D(92%, 68%, 0) rotate(162deg); }
+  50% { transform: translate3D(99%, 47%, 0) rotate(180deg); }
+  55% { transform: translate3D(97%, 21%, 0) rotate(198deg); }
+  60% { transform: translate3D(80%, 7%, 0) rotate(216deg); }
+  65% { transform: translate3D(68%, 25%, 0) rotate(234deg); }
+  70% { transform: translate3D(59%, 41%, 0) rotate(251deg); }
+  75% { transform: translate3D(50%, 63%, 0) rotate(270deg); }
+  80% { transform: translate3D(38%, 78%, 0) rotate(288deg); }
+  85% { transform: translate3D(21%, 92%, 0) rotate(306deg); }
+  90% { transform: translate3D(3%, 79%, 0) rotate(324deg); }
+  100% { transform: translate3D(0%, 51%, 0) rotate(360deg); }
+}
+
+body.light-mode .light-shard-ui-base { opacity: 0.5; }
+
+/* Frosted panels on settings pages */
+.bb-bs-card,
+.bb-team-console-slab,
+.bb-premium-wrap {
+  box-shadow: 0 0 1rem 0 rgb(0 0 0 / 0%) !important;
+  background: #f2f3f896 !important;
+  backdrop-filter: blur(50px) !important;
+  -webkit-backdrop-filter: blur(50px) !important;
+}
+
+.bb-bs-card {
+  border: 1px solid #d3d3d3c7 !important;
+}
+
+/* Always keep the "Customise Your Brand Modal" card deep blue */
+#bbModalThemeCard {
+  background: #06084e !important;
+}
+
+/* Preview host (Brand Settings) frosted styles */
+#bbPreviewHost {
+  backdrop-filter: blur(50px) !important;
+  -webkit-backdrop-filter: blur(50px) !important;
+  background: #fdfdfde8 !important;
+}
+body.dark-mode #bbPreviewHost {
+  background: #222222 !important;
+}
+body.dark-mode #bbPreviewHost,
+body.dark-mode #bbPreviewHost #bbSimulatedContent {
+  color: #fff !important;
+}
+
+/* Dark mode: make settings cards fully transparent */
+body.dark-mode .bb-bs-card {
+  background: #00000054 !important;
+  color: #fff !important;
+}
+
+body.dark-mode .bb-bs-card h1,
+body.dark-mode .bb-bs-card h2,
+body.dark-mode .bb-bs-card h3,
+body.dark-mode .bb-bs-card p,
+body.dark-mode .bb-bs-card label,
+body.dark-mode .bb-bs-card .bb-bs-help,
+body.dark-mode .bb-bs-card .bb-bs-row label,
+body.dark-mode .bb-bs-card .bb-bs-val,
+body.dark-mode .bb-bs-card .bb-place-title,
+body.dark-mode .bb-bs-card .bb-place-brand-ai-label,
+body.dark-mode .bb-bs-card .bb-place-hint {
+  color: #fff !important;
+}
+
+/* Dark mode: make ALL page text white */
+body.dark-mode,
+body.dark-mode * {
+  color: #fff !important;
+}
+
+/* Never reveal the underlying text when a mark is enhanced (logo replacement) */
+body.dark-mode .brandbased.bb-enhanced,
+body.dark-mode .brandbased-dynamic-logo-slot.bb-enhanced {
+  color: transparent !important;
+}
+
+/* If no explicit body.dark-mode class is set, follow OS dark mode */
+@media (prefers-color-scheme: dark) {
+  body, body * { color: #fff !important; }
+  .bb-bs-card { background: #00000054 !important; }
+  /* Keep the Brand Modal Settings button text dark */
+  .bb-bs-card.bb-modal-theme .bb-modal-theme-btn { color: #06084e !important; }
+
+  /* Never reveal the underlying text when a mark is enhanced (logo replacement) */
+  .brandbased.bb-enhanced,
+  .brandbased-dynamic-logo-slot.bb-enhanced {
+    color: transparent !important;
+  }
+}
+
+/* Light mode: keep the Brand Modal theme card deep blue */
+body.light-mode .bb-bs-card.bb-modal-theme {
+  background: #06084e !important;
+}
+
+/* Extra-specific hook (requested): force the Brand Modal card in light mode */
+body.light-mode #bbModalThemeCard {
+  background: #06084e !important;
+}
+
+
+/* ============================= */
+/* YOUR ORIGINAL PULSE (UNCHANGED) */
+/* ============================= */
+
+@keyframes pulse-dynamic-logos {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1, 0.9);
+  }
+  45% {
+    transform: scale(1.1, 1.2);
+  }
+  65% {
+    transform: scale(1.1, 1.2);
+  }
+  85% {
+    transform: scale(1.03, 1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+
+
+
+
+        
+.close-icon-desktop:hover {
+  animation: pulse 0.6s ease;
+}
+
+/* ============================= */
+/* SMART SIZE RULES UI (DEV TOOL) */
+/* ============================= */
+.bb-smart-rules-btn {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 999999;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  font: 700 12px/1 Roboto, system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.bb-smart-rules-panel {
+  position: fixed;
+  right: 14px;
+  bottom: 56px;
+  width: min(420px, calc(100vw - 28px));
+  z-index: 999999;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  display: none;
+}
+
+.bb-smart-rules-panel.open {
+  display: block;
+}
+
+.bb-smart-rules-intro {
+  margin: 0 0 10px 0;
+  font: 12px/1.45 Roboto, system-ui, -apple-system, sans-serif;
+  color: #444;
+}
+
+.bb-smart-rules-label {
+  display: block;
+  margin: 0 0 6px 0;
+  font: 700 12px/1.3 Roboto, system-ui, -apple-system, sans-serif;
+  color: #111;
+}
+
+.bb-smart-rules-panel textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+/* ============================= */
+/* ASSET LAB (upload + preview)  */
+/* ============================= */
+
+.bb-asset-lab-btn {
+  position: fixed;
+  top: 14px;
+  left: 168px;
+  z-index: 2147483647;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.78);
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+}
+.bb-asset-lab-btn:hover { opacity: 0.9; }
+
+.bb-upload-inline {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  /* Keep under popups/close-up controls */
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.bb-upload-inline-btn {
+  all: unset;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  line-height: 1;
+}
+.bb-upload-inline-btn:focus-visible {
+  outline: 3px solid rgba(0, 112, 255, 0.9);
+  outline-offset: 4px;
+}
+.bb-upload-card {
+  width: 200px;
+  height: 110px;
+  border-radius: 28px;
+  background: #c2c1c5;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.22);
+  position: relative;
+}
+.bb-upload-plus {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 68px;
+  transform: translate(-50%, -55%);
+}
+.bb-upload-plus::before,
+.bb-upload-plus::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 68px;
+  height: 6px;
+  background: rgba(120, 120, 120, 0.95);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+.bb-upload-plus::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.bb-upload-caption {
+  margin-top: 8px;
+  font: 800 18px/1.1 Roboto, system-ui, -apple-system, sans-serif;
+  color: #111;
+  text-align: center;
+}
+.bb-upload-inline-btn:hover .bb-upload-card {
+  box-shadow: 0 26px 75px rgba(0, 0, 0, 0.28);
+}
+.bb-upload-inline-btn:active .bb-upload-card {
+  transform: translateY(1px);
+}
+.bb-upload-inline-status {
+  font: 12px/1.1 Roboto, system-ui, -apple-system, sans-serif;
+  color: #555;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bb-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.bb-upload-inline-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bb-asset-lab-panel {
+  position: fixed;
+  top: 56px;
+  left: 14px;
+  width: 380px;
+  max-width: calc(100vw - 28px);
+  z-index: 2147483647;
+  isolation: isolate;
+  overflow: hidden;
+  background: rgba(30, 34, 46, 0.55);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  color: rgba(255, 255, 255, 0.92);
+  display: none;
+}
+.bb-asset-lab-panel.open { display: block; }
+.bb-asset-lab-header {
+  position: relative;
+  margin-bottom: 12px;
+  padding-right: 40px;
+}
+.bb-asset-lab-wordmark {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 34px;
+  height: auto;
+  object-fit: contain;
+  object-position: left center;
+}
+.bb-asset-lab-subtitle {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.35;
+}
+.bb-asset-lab-close {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bb-asset-lab-close:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+.bb-asset-lab-close:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.45);
+  outline-offset: 2px;
+}
+.bb-asset-lab-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* “Choose file” control matches other Asset Lab buttons (Clear-style glass) */
+.bb-asset-lab-file {
+  width: 100%;
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, Roboto, sans-serif;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: default;
+  line-height: 1.4;
+}
+.bb-asset-lab-file::file-selector-button,
+.bb-asset-lab-file::-webkit-file-upload-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-right: 12px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 10, 18, 0.5);
+  color: rgba(255, 255, 255, 0.92);
+  font: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.bb-asset-lab-file::file-selector-button:hover,
+.bb-asset-lab-file::-webkit-file-upload-button:hover {
+  background: rgba(18, 22, 35, 0.68);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.bb-asset-lab-file::file-selector-button:focus-visible,
+.bb-asset-lab-file::-webkit-file-upload-button:focus-visible {
+  outline: 2px solid rgba(26, 71, 217, 0.55);
+  outline-offset: 2px;
+}
+.bb-asset-lab-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 8px;
+  line-height: 1.35;
+}
+.bb-asset-lab-actions { display: flex; gap: 8px; margin-top: 10px; }
+.bb-asset-lab-actions button {
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 10, 18, 0.5);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  font-weight: 600;
+  flex: 1;
+}
+.bb-asset-lab-actions .bb-asset-lab-apply,
+.bb-asset-lab-actions .bb-asset-lab-crop {
+  background: #1a47d9 !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  font-weight: 800;
+  box-shadow: 0 3px 16px rgba(26, 71, 217, 0.35);
+}
+.bb-asset-lab-actions .bb-asset-lab-apply {
+  background: #0a0a0a !important;
+  border-color: #333 !important;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
+}
+
+.bb-asset-lab-preview {
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 10, 18, 0.45);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.bb-asset-lab-preview-img {
+  width: 64px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.08);
+  object-fit: contain;
+}
+.bb-asset-lab-preview-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.25;
+  flex: 1;
+}
+.bb-asset-lab-preview-meta strong {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Custom Size & Placement (in-text upload logos only) — matches Asset lab chrome */
+.bb-place-btn {
+  display: none;
+  position: fixed;
+  right: 14px;
+  top: 14px;
+  z-index: 2147483646;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.78);
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  max-width: calc(100vw - 28px);
+}
+.bb-place-btn.bb-place-btn--visible {
+  display: block;
+}
+.bb-place-btn:hover {
+  opacity: 0.9;
+}
+.bb-place-panel {
+  position: fixed;
+  right: 14px;
+  top: 56px;
+  width: 360px;
+  max-width: calc(100vw - 28px);
+  max-height: min(78vh, 640px);
+  z-index: 2147483646;
+  isolation: isolate;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: rgba(30, 34, 46, 0.55);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  color: rgba(255, 255, 255, 0.92);
+  display: none;
+}
+.bb-place-panel.open {
+  display: block;
+}
+
+/* When a placement panel is forced open inline (e.g. Brand Settings page),
+   allow it to be fully transparent (page can override further). */
+.bb-place-panel.open {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.bb-place-header {
+  position: relative;
+  margin-bottom: 12px;
+  padding-right: 40px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.bb-place-logo {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+  user-select: none;
+}
+.bb-place-header-text {
+  flex: 1;
+  min-width: 0;
+}
+.bb-place-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.98);
+  letter-spacing: 0.02em;
+}
+.bb-place-brand-ai {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 6px 0 0 0;
+  min-height: 28px;
+}
+.bb-place-brand-ai-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+.bb-place-brand-ai-toggle {
+  flex-shrink: 0;
+  min-width: 48px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(0, 30, 80, 0.45);
+  color: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.bb-place-brand-ai-toggle:hover {
+  background: rgba(0, 40, 100, 0.55);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.bb-place-brand-ai-toggle[aria-pressed="true"] {
+  background: linear-gradient(135deg, #1a5fbd, #0d3d8a);
+  border-color: rgba(120, 180, 255, 0.5);
+}
+.bb-place-brand-ai-toggle[aria-pressed="false"] {
+  opacity: 0.75;
+}
+.bb-place-close {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bb-place-close:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+.bb-place-manual-hint,
+.bb-place-golden-hint {
+  margin: 8px 0 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(255, 200, 120, 0.9);
+}
+.bb-place-golden-hint {
+  color: rgba(255, 255, 255, 0.55);
+}
+.bb-place-ai-status {
+  margin: 8px 0 0 0;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(200, 230, 255, 0.92);
+  background: rgba(0, 30, 70, 0.45);
+  border: 1px solid rgba(120, 180, 255, 0.25);
+  border-radius: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.bb-dev-openai {
+  margin: 10px 0 0 0;
+  padding: 0;
+}
+.bb-dev-openai-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 220, 180, 0.95);
+  margin-bottom: 6px;
+}
+.bb-dev-openai-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.bb-dev-openai-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 200, 120, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.95);
+}
+.bb-dev-openai-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.bb-dev-openai-clear {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+}
+.bb-dev-openai-clear:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+.bb-dev-openai-hint {
+  margin: 6px 0 0 0;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.45);
+}
+.bb-place-guidance {
+  margin: 10px 0 0 0;
+}
+.bb-place-guidance-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 6px;
+}
+.bb-place-guidance-textarea {
+  width: 100%;
+  min-height: 86px;
+  resize: vertical;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 180, 255, 0.25);
+  background: rgba(0, 10, 30, 0.35);
+  color: #fff;
+  font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.bb-place-guidance-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.bb-place-guidance-actions button {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+.bb-place-guidance-actions button:hover {
+  background: rgba(0, 0, 0, 0.35);
+}
+.bb-place-guidance-status {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 220, 180, 0.8);
+  margin-left: auto;
+  text-align: right;
+}
+.bb-place-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.bb-place-sliders.bb-place-sliders--locked {
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+.bb-place-sliders.bb-place-sliders--locked label {
+  cursor: not-allowed;
+}
+.bb-place-sliders label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.bb-place-sliders .bb-place-hint {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: -2px;
+}
+.bb-place-sliders input[type="range"] {
+  width: 100%;
+  min-height: 28px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  accent-color: #06084e;
+}
+.bb-place-sliders input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: #06084e;
+  border-radius: 9999px;
+}
+.bb-place-sliders input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  margin-top: -5px;
+}
+.bb-place-sliders input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: #06084e;
+  border-radius: 9999px;
+  border: 0;
+}
+.bb-place-sliders input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.bb-place-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.bb-place-actions button {
+  flex: 1;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(8, 10, 18, 0.5);
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+  cursor: pointer;
+}
+.bb-place-actions .bb-place-reset {
+  background: rgba(8, 10, 18, 0.5);
+}
+.bb-place-actions .bb-place-apply {
+  background: #1a47d9;
+  color: #fff;
+  font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 3px 16px rgba(26, 71, 217, 0.35);
+}
+
+/* ============================= */
+/* KONVA MANUAL CROP OVERLAY     */
+/* ============================= */
+.bb-crop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+.bb-crop-overlay.open { display: flex; }
+.bb-crop-modal {
+  width: min(980px, 96vw);
+  height: min(720px, 88vh);
+  box-shadow: 0 0 1rem 0 rgb(0 0 0 / 26%), 0 20px 50px rgba(0, 0, 0, 0.22);
+  background-color: #2b2b2c69;
+  backdrop-filter: blur(50px);
+  -webkit-backdrop-filter: blur(50px);
+  border-radius: 20px;
+  /* Thick light “window” frame (reference UI) */
+  border: 5px solid #b9bac2;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  isolation: isolate;
+}
+/* Top bar: solid; blue fills the top-left corner (slimmer than the old ~⅓–width diagonal) */
+.bb-crop-header {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px 15px 0 0;
+  background: #26262a;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+.bb-crop-header::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  height: 100%;
+  /* Old chrome read as a wide swath; this keeps a clear corner patch without spanning the full header */
+  width: min(20%, 190px);
+  min-width: 130px;
+  background: #1a47d9;
+  /* Full height on the left, diagonal cut into the dark bar */
+  clip-path: polygon(0 0, 100% 0, 52% 100%, 0 100%);
+}
+.bb-crop-header-title,
+.bb-crop-header-trail {
+  position: relative;
+  z-index: 1;
+}
+.bb-crop-header-title {
+  margin: 0;
+  margin-right: auto;
+  min-width: 0;
+  flex: 0 1 auto;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.98);
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+.bb-crop-header-trail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.bb-crop-header-b {
+  display: block;
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+  user-select: none;
+}
+.bb-crop-close {
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.bb-crop-close:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+/* Frosted “glass” crop canvas (Konva layer above; same family as Asset Lab panel) */
+.bb-crop-stage {
+  position: relative;
+  overflow: hidden;
+  background: rgba(32, 36, 48, 0.42);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+.bb-crop-stage > * {
+  position: relative;
+  z-index: 1;
+}
+.bb-crop-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.bb-crop-footer .bb-crop-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+.bb-crop-sliders-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.92);
+}
+.bb-crop-footer .bb-crop-sliders label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.bb-crop-footer .bb-crop-actions {
+  display: flex;
+  gap: 8px;
+}
+.bb-crop-footer .bb-crop-sliders {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 640px;
+}
+.bb-crop-footer .bb-crop-scale-label {
+  grid-column: 1 / -1;
+}
+/* Crop sliders: navy track, white thumbs */
+.bb-crop-footer input[type="range"] {
+  width: 100%;
+  min-height: 28px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  accent-color: #06084e; /* Firefox / fallback */
+}
+.bb-crop-footer input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: #06084e;
+  border-radius: 9999px;
+}
+.bb-crop-footer input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  margin-top: -5px;
+}
+.bb-crop-footer input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: #06084e;
+  border-radius: 9999px;
+  border: 0;
+}
+.bb-crop-footer input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.bb-crop-footer input[type="range"]:focus-visible {
+  outline: 2px solid rgba(6, 8, 78, 0.45);
+  outline-offset: 2px;
+}
+.bb-crop-footer button {
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 700;
+  cursor: pointer;
+}
+.bb-crop-footer button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.bb-crop-footer .bb-crop-save {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a1a1b;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.bb-crop-footer .bb-crop-save:hover {
+  background: #fff;
+}
+/* Local dev control bar (optional): requires bb_dev_control.py on :8010 */
+.bb-devbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000000;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid rgba(0,0,0,0.12);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.10);
+  padding: 10px 12px;
+  font: 12px/1.35 Roboto, system-ui, -apple-system, sans-serif;
+  color: #111;
+  display: none;
+}
+.bb-devbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bb-devbar-title {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  margin-right: 6px;
+}
+.bb-devbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.bb-devbar button {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.16);
+  background: #fff;
+  font: 800 12px/1 Roboto, system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+}
+.bb-devbar .bb-devbar-primary {
+  background: #1030f5;
+  border-color: #1030f5;
+  color: #fff;
+}
+.bb-devbar .bb-devbar-ghost {
+  background: #fff;
+  color: #111;
+}
+.bb-devbar .bb-devbar-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  opacity: 0.9;
+  max-width: 520px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .bb-devbar .bb-devbar-mono { max-width: 100%; white-space: normal; }
+}
+
+.bb-smart-rules-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.bb-smart-rules-actions button {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: white;
+  font: 700 12px/1 Roboto, system-ui, -apple-system, sans-serif;
+  cursor: pointer;
+}
+
+.bb-smart-rules-status {
+  margin-top: 8px;
+  font: 12px/1.35 Roboto, system-ui, -apple-system, sans-serif;
+  opacity: 0.8;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bb-smart-rules-btn,
+  .bb-smart-rules-panel {
+    background: rgba(20, 20, 20, 0.85);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+  .bb-smart-rules-panel textarea,
+  .bb-smart-rules-actions button {
+    background: rgba(0, 0, 0, 0.25);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+}
+
+
+ .blur-bg {
+  position: absolute;
+  
+  background-size: cover;
+  background-position: center;
+  filter: blur(30px);
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  padding: 0;
+  margin:0px;
+  opacity: 1;
+}
+
+
+.popup-handle {
+  display: none;
+}
+
+.close-icon-desktop {
+width: 22px;
+height: 22px;
+position: absolute;
+text-align: right;
+right: 0px;
+margin-right: 13px;
+margin-top: -5px;
+display: none;
+transition: transform 0.3s ease;
+}
+.close-icon-desktop:hover {
+  animation: pulse 0.6s ease;
+}
+@media (max-width: 980px) {
+  .close-icon-desktop {
+  display: none!important;
+  visibility: hidden;
+ }
+}
+
+/* Style the close button container */
+.close-x-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 2px;
+  border: 1px solid rgba(204, 204, 204, 0.077);
+  background: rgb(255 255 255 / 21%);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.023);
+  opacity: 0;
+  pointer-events: none;
+  animation-fill-mode: forwards;
+  transition: opacity 0.3s ease;
+}
+
+/* Pulse effect after appearing */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Animate stroke drawing for the X lines */
+.close-x-icon svg line {
+  stroke: black;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation-fill-mode: forwards;
+}
+
+/* Show + animate first line */
+.close-x-icon.show svg line:first-of-type {
+  animation: drawLine 0.3s ease forwards 0s;
+}
+
+/* Then animate second line */
+.close-x-icon.show svg line:last-of-type {
+  animation: drawLine 0.3s ease forwards 0.3s;
+}
+
+/* Draw line keyframes */
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+
+.popup {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  box-shadow: -2px 9px 49px -2px rgba(0, 0, 0, 0.372);
+  background: rgb(199 197 197 / 51%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  z-index: 1000;
+  min-width: 120px;
+  max-width: 500px;
+  padding: 12px;
+  border: 1px solid rgba(97, 97, 97, 0.139);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+/* Always keep the modal above every demo layer */
+.popup {
+  z-index: 2147483647 !important;
+}
+
+.popup .product-top-section {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.popup .product-element {
+  flex-shrink: 0;
+  width: 190px;
+  height: auto;
+}
+@media (max-width: 840px) {
+  .popup .product-element {
+    width: 80%;
+    max-width: 300px;
+    margin: 0 auto;
+    display: block;
+    
+  }
+}
+
+.popup .text-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.068);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+}
+@media (max-width: 840px) {
+  .title-row {
+    justify-content: center;
+    text-align: center; 
+    gap: 0px;    
+  }
+}
+
+
+
+/* If they share a common parent */
+.brand-icon + .product-title {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+
+
+.product-title {
+  display: inline-block;
+  vertical-align: middle;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 900;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: rgb(0, 0, 0);
+  margin: 0;
+  max-width: calc(84% - 20px);
+  padding: 6px 5px;
+  border-radius: 16px;
+  background: #eaeaea00;
+  width: 100%;
+}
+
+.brand-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;        
+  border-radius: 50%;
+  border: 0.09rem solid #1030f5;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top:-4px;
+  padding:1px;
+  background-color: #1030f5 !important;
+}
+@media (max-width: 840px) {
+  .brand-icon {
+  margin-top:23px;
+  padding:0px;
+}
+}
+
+.brand-icon img,
+.brand-icon svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  padding:3px;
+ 
+}
+/* Popup title: same --bb-logo as marks (add .bb-{brand} on .brand-icon in JS). */
+.popup .title-row .brand-icon {
+  background-color: #1030f5 !important;
+  background-image: none;
+  position: relative;
+}
+.popup .title-row .brand-icon::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  background-color: #fff;
+  -webkit-mask-image: var(--bb-logo);
+  mask-image: var(--bb-logo);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: 56%;
+  mask-size: 56%;
+}
+@media (max-width: 840px) {
+  .brand-icon img,
+  .brand-icon svg {
+  padding:2px;
+ }
+}
+
+
+
+.lock-icon-bb-logo {
+  display: inline-flex;
+  align-items: right;
+  width: 38px;
+  height: 38px;
+  vertical-align: text-top;
+  margin-top: 0px;
+  position: absolute;
+    text-align: right;
+    right: -2px;
+    opacity: 1;
+  transition: margin-right 0.4s ease;
+}
+
+
+
+
+
+
+
+@media (max-width: 980px) {
+  .lock-icon-bb-logo {
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: auto !important;
+    /* Top row with sheet close X — snug to modal inset, not pushed below the grab handle */
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    margin-top: 0 !important;
+    margin-right: 0 !important;
+    text-align: left;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 840px) {
+  .title-row {
+    gap: 0px; /* slightly larger gap for mobile */
+    margin-top: -48px;
+  }
+}
+
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 840px) {
+  .product-title {
+    font-weight: 900;
+    font-size: 1rem;
+    line-height: 1.1;
+    text-align: center;
+    padding-top: 30px;
+    width: unset;
+  }
+}
+
+/* Container for description with fade-out effect at bottom to hint scroll */
+.product-description-holder {
+  display: block;
+  max-height: 190px;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+
+  /* Fade out bottom 20% for visual hint */
+  mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+/* Scrollable description text */
+.product-description {
+  display: block;
+  max-height: 190px;
+  overflow-y: auto;
+  scrollbar-width: none;   /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+  padding-right: 10px;      /* Avoid scrollbar overlapping text */
+  font-family: 'Roboto', sans-serif;
+  color: rgb(0, 0, 0);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  margin: 0;
+  cursor: default;
+}
+
+@media (max-width: 840px) {
+  .product-description-holder {
+  display: block;
+  max-height: 100px;
+}
+.product-description {
+  max-height: 110px;
+ }
+}
+
+
+
+/* Hide scrollbar for WebKit browsers */
+.product-description::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+
+@media (max-width: 840px) {
+  .popup .product-top-section {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: -15px;
+  }
+
+  /* The product-title is inside .text-section so to make it first, we pull it out visually */
+
+  /* Make the whole .text-section take full width and order it */
+  .popup .text-section {
+    order: 1; /* comes after the image */
+    width: 100%;
+  }
+
+
+
+  /* product-element (image) */
+  .popup .product-element {
+    order: 0; /* between title and description */
+    width: 80%;
+    max-width: 300px;
+    margin: 0 auto 12px auto;
+  }
+
+  /* product-description-holder stays last */
+  .popup .product-description-holder {
+    order: 2; /* last */
+    width: 90%;
+    margin: 0 auto;
+  }
+}
+
+
+
+
+
+
+
+
+
+.add-element {
+  width: 100%;           /* Full width of the parent container */
+  aspect-ratio: 728 / 90; /* Maintains 8.09:1 width to height ratio */
+  border-radius: 8px;
+  margin-top: 25px;
+  overflow: hidden;      
+  position: relative;
+}
+@media (max-width: 840px) {
+  .add-element {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;  /* full viewport width */
+    max-width: 100vw;
+    height: auto;
+    aspect-ratio: 728 / 90; /* Maintains 8.09:1 width to height ratio */
+    max-height: 100px;       /* official height */
+    border-radius: 0;
+    padding-left: 2%;
+    padding-right: 2.8%;
+    padding-bottom: 2%;
+    box-sizing: border-box;
+    z-index: 99999;
+    overflow: hidden;
+  }
+}
+
+
+.add-element video,
+.add-element iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+
+.ad-label {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  font-size: 10px;
+  font-family: Arial, sans-serif;
+  padding: 2px 6px;
+  border-radius: 2px;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 840px) {
+  .ad-label {
+    left: 15px;
+  }
+}
+
+
+
+
+
+
+@media (max-width: 980px) {
+
+  *, *::before, *::after {
+  box-sizing: border-box;
+}
+
+.popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 90vw;
+  min-width: 90%;
+  height: 70vh;
+  background: rgb(199 197 197 / 85%);
+  backdrop-filter: blur(90px);
+  -webkit-backdrop-filter: blur(90px);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  z-index: 9999;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+  padding: 20px; /* Add some padding so button isn't flush to the edge */
+  box-sizing: border-box;
+}
+
+  .popup.popup-visible {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .popup-handle {
+    width: 40px;
+        height: 5px;
+        background: rgb(255 255 255 / 74%);
+        border-radius: 4px;
+        margin-top: -5px!important;
+        margin: 10px auto;
+        margin-bottom: 30px;
+        border: 1px solid #dddddd85;
+        display: block;
+        position: relative;
+        z-index: 99999999999;
+  }
+}
+
+
+
+@media (max-width: 840px) {
+  .popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  min-width: 100%;
+  height: 90vh;
+  background: rgb(199 197 197 / 85%);
+  backdrop-filter: blur(90px);
+  -webkit-backdrop-filter: blur(90px);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  z-index: 9999;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+  padding: 20px; /* Add some padding so button isn't flush to the edge */
+  box-sizing: border-box;
+ }
+}
+
+
+
+
+
+.dot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.product-element {
+  width: 50%;
+  height: auto;
+  border-radius: 20px;
+}
+@media(max-width:840px)
+{
+  .product-element {
+  width: 50%;
+  height: auto;
+  border-radius: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+}
+
+
+.popup .product-element img,
+.popup .product-element video,
+.product-element img,
+.product-element video {
+  border-radius: 16px !important;
+  overflow: hidden;
+  display: block;
+}
+
+/* Thumb strip <video>: avoid double-rounded compositor glitch; slide + .swiper-thumb provide the radius */
+.popup .product-element .swiper-thumb .swiper-slide video {
+  border-radius: 0 !important;
+  overflow: visible !important;
+}
+
+swiper-button-next.swiper-button-disabled, .swiper-button-prev.swiper-button-disabled {
+    opacity: 1;
+}
+
+.label {
+  color: #fff;
+  font-size: 0.9rem;
+  margin-bottom: 0px;
+  padding-bottom:10px;
+}
+
+.buy-now-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  margin-top: 10px;
+}
+
+.buy-now-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.explore-icon-when-buy-now-is-used {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  margin-top: -5px;
+  padding-right: 6px;
+}
+@media(max-width:840px)
+{
+  .explore-icon-when-buy-now-is-used {
+  margin-top: -6px;
+  width: 47px;
+  height: 47px;
+}
+}
+
+
+
+.buy-now-link {
+  flex: 1;
+}
+
+.buy-now-button {
+  display: block;
+  width: 100%;
+  padding: 7px 15px;
+  font-size: 1rem;
+  padding: 8px 12px;
+  border-radius: 30px;
+  background-color: #1030f5;
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
+  transition: opacity 0.3s ease;
+  font-weight: 900;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 10px rgba(2, 2, 2, 0.11);
+}
+.buy-now-button:hover {
+  opacity: 0.7;
+}
+
+@media (max-width: 840px) {
+  .buy-now-button {
+    margin-left: unset;
+    padding: 10px 15px;
+    font-size: 1rem;
+    width: 100%;
+    min-width: 220px;
+    border-radius: 30px;
+    text-align: center;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    transition: unset;
+    margin-top: -120px;
+  }
+  .buy-now-button:hover {
+    opacity: 1;
+  }
+}
+
+.selectors-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.selectors-row select {
+  flex: 1;
+  min-width: 90px;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(204, 204, 204, 0.077);
+  background: rgba(255, 255, 255, 0.31);
+  color: rgb(0, 0, 0);
+  margin: 0;
+  margin-bottom: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='14' viewBox='0 0 24 24' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 5px center;
+  background-size: 14px;
+}
+
+@media (max-width: 840px) {
+  .selectors-row select {
+    margin-bottom: -10px;
+  }
+}
+
+
+/* Optional: make Buy Now button stack below if needed */
+.label {
+  display: block;
+  margin-top: 12px;
+}
+
+
+
+
+
+
+
+  <!---- Produt Slider ----->
+
+ 
+    
+  .popup .product-element {
+  width: 100%;
+  height: 100%; 
+  display: flex;
+  flex-direction: column;
+  padding-top: 0;
+}
+
+@media (max-width: 1560px) {
+.popup .product-element {
+    height: 190px;
+    padding-top: 0px;
+    margin-top:-5px;
+}
+}
+
+@media (max-width: 840px) {
+.popup .product-element {
+    height: 240px;
+    padding-top: 0px;
+    margin-top:-5px;
+}
+}
+
+
+ /* Make swiper-thumb fill the product-element */
+.swiper-thumb {
+  width: 100%;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.002);
+  margin-top: 10px;
+}
+
+
+
+@media (max-width: 840px) {
+  .swiper-thumb {
+    height: 100%;
+  }
+}
+
+
+
+/*
+  Thumb strip (~190×180 logical px): heavy downscale makes motion look “wavy” vs zoom (near full-screen)—fewer pixels
+  to paint each decoded frame into, so shimmering / moiré shows up more. Absolute fill avoids flex half-pixel offsets;
+  rounded corners come only from overflow on ancestors (no double-radius on <video>).
+*/
+.swiper-thumb .swiper-slide {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.swiper-thumb .swiper-slide img,
+.swiper-thumb .swiper-slide video {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0;
+  display: block;
+}
+
+.swiper-thumb .swiper-slide video {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+    
+    
+    /* Thumbnail mode: smaller dots */
+    .swiper-thumb .swiper-pagination-bullet {
+      width: 10px;
+      height: 10px;
+      background-color: white;
+      opacity: 0.8;
+      margin: 0 6px !important;
+    }
+    .swiper-thumb .swiper-pagination-bullet-active {
+      background-color: white;
+      opacity: 1;
+    }
+
+    .slider-close-up {
+      border-radius: 20px;
+      background: rgba(228, 228, 228, 0.961);
+    backdrop-filter: blur(150px);
+    -webkit-backdrop-filter: blur(150px);
+    }
+    @media (max-width:840px){
+      .slider-close-up {
+        border-top-right-radius: 20px;
+        border-top-left-radius: 20px;
+        background: rgba(228, 228, 228, 0.961);
+    }
+    }
+    
+    /* Close-up swiper is positioning context for pagination + zoom "+" */
+    .slider-close-up .slider-close-up-swiper {
+      position: relative;
+    }
+
+    /* Close-up pagination: dark translucent pill + solid white dots (dynamicBullets uses -active-main, etc.) */
+    .slider-close-up .swiper-pagination {
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      padding: 8px 16px 10px;
+      border-radius: 999px;
+      width: auto !important;
+      box-sizing: border-box;
+    }
+
+    /* >=880px: share one bottom inset so "+" and dot pill align (same containing block as .swiper) */
+    @media (min-width: 880px) {
+      .slider-close-up {
+        --bb-closeup-controls-bottom: 14px;
+      }
+      .slider-close-up .slider-close-up-swiper .swiper-pagination {
+        bottom: var(--bb-closeup-controls-bottom) !important;
+      }
+      .slider-close-up .slider-close-up-swiper > .zoom-toggle-btn {
+        bottom: var(--bb-closeup-controls-bottom);
+        /* to the right of .bb-icon-close-up (8 + 40 + 10) */
+        left: calc(8px + 40px + 10px);
+        top: auto;
+        transform: none;
+      }
+    }
+    .slider-close-up .swiper-pagination-bullet,
+    .slider-close-up .swiper-pagination-bullet-active,
+    .slider-close-up .swiper-pagination-bullet-active-main,
+    .slider-close-up .swiper-pagination-bullet-active-prev,
+    .slider-close-up .swiper-pagination-bullet-active-next {
+      background-color: #fff !important;
+      opacity: 1 !important;
+      margin: 0 4px !important;
+      box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.22),
+        0 0 10px rgba(255, 255, 255, 0.75),
+        0 0 22px rgba(255, 255, 255, 0.35);
+    }
+
+    /* (Pagination wrapper removed — Swiper manages .swiper-pagination contents) */
+    
+    
+    /* Slider Close Up (was .modal) */
+    .slider-close-up {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      justify-content: center;
+      align-items: center;
+      z-index: 99999999999;
+     
+    }
+
+    .slider-close-up .swiper {
+      width: 80vw;
+      height: 82vh;
+      border-radius: 20px;
+      background: rgba(228, 228, 228, 0.961);
+    backdrop-filter: blur(150px);
+    -webkit-backdrop-filter: blur(150px);
+    }
+
+    @media(max-width:980px)
+{
+.slider-close-up .swiper {
+  background: #e1e1e1;
+  width: 79vw;
+  height: 60vh;
+ }
+ .slider-close-up {
+ border-radius: 12px;
+ }
+}
+@media(max-width:840px)
+{
+.slider-close-up .swiper {
+  background: transparent;
+  width: 79vw;
+  height: 79vh;
+ }
+}
+@media(max-width:640px)
+{
+.slider-close-up .swiper {
+  background: transparent;
+  width: 90vw;
+  height: 89vh;
+ }
+ .slider-close-up {
+ border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+ }
+}
+
+
+    .slider-close-up .swiper-slide img,
+    .slider-close-up .swiper-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 16px;
+    }
+    .slider-close-up .swiper-button-next,
+    .slider-close-up .swiper-button-prev {
+      width: 72px;
+      height: 72px;
+      margin-top: 0;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+      color: #fff;
+      padding: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .slider-close-up .swiper-button-next::after,
+    .slider-close-up .swiper-button-prev::after {
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0;
+      -webkit-text-stroke: 0.35px rgba(255, 255, 255, 0.95);
+      text-shadow:
+        0 0 1px rgba(255, 255, 255, 0.85),
+        0 1px 0 rgba(0, 0, 0, 0.35);
+    }
+
+    @media (min-width:890px)and(max-width:1450px)
+{
+  .slider-close-up .swiper-slide img,
+    .slider-close-up .swiper-slide video {
+      width: 100%;
+      height: 80%;
+      margin-top: 7.5%;
+      object-fit: contain;
+      border-radius: 16px;
+    }
+
+}
+
+
+
+    .close {
+      position: absolute;
+      top: 2px;
+    right: 10px;
+      font-size: 2em;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    @media (max-width:1900px){
+  .close {
+    top: -5px;
+    right: 15px;
+ }
+}
+
+
+    video::-webkit-media-controls {
+  display: none !important;
+}
+video::-moz-media-controls {
+  display: none !important;
+}
+
+.close {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  border-radius: 50%; /* makes the circle */
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 3px;
+  box-sizing: border-box;
+} 
+
+@media (max-width:1450px){
+  .close {
+    margin-top: -10px;
+    margin-right: -14px;
+ }
+}
+
+@media (max-width:980px){
+  .close {
+    margin-top: 8px;
+  margin-right: -14px;
+ }
+}
+
+/* Mobile: shrink the close button ~20% */
+@media (max-width: 640px) {
+  .close {
+    width: 27px;
+    height: 27px;
+    font-size: 16px;
+    top: 7px;
+    right: 25px;
+    margin-top: 0;
+    margin-right: 0;
+  }
+  /* Mobile: hide zoom button; use double-tap on media to zoom */
+  .zoom-toggle-btn {
+    display: inline-flex;
+    left: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 24px !important;
+  }
+}
+
+
+@media (max-width:640px){
+  .close {
+    margin-top: 5px;
+  margin-right: -15px;
+ }
+}
+
+
+/* Sheet-level close (same glass circle + white X as zoom close-up `.slider-close-up .close`) */
+.popup .popup-sheet-close {
+  display: none;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 3px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: inherit;
+}
+/*
+  Viewport-fixed top-right: same conventions as fullscreen zoom `.slider-close-up .close`
+  (see `.close` top/right + sizes above). Only when the modal is open.
+*/
+@media (max-width: 980px) {
+  /* Hidden until `.close-visible` (~2s after open; same timing as `.close-icon-desktop`). */
+  .popup.popup-visible .popup-sheet-close {
+    display: inline-flex !important;
+    position: fixed;
+    top: calc(-5px + env(safe-area-inset-top, 0px));
+    right: max(15px, env(safe-area-inset-right, 0px));
+    margin: 0;
+    margin-top: 8px;
+    margin-right: -14px;
+    z-index: 2147483646;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.32s ease;
+  }
+  .popup.popup-visible.close-visible .popup-sheet-close {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+}
+@media (max-width: 640px) {
+  .popup.popup-visible .popup-sheet-close {
+    top: calc(7px + env(safe-area-inset-top, 0px));
+    right: max(25px, env(safe-area-inset-right, 0px));
+    margin-top: 5px;
+    margin-right: -15px;
+    width: 27px;
+    height: 27px;
+    padding: 2px;
+  }
+}
+
+
+/* Brand mark: left edge; bottom aligns with zoom "+" (same swiper positioning context) */
+.slider-close-up .slider-close-up-swiper > .bb-icon-close-up {
+  position: absolute;
+  bottom: 12px;
+  left: 8px;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  top: auto;
+  right: auto;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-decoration: none;
+}
+.slider-close-up .slider-close-up-swiper > .bb-icon-close-up img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+@media (min-width: 880px) {
+  .slider-close-up .slider-close-up-swiper > .bb-icon-close-up {
+    bottom: var(--bb-closeup-controls-bottom);
+  }
+}
+
+@media (min-width: 880px) and (max-width: 1350px) {
+ 
+  .swiper-slide {
+    height: 80%;
+    margin-top: 7.5%;
+    
+  }
+  .slider-close-up .swiper-button-next,
+  .slider-close-up .swiper-button-prev {
+    padding: 0px;
+  }
+}
+@media (max-width: 1250px) {
+  .slider-close-up .slider-close-up-swiper > .bb-icon-close-up {
+    display: none !important;
+  }
+}
+
+/* Zoom gallery slides + media rounding */
+.slider-close-up-swiper .swiper-slide {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.slider-close-up .swiper-button-next, .slider-close-up .swiper-button-prev {
+    color: #fff;
+}
+
+
+
+
+
+@media (prefers-color-scheme: dark) {
+
+.brandbased-dynamic-logo-slot::after {
+  /* Keep uploaded/brand logos true-color in dark mode */
+  filter: none;
+}
+
+.brandbased-dynamic-logo-slot:hover::after {
+  animation: pulse-dynamic-logos 0.6s ease;
+  filter: drop-shadow(0 6px 12px rgba(255, 255, 255, 0.08));
+}
+
+body {
+  background-color: #060606ee;
+  color:white;
+}
+
+.popup {
+  background-color: #37363666;
+      box-shadow: 0 0 2rem 0 rgba(34, 34, 34, 0.4);
+      border: 1px solid #6d6d6d6b;
+}
+.popup-handle {
+      background: rgba(144, 144, 144, 0.295);
+      border: 1px solid #dddddd00;
+}
+
+.brand-icon  {
+border-color: white;
+}
+
+.product-title {
+color:white;
+}
+
+.lock-icon-bb-logo {
+      filter: invert(0);
+      opacity: 1;
+  }
+
+.buy-now-row {
+filter: none;
+opacity: 0.9;
+}
+
+
+
+.product-description {
+color:white;
+}
+
+.buy-now-button {
+ background-color: rgba(255, 255, 255, 0.975);
+ color:black;
+}
+
+.close-x-icon svg line {
+stroke: white;
+}
+
+.slider-close-up .swiper {
+    background: rgb(0, 0, 0);
+  }
+
+  
+
+  .bb-icon-close-up {
+    filter:brightness(1)
+}
+
+.close {
+  filter: brightness(1);
+}
+
+.popup .popup-sheet-close {
+  filter: brightness(1);
+}
+
+.slider-close-up .swiper-button-next, .slider-close-up .swiper-button-prev {
+    color: rgb(255, 255, 255);
+}
+
+   
+      .slider-close-up {
+        background: rgb(0, 0, 0);
+    }
+    
+
+}
+
+.zoom-toggle-btn {
+  position: absolute;
+  /* right of .bb-icon-close-up when both visible: 8 + 40 + 10 */
+  left: calc(8px + 40px + 10px);
+  bottom: 12px;
+  transform: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: white;
+  font-size: 30px;
+  font-weight: normal;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 999999999;
+  user-select: none;
+  transition: background 0.3s ease;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.zoom-toggle-btn:hover {
+  opacity: 0.7;
+}
+.close:hover {
+  opacity: 0.7;
+}
+
+/* Zoom close-up X: positioned dynamically in JS for >= 780px */
+
+.slider-close-up-swiper img,
+.slider-close-up-swiper video {
+  border-radius: 16px;
+  transition: transform 0.3s ease;
+  cursor: zoom-in;
+  transform-origin: center center;
+}
+
+/* Global demo cleanup: remove the old top-header breadcrumb/nav link row
+   from every page that uses the shared UI shell. Page titles remain. */
+.bb-module-nav {
+  display: none !important;
+}

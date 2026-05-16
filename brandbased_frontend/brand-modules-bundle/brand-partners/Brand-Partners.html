@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        if (new URLSearchParams(location.search).get("embed") === "admin") {
+          document.documentElement.classList.add("bb-platforms-admin-embed");
+        }
+      } catch (_e) {}
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brand Partners — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Montserrat:ital,wght@0,300;0,500;0,700;1,500&family=Nunito:ital,wght@0,300;0,500;0,700;1,500&family=Open+Sans:ital,wght@0,300;0,500;0,700;1,500&family=Poppins:ital,wght@0,300;0,500;0,700;1,500&family=Raleway:ital,wght@0,300;0,500;0,700;1,500&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Work+Sans:ital,wght@0,300;0,500;0,700;1,500&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="icon" href="../favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="../favicons/manifest.webmanifest" />
+
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="stylesheet" href="../platforms/platforms.css?v=platforms-58" />
+  <link rel="stylesheet" href="./brand-partners.css?v=bp-13" />
+  <link rel="stylesheet" href="../_shared/sync-popup.css?v=shared-2" />
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+          document.documentElement.classList.toggle("bb-embed-host-light", scheme === "light");
+          document.documentElement.classList.toggle("bb-embed-host-dark", scheme === "dark");
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-platforms-page bb-brand-theme-settings bb-platforms-page--admin-solo bb-brand-partners-admin">
+
+  <!-- Admin-only Platforms variant. The left "Excluded URLs Across Your
+       Digital Platforms" panel + the Hotspots CTA below it are stripped
+       from the DOM, so the 2-column grid would collapse with an awkward
+       gap. This block:
+         1. Switches `.bb-plat-dash-layout--admin-solo` from CSS grid to a
+            centered flex column so the right panel sits in the middle of
+            the page at all viewport widths.
+         2. Lets the panel grow up to ~1080px wide (vs the original
+            ~520px right column) so the Platform Partners list has more
+            breathing room.
+         3. Neutralises any grid-column / max-width / margins the parent
+            CSS was applying to the right section in 2-column mode. -->
+  <style>
+    /* Single source of truth for the admin panel's width — used by both
+       the layout and the page header so the "Platforms" title lines up
+       with the panel's left edge. */
+    .bb-platforms-page--admin-solo {
+      --bb-plat-admin-solo-max: 1080px;
+    }
+
+    .bb-plat-dash-layout--admin-solo {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      grid-template-columns: none !important;
+      gap: 0 !important;
+    }
+    /* Kill the vertical divider that the 2-column theme paints between
+       the left + right columns (products.theme-design.css line ~621:
+       `.bb-bts-layout::before`). In single-column admin mode this
+       silver bar would float to the left of the centered panel. */
+    .bb-plat-dash-layout--admin-solo::before,
+    .bb-plat-dash-layout--admin-solo::after {
+      content: none !important;
+      display: none !important;
+      background: none !important;
+      box-shadow: none !important;
+      border: 0 !important;
+    }
+
+    .bb-plat-dash-layout--admin-solo .bb-bts-right--platforms {
+      width: 100% !important;
+      max-width: var(--bb-plat-admin-solo-max) !important;
+      grid-column: auto !important;
+      margin: 0 auto !important;
+      flex: 0 0 auto !important;
+    }
+    .bb-plat-dash-layout--admin-solo .bb-plat-dash-panel--global {
+      width: 100% !important;
+      max-width: none !important;
+      margin: 0 auto !important;
+    }
+    .bb-plat-dash-layout--admin-solo .bb-plat-platform-list {
+      width: 100% !important;
+    }
+
+    /* Page header: line "Platforms" up with the LEFT edge of the panel
+       below it. The theme's .bb-module-head spans the full shell width,
+       so we cap it to the same max-width and center it. h1 already has
+       `text-align: left` (platforms.css line ~37), so this is enough
+       for visual alignment. */
+    .bb-platforms-page--admin-solo .bb-module-head {
+      width: 100% !important;
+      max-width: var(--bb-plat-admin-solo-max) !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    @media (max-width: 840px) {
+      .bb-plat-dash-layout--admin-solo .bb-bts-right--platforms,
+      .bb-platforms-page--admin-solo .bb-module-head {
+        max-width: 100% !important;
+      }
+    }
+  </style>
+
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <div id="bbPlatformsMount" class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="../start-now/Start-Now.html">Start Now</a>
+        <a href="../logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="../brands/Brands.html">Brands</a>
+        <a href="../Brand-Settings-Module.html">Brand Settings</a>
+        <a href="../Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="../products/Products.html">Products</a>
+        <a href="../Product-Scheduling-Module.html">Scheduling</a>
+        <a href="../platforms/Platforms.html">Platforms</a>
+        <a href="Brand-Partners.html">Brand Partners</a>
+        <a href="../hotspots/Hotspots.html">Hotspots</a>
+        <a href="../ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="../ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+        <a href="../metrics/Metrics.html">Metrics</a>
+        <a href="../payments/Payments.html">Payments</a>
+        <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <h1>Brand Partners</h1>
+    </header>
+
+    <div class="bb-bts-layout bb-plat-dash-layout bb-plat-dash-layout--admin-solo" role="main" aria-label="Brand partners distribution">
+      <!-- Admin variant: the "Excluded URLs Across Your Digital Platforms"
+           left panel is intentionally omitted here. The Platform Partners
+           panel below is the only column, centered and widened via the
+           `bb-plat-dash-layout--admin-solo` modifier (rules in the inline
+           <style> block at the top of <body>). -->
+
+      <section class="bb-bts-right bb-bts-right--platforms bb-plat-dash-col" aria-label="Brand partners">
+        <div class="bb-plat-dash-panel bb-plat-dash-panel--global">
+          <h2 class="bb-plat-dash-title bb-plat-dash-title--with-lockup">
+            <img
+              class="bb-plat-dash-title-typeface"
+              src="../payments/BrandBased-Typeface.svg"
+              width="160"
+              height="26"
+              alt="BrandBased"
+              decoding="async"
+            />
+            <span class="bb-plat-dash-title-text">Global Brand Partners</span>
+          </h2>
+
+          <p class="bb-plat-dash-lede">
+            Configure each brand&#8217;s <strong>credit tier</strong> and how much <strong>user signal data</strong> BrandBased AI may favour when collecting and weighting signals across the network. Use <strong>Standard</strong> / <strong>Elevated</strong> to unlock higher collection ceilings; drag the slider toward the right to prioritise BB AI collection for selected brands over others.
+            <button type="button" class="bb-plat-info-btn bb-plat-info-btn--inline" aria-label="About brand partners" title="About brand partners">
+              <img src="../platforms/tool-tip.svg" width="18" height="18" alt="" decoding="async" />
+            </button>
+          </p>
+
+          <div class="bb-plat-global-scroll">
+                        <ul class="bb-plat-platform-list" id="bbBrandPartnersList">
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="nike">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/nike.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Nike</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="94" step="1" data-brand="nike" data-default-weight="94" aria-label="Signal collection weight for Nike" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="nike"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="nike" aria-label="Nike elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="loreal">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/loreal.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">L&apos;Oréal</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="91" step="1" data-brand="loreal" data-default-weight="91" aria-label="Signal collection weight for L&apos;Oréal" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="loreal"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="loreal" aria-label="L&apos;Oréal elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="mecca">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/MECCA.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Mecca</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="89" step="1" data-brand="mecca" data-default-weight="89" aria-label="Signal collection weight for Mecca" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="mecca"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="mecca" aria-label="Mecca elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="louisvuitton">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/louisvuitton.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Louis Vuitton</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="86" step="1" data-brand="louisvuitton" data-default-weight="86" aria-label="Signal collection weight for Louis Vuitton" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="louisvuitton"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="louisvuitton" aria-label="Louis Vuitton elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="dior">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/dior.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Dior</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="88" step="1" data-brand="dior" data-default-weight="88" aria-label="Signal collection weight for Dior" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="dior"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="dior" aria-label="Dior elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="ysl">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/ysl.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">YSL</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="84" step="1" data-brand="ysl" data-default-weight="84" aria-label="Signal collection weight for YSL" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="ysl"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="ysl" aria-label="YSL elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="kbeauty">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/kbeauty.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">K-Beauty</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="81" step="1" data-brand="kbeauty" data-default-weight="81" aria-label="Signal collection weight for K-Beauty" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="kbeauty"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="kbeauty" aria-label="K-Beauty elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="apple">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/apple.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Apple</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="79" step="1" data-brand="apple" data-default-weight="79" aria-label="Signal collection weight for Apple" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="apple"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="apple" aria-label="Apple elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="samsung">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/samsung.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Samsung</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="77" step="1" data-brand="samsung" data-default-weight="77" aria-label="Signal collection weight for Samsung" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="samsung"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="samsung" aria-label="Samsung elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="chanel">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/chanel.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Chanel</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="83" step="1" data-brand="chanel" data-default-weight="83" aria-label="Signal collection weight for Chanel" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="chanel"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="chanel" aria-label="Chanel elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="sephora">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/sephora.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Sephora</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="80" step="1" data-brand="sephora" data-default-weight="80" aria-label="Signal collection weight for Sephora" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="sephora"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="sephora" aria-label="Sephora elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row bb-brand-partner-row" data-brand="adidas">
+                <img class="bb-plat-platform-logo" src="../metrics/brand-logos/adidas.svg" width="40" height="40" alt="" decoding="async" />
+                <div class="bb-brand-partner-main">
+                  <span class="bb-plat-platform-name">Adidas</span>
+                  <div class="bb-brand-partner-signals">
+                    <div class="bb-brand-partner-slider-labels">
+                      <span>Credit tier — baseline</span>
+                      <span>Extended user signals · BB AI priority</span>
+                    </div>
+                    <div class="bb-brand-partner-slider-row">
+                      <input type="range" class="bb-brand-partner-slider" min="0" max="100" value="75" step="1" data-brand="adidas" data-default-weight="75" aria-label="Signal collection weight for Adidas" />
+                    </div>
+                    <p class="bb-brand-partner-readout" data-readout-for="adidas"></p>
+                  </div>
+                </div>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Standard</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-brand="adidas" aria-label="Adidas elevated credit pathway (higher user signal ceiling for BB AI)" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Elevated</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <button type="button" class="bb-plat-sync-btn" id="bbPlatSyncGlobal">Sync</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../_shared/sync-popup.js?v=shared-1"></script>
+  <script src="../platforms/platforms-page.js?v=platforms-28"></script>
+  <script src="./brand-partners-page.js?v=bp-7"></script>
+</body>
+</html>

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>brandbased - Team Console | Admin</title>
+  
+  <meta name="description"
+    content="brandbased — the biggest evolution in brand and brand-commerce since brands were invented">
+  <meta name="keywords" content="brand based">
+  <meta name="author" content="brandbased">
+  <meta name="robots" content="index, follow">
+
+  <!---Favicons---->
+  <link rel="icon" href="./favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="./favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="./favicons/manifest.webmanifest" />
+
+  <!---Styles---->
+  <link rel="stylesheet" href="./css/admin-console-styles.css?v=admin-ac-4">
+  <link rel="stylesheet" href="./css/animate.css">
+
+  <!---Fonts---->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+    rel="stylesheet">
+
+   
+
+    <!-- JS -->
+    <script src="js/main-js.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    
+    <!--- jQuery -->
+    <script src="js/jquery-3.7.1.min.js"></script>   
+   
+
+
+
+</head>
+
+<body>
+
+
+
+
+
+     <!------------------------ Home App Screen  --------------------------->
+     <div class="screen hidden" id="screen2" style="display: flex;">
+
+
+
+
+
+
+
+
+    <!---------- Header --------------->
+    <div class="header-nav">
+    <div class="header-logo animate__animated animate__slideInDown" id="header-logo-mobile"><img src="./images/BB-TYPEFACE-LOGO-white.svg" width="100%" height="100%"></div>
+      <div class="header-logo-desktop animate__animated animate__fadeInLeft" id="header-icon-desktop">
+        <img src="./images/b-white.svg" width="100%" height="100%" id="white-icon">
+        <img src="./images/b-white.svg" width="100%" height="100%" id="blue-icon">
+      </div>
+      <div class="bb-admin-header-brand-cluster animate__animated animate__slideInDown">
+        <div class="bb-typeface"><img src="./images/BB-TYPEFACE-LOGO-white.svg" width="100%" height="100%" alt="BrandBased" /></div>
+        <p class="bb-admin-header-team-console-heading">Team Console</p>
+      </div>
+      <!---Logout toggle popup---->
+      <div id="account-popup">
+     
+
+        <div class="theme-toggle-container">
+          <span class="theme-label" id="theme-label">Theme Dark</span>
+          <label class="theme-button">
+            <input type="checkbox" class="checkbox" id="theme-switch">
+            <div class="knobs"></div>
+            <div class="layer"></div>
+          </label>
+        </div>
+       <div class="logout-button">Log Out</div>
+      <script>
+         document.querySelector('.logout-button').addEventListener('click', () => {
+      window.location.href = "../../signout.html";
+      });
+      </script>
+    </div>
+    
+    <div class="account">
+      <p id="account-title">Team Account</p>
+      <img src="./images/account-placeholder.svg" alt="Account Icon" style="filter: brightness(0.7);">
+    </div>
+    
+    <div id="animate-header-line"></div>
+    </div>
+  
+     <!---------- Sidebar  --------------->
+     
+      <div class="nav-container">
+
+        <div class="nav-item" id="Brand-Verify-AI">
+          <img src="./images/brand-auth-ai.svg" alt="Brand Verify AI">
+          <p>Brand Verify AI</p>
+        </div>
+
+
+        <div class="nav-item" id="brand-partners">
+          <img src="./images/brands-active-paused.svg" alt="brand-partners">
+          <p>Brand Partners</p>
+        </div>
+      
+      <div class="nav-item" id="platform-partners">
+        <img src="./images/platforms.svg" alt="platform-partners">
+        <p>Platform Partners</p>
+      </div>
+      
+  
+      <div class="nav-item" id="brand-payouts">
+        <img src="./images/payments.svg" alt="brand-payouts">
+        <p>Brand Payouts</p>
+      </div>
+      
+      <div class="nav-item" id="ai-logic">
+        <img src="./images/ai-logic.svg" alt="ai-logic" id="custom-ai-logic-size">
+        <p>AI-Logic</p>
+      </div>
+      <div class="nav-item" id="brand-controls">
+        <img src="./images/settings.svg" alt="Brand Controls">
+        <p>Brand Controls</p>
+      </div>
+      <div class="nav-item" id="campaigns">
+        <img src="./images/campaigns.svg" alt="campaigns">
+        <p>Campaigns</p>
+      </div>
+      <div class="nav-item" id="metrics">
+        <img src="./images/Metrics.svg" alt="metrics">
+        <p>Metricks</p>
+      </div>
+      
+      <div class="nav-item" id="api">
+        <img src="./images/apis.svg" alt="api">
+        <p>API</p>
+      </div>
+    </div>
+  
+<!-- NEW MOBILE FOOTER -->
+<footer class="mobile-footer-nav">
+
+  <div class="close-mobile-nav">
+    <div class="close-mobile-nav"><img src="./images/close-nav-icon.svg"></div>
+  </div>
+
+  <div class="footer-grid">
+
+    <div class="footer-item" id="Brand-Verify-AI">
+      <img src="./images/brand-auth-ai.svg" alt="Brand Verify AI">
+      <p>Brand Verify AI</p>
+    </div>
+
+    <div class="footer-item" id="brand-partners">
+      <img src="./images/brands-active-paused.svg" alt="Brand Partners">
+      <p>Brand Partners</p>
+    </div>
+
+    <div class="footer-item" id="onboard-platform">
+      <img src="./images/platforms.svg" alt="Platform Partners">
+      <p>Platform Partners</p>
+    </div>
+
+    <div class="footer-item" id="brand-payouts">
+      <img src="./images/payments.svg" alt="Brand Payouts">
+      <p>Brand Payouts</p>
+    </div>
+
+    <div class="footer-item" id="ai-logic">
+      <img src="./images/ai-logic.svg" alt="AI Logic">
+      <p>AI Logic</p>
+    </div>
+
+    <div class="footer-item" id="campaigns">
+      <img src="./images/campaigns.svg" alt="Campaigns">
+      <p>Campaigns</p>
+    </div>
+ 
+
+    <div class="footer-item" id="brand-controls-mobile">
+      <img src="./images/settings.svg" alt="Brand Controls">
+      <p>Brand Controls</p>
+    </div>
+
+    <div class="footer-item" id="metrics">
+      <img src="./images/Metrics.svg" alt="Metrics">
+      <p>Metrics</p>
+    </div>
+
+    <div class="footer-item" id="api">
+      <img src="./images/apis.svg" alt="api">
+      <p>API</p>
+    </div>
+
+  </div>
+
+</footer>
+
+<div class="mobile-footer-bar">
+  <div class="mobile-footer-bar-item" id="brands">
+    
+   
+  </div>
+
+  <div class="mobile-footer-bar-item" id="open-footer-nav">
+    <img src="./images/ai-logic.svg"  width="40px" height="40px">
+  
+  </div>
+
+  <div class="mobile-footer-bar-item" id="brand-settings">
+    
+   
+  </div>
+</div>
+
+
+
+
+
+    <div class="content-block animate__animated animate__slideInUp">
+
+   <h2 id="content-heading">Team Workspace</h2>
+   <video class="video-bg-content-header" autoplay muted loop playsinline>
+    <source src="videos/BB-background-video-theme.mp4" type="video/mp4">
+</video>
+    </div>
+  
+ 
+
+
+<div id="loading"><img src="./images/loading-icon.svg" width="100%" height="100%"></div>
+
+
+ 
+
+    
+  </div>
+
+
+  <div class="footer-bar-brand-console animate__animated animate__slideInUp" id="console-desktop-footer-bar">
+    <div class="footer-left">
+      <div class="footer-b-icon">
+        <img src="images/b-white.svg" width="17" height="17">
+      </div>
+      <h5>
+        © 2026 BrandBased · 
+        <a href="/ai-commerce">AI Commerce Platform</a> · 
+        <a href="/brand-support">Brand Support</a>
+      </h5>
+    </div>
+    <div class="footer-right">
+      <h5>
+        <a href="/privacy">Privacy</a> · 
+        <a href="/terms">Terms</a> · 
+        <a href="/contact">Contact</a>
+      </h5>
+    </div>
+  </div>
+ <!------------------------ Base Light More gradient light behind UI ----------------------> 
+ <div class="light-shard-ui-base">
+  <div class="light-shard-ui-theme"></div>
+  <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+  <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+</div>
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+<!-----show eye on password input------->
+<script>
+  document.querySelectorAll('.password-wrapper').forEach(wrapper => {
+    const input = wrapper.querySelector('input');
+    const toggleContainer = wrapper.querySelector('.toggle-password');
+    const eyeDefault = wrapper.querySelector('.eye-default');
+    const eyeShow = wrapper.querySelector('.eye-show');
+
+    // Attach click event to the span container (not the individual images)
+    toggleContainer.addEventListener('click', () => {
+      const isHidden = input.type === 'password';
+
+      // Toggle the password visibility
+      input.type = isHidden ? 'text' : 'password';
+
+      // Toggle visibility of the eye icons
+      eyeDefault.style.display = isHidden ? 'none' : 'inline';
+      eyeShow.style.display = isHidden ? 'inline' : 'none';
+    });
+  });
+</script>
+
+
+
+<script>
+  //light shine logo icon
+const whiteIcon = document.getElementById('white-icon');
+
+function triggerDoubleShine() {
+  whiteIcon.classList.remove('shine-double');
+  void whiteIcon.offsetWidth; // force reflow to restart animation
+  whiteIcon.classList.add('shine-double');
+}
+
+triggerDoubleShine(); // Initial trigger
+setInterval(triggerDoubleShine, 30000);
+
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const checkbox = document.getElementById("theme-switch");
+    const label    = document.getElementById("theme-label");
+  
+    const STORAGE_KEY = "theme";           // "light", "dark" or null (= auto/system)
+    const DARK_CLASS  = "light-mode";      // your existing class name (inverted logic)
+  
+    // ── Apply the correct class right now ────────────────────────────────
+    function applyTheme(isLight) {
+      document.body.classList.toggle(DARK_CLASS, isLight);
+    }
+  
+    // ── What theme should we use? ────────────────────────────────────────
+    function getDesiredTheme() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+  
+      if (saved === "light") return true;   // light-mode = on
+      if (saved === "dark")  return false;  // light-mode = off
+  
+      // auto → follow system
+      return !window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+  
+    // ── Update checkbox & label to match current state ───────────────────
+    function updateUI() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+  
+      if (saved === "light") {
+        checkbox.checked = true;
+        label.textContent = "Theme Light";
+      } else if (saved === "dark") {
+        checkbox.checked = false;
+        label.textContent = "Theme Dark";
+      } else {
+        // auto / system
+        const isSystemLight = !window.matchMedia("(prefers-color-scheme: dark)").matches;
+        checkbox.checked = isSystemLight;   // visual hint only
+        label.textContent = "Theme: System";
+      }
+    }
+  
+    // ── When user toggles the switch ─────────────────────────────────────
+    checkbox.addEventListener("change", () => {
+      const wantsLight = checkbox.checked;
+  
+      if (wantsLight) {
+        localStorage.setItem(STORAGE_KEY, "light");
+      } else {
+        localStorage.setItem(STORAGE_KEY, "dark");
+      }
+  
+      applyTheme(wantsLight);
+      updateUI();
+    });
+  
+    // ── Listen to system theme changes (when not overridden) ─────────────
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    media.addEventListener("change", (e) => {
+      // Only react if user didn't pick a manual preference
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        const isLightNow = !e.matches;
+        applyTheme(isLightNow);
+        updateUI();
+      }
+    });
+  
+    // ── First load ───────────────────────────────────────────────────────
+    const shouldBeLight = getDesiredTheme();
+    applyTheme(shouldBeLight);
+    updateUI();
+  });
+  </script>
+
+
+
+
+
+
+</body>
+</html>

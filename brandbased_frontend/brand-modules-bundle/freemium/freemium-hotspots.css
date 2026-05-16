@@ -1,0 +1,300 @@
+/* Freemium Hotspots page — single-column overrides on top of platforms.css.
+   Body class includes `bb-platforms-page` so panel / URL pill / Sync button styles apply unchanged.
+   Anything tweaked here is scoped behind `body.bb-freemium-hotspots-page` so this Freemium copy
+   stays independent from the Premium Hotspots page (same selectors, different body class). */
+
+/* Force single-column layout: theme-design.css grid is 2-col on >=1351px and adds a vertical
+   divider via ::before — neither belongs on this page. */
+body.bb-freemium-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: calc(clamp(6px, 1.5vh, 20px) + 30px);
+  grid-template-columns: 1fr !important;
+  position: relative;
+}
+
+/* Kill the vertical divider that the shared theme draws between the two grid columns. */
+body.bb-freemium-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout::before,
+body.bb-freemium-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout::after {
+  content: none !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+body.bb-freemium-hotspots-page .bb-hotspots-center {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+/* Match the page title's left edge to the centered Hotspots panel. */
+body.bb-freemium-hotspots-page .bb-module-head h1 {
+  width: min(720px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 15px;
+}
+
+@media (min-width: 1351px) {
+  body.bb-freemium-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout {
+    /* Shared desktop CSS makes .bb-bts-layout flex:1 and viewport-height; keep this page
+       content-sized so the single card sits near the top like tablet/mobile. */
+    flex: 0 0 auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    padding-top: 8px;
+  }
+}
+
+/* Single panel: cap the width, no min-height (Platforms forces 590px on non-excluded panels for
+   visual parity with the partners panel — we don't have that here, so let the panel size to content). */
+body.bb-freemium-hotspots-page .bb-plat-dash-panel.bb-hotspots-panel {
+  width: 100%;
+  max-width: 720px;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 32px);
+  min-height: 0 !important;
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+
+/* Secondary CTA: Freemium publish-ready panel.
+   Lives behind a 1.5s diagonal white-shimmer that loops every ~3s
+   so the "Brand Ready for Publishing" panel feels alive. The
+   shimmer is painted by an absolutely-positioned ::before sweep
+   clipped to the rounded panel via `overflow: hidden`. */
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: left;
+  background: #635bff !important;
+  overflow: hidden;
+  isolation: isolate;
+  transform-origin: center;
+  box-shadow:
+    0 18px 40px rgba(99, 91, 255, 0.34),
+    0 0 38px rgba(99, 91, 255, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  animation: bb-fm-publish-breathe 3.8s ease-in-out infinite;
+}
+
+/* Dark-mode tier: shared theme-design.css has TWO dark-mode paths
+   that paint .bb-bts-card.bb-bts-cta with `background: #06084e
+   !important` — one keyed off the manual `.dark-mode` body class,
+   the other off the OS-level `@media (prefers-color-scheme: dark)`.
+   Override both so the Freemium publish panel always stays Sync
+   purple #635bff in dark mode. */
+body.dark-mode.bb-brand-theme-settings.bb-freemium-hotspots-page .bb-hotspots-ai-cta,
+body.dark-mode.bb-brand-theme-settings.bb-freemium-hotspots-page .bb-bts-card.bb-bts-cta.bb-hotspots-ai-cta,
+body.dark-mode.bb-freemium-hotspots-page .bb-hotspots-ai-cta {
+  background: #635bff !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-freemium-hotspots-page .bb-hotspots-ai-cta,
+  body.bb-brand-theme-settings.bb-freemium-hotspots-page .bb-hotspots-ai-cta,
+  body.bb-brand-theme-settings.bb-freemium-hotspots-page .bb-bts-card.bb-bts-cta.bb-hotspots-ai-cta {
+    background: #635bff !important;
+  }
+}
+
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-18deg);
+  pointer-events: none;
+  z-index: 0;
+  animation: bb-fm-publish-shimmer 3s ease-in-out infinite;
+}
+
+/* Keep text + button above the shimmer sweep. */
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes bb-fm-publish-shimmer {
+  0%   { left: -60%; opacity: 0; }
+  20%  { opacity: 1; }
+  60%  { left: 110%; opacity: 1; }
+  100% { left: 110%; opacity: 0; }
+}
+
+@keyframes bb-fm-publish-breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 18px 40px rgba(99, 91, 255, 0.34),
+      0 0 38px rgba(99, 91, 255, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.26);
+  }
+  50% {
+    transform: scale(1.018);
+    box-shadow:
+      0 22px 52px rgba(99, 91, 255, 0.42),
+      0 0 52px rgba(99, 91, 255, 0.36),
+      inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-freemium-hotspots-page .bb-hotspots-ai-cta {
+    animation: none;
+  }
+  body.bb-freemium-hotspots-page .bb-hotspots-ai-cta::before {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta h2 {
+  margin: 0 0 8px;
+  font: 900 16px/1.15 Roboto, system-ui, sans-serif;
+  color: #fff;
+}
+
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta .bb-bts-help {
+  margin: 0 0 6px;
+  font: 400 13px/1.45 Roboto, system-ui, sans-serif;
+  color: #fff !important;
+}
+
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-actions {
+  margin-top: 14px;
+  justify-content: flex-start;
+}
+
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-btn {
+  width: 100%;
+  max-width: none;
+  appearance: none;
+  -webkit-appearance: none;
+  font: 900 14px/1 Roboto, system-ui, sans-serif;
+  /* Button label tints to match the panel's #635bff background.
+     Override both `color` and `-webkit-text-fill-color` since the
+     shared theme-design.css applies `color: rgba(6,8,78,0.95)
+     !important` to .bb-bts-cta-btn. */
+  color: #635bff !important;
+  -webkit-text-fill-color: #635bff !important;
+  transition: opacity 200ms ease;
+}
+
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-btn:hover,
+body.bb-freemium-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-btn:focus-visible {
+  opacity: 0.78;
+}
+
+/* Dark-mode tier — the shared theme-design.css adds a more-specific
+   `body.dark-mode.bb-brand-theme-settings .bb-bts-cta-btn` rule that
+   would otherwise win the cascade in dark mode. Match its specificity
+   here so the green label sticks. */
+body.dark-mode.bb-brand-theme-settings.bb-freemium-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-btn,
+body.dark-mode.bb-freemium-hotspots-page .bb-hotspots-ai-cta .bb-bts-cta-btn {
+  color: #635bff !important;
+  -webkit-text-fill-color: #635bff !important;
+}
+
+/* Bold lede paragraph (top of the panel) — matches the screenshot's white bold heading. */
+body.bb-freemium-hotspots-page .bb-hotspots-heading {
+  margin: 0;
+  font: 700 17px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  color: var(--bb-plat-dash-text);
+}
+
+@media (min-width: 768px) {
+  body.bb-freemium-hotspots-page .bb-hotspots-heading {
+    font-size: 18px;
+    line-height: 1.45;
+  }
+}
+
+/* Copy paragraph: same family as platforms but a touch more breathing room since this is the only block. */
+body.bb-freemium-hotspots-page .bb-hotspots-copy p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* URL field shouldn't show the row remove button (single URL on this page) — none rendered, but keep
+   the field self-contained in case a stray remove button is added later. */
+body.bb-freemium-hotspots-page .bb-hotspots-url-field .bb-plat-url-remove {
+  display: none;
+}
+
+/* Sync button: brand purple, full width, slightly taller. */
+body.bb-freemium-hotspots-page .bb-plat-sync-btn.bb-hotspots-sync-btn {
+  width: 100%;
+  --bb-plat-sync-bg: #635bff;
+  --bb-plat-sync-bg-hover: #5249e8;
+  background: var(--bb-plat-sync-bg);
+  font-size: 18px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  letter-spacing: 0.01em;
+}
+
+body.bb-freemium-hotspots-page .bb-plat-sync-btn.bb-hotspots-sync-btn:hover {
+  background: var(--bb-plat-sync-bg-hover);
+}
+
+/* Hide the resize handle / collapse chevron / "Add Excluded URL" button affordances that the
+   panel--excluded variant adds in the Platforms page chrome — they have no place here. */
+body.bb-freemium-hotspots-page .bb-plat-excluded-collapse,
+body.bb-freemium-hotspots-page .bb-plat-excluded-resize-handle,
+body.bb-freemium-hotspots-page .bb-plat-add-url {
+  display: none !important;
+}
+
+/* Defensive: kill any inherited horizontal divider lines around the URL field / scroll wrapper.
+   The Platforms layout uses these as separators on a multi-row scrollable list — the single-URL
+   Hotspots layout doesn't want them. */
+body.bb-freemium-hotspots-page .bb-plat-excluded-scroll,
+body.bb-freemium-hotspots-page .bb-plat-url-field,
+body.bb-freemium-hotspots-page .bb-plat-url-field-main {
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Mobile: keep the panel comfy with side margins. */
+@media (max-width: 600px) {
+  body.bb-freemium-hotspots-page .bb-bts-layout.bb-hotspots-dash-layout {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  body.bb-freemium-hotspots-page .bb-plat-dash-panel.bb-hotspots-panel {
+    padding: 18px;
+    gap: 14px;
+  }
+  body.bb-freemium-hotspots-page .bb-hotspots-heading {
+    font-size: 16px;
+  }
+}
+
+/* Publish Now popup uses the shared sync-popup module for its
+   "Publishing → Published" finishing beat — no page-local CSS
+   needed. See ../_shared/sync-popup.{js,css} for the implementation. */

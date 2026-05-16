@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Layer_1"
+   data-name="Layer 1"
+   viewBox="0 0 84.027673 87.207109"
+   version="1.1"
+   sodipodi:docname="campaigns.svg"
+   inkscape:version="1.1.2 (b8e25be8, 2022-02-05)"
+   width="84.027672"
+   height="87.207108"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs76943" />
+  <sodipodi:namedview
+     id="namedview76941"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="6.0628257"
+     inkscape:cx="37.523758"
+     inkscape:cy="55.996992"
+     inkscape:window-width="1296"
+     inkscape:window-height="959"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Layer_1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <title
+     id="title76936">bar-chart</title>
+  <metadata
+     id="metadata77002">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>bar-chart</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     class="st0"
+     d="M 53.830221,70.841579 50.515977,76.639763 32.376245,67.69051 33.001461,61.466521 Z M 13.952474,32.411686 H 0 v 21.070883 h 13.952474 z m 8.686722,24.385128 -1.362632,13.597656 34.086529,16.81264 7.125275,-12.462212 21.5393,10.503434 V 0 L 17.188765,32.071105 v 22.27014 z"
+     id="path62196"
+     style="clip-rule:evenodd;fill:#ffffff;fill-rule:evenodd;stroke-width:0.709691" />
+</svg>

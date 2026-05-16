@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>brandbased • create your account</title>
+
+    <!-- Favicons -->
+    <link rel="icon" href="./favicons/favicon.ico" sizes="any" />
+    <link rel="icon" href="./favicons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./favicons/apple-touch-icon.png" />
+    <link rel="manifest" href="./favicons/manifest.webmanifest" />
+
+    <!-- styles -->
+    <link rel="stylesheet" href="signup-page.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    </style>
+</head>
+
+<body>
+
+<!-- Base Light More gradient light behind UI -->
+<div class="light-shard-ui-base">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+</div>
+
+<!-- DESKTOP VERSION -->
+<div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <img src="./assets/images/Brandbased-icon.svg" alt="logo" class="logo-top">
+
+        <div style="text-align: center; margin-top: 80px;">
+            <h1 class="brand-name">
+                <span class="brand-name-inner">
+                    <img src="./assets/images/BrandBased-Typeface.svg" width="100%" height="100%" alt="brandbased">
+                </span>
+            </h1>
+
+            <!-- Animated Moving Subtitle -->
+            <div class="moving-subtitle">
+                <span class="text-slide active desktop-text1">Create your account</span>
+                <span class="text-slide desktop-text2">Join a <span style="font-style: italic;">Brand</span> - New Movement</span>
+            </div>
+        </div>
+
+        <!-- INLINE AUTH FLOW - DESKTOP -->
+        <div class="auth-inline-box">
+
+            <!-- Start -->
+            <div class="auth-step active" id="desktop-start">
+                <button onclick="goToStep('desktop-signup-email')" class="signup-btn">
+                    <img src="./assets/images/email-icon-login-signup.svg" alt="email" width="22">
+                    Sign up with email
+                </button>
+
+                <p class="signin">
+                    Already have an account?
+                    <a href="#" onclick="goToStep('desktop-login')">Sign in</a>
+                </p>
+            </div>
+
+            <!-- Signup Email -->
+            <div class="auth-step" id="desktop-signup-email">
+                <h2>Create account</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Enter your email to continue</p>
+
+                <input type="email" placeholder="Email address">
+
+                <button onclick="sendSignupOtp('desktop-signup-email', 'desktop-signup-otp')" class="signup-btn">Continue</button>
+
+                <p class="signin">
+                    Already have an account?
+                    <a href="#" onclick="goToStep('desktop-login')">Sign in</a>
+                </p>
+            </div>
+
+            <!-- Signup OTP -->
+            <div class="auth-step" id="desktop-signup-otp">
+                <h2>Verify email</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Enter the OTP sent to your email</p>
+
+                <input type="text" maxlength="6" inputmode="numeric" placeholder="Enter OTP">
+
+                <button onclick="verifySignupOtp('desktop-signup-otp', 'desktop-signup-password')" class="signup-btn">Verify OTP</button>
+            </div>
+
+            <!-- Signup Password -->
+            <div class="auth-step" id="desktop-signup-password">
+                <h2>Create password</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Set your account password</p>
+
+                <input type="password" placeholder="Password">
+                <input type="password" placeholder="Confirm password">
+
+                <button onclick="validateSignupPassword('desktop-signup-password', 'desktop-setup-pin-choice')" class="signup-btn">Continue</button>
+            </div>
+
+            <!-- PIN Choice -->
+            <div class="auth-step" id="desktop-setup-pin-choice">
+                <h2>Setup PIN code?</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Use a 6 digit PIN for faster login</p>
+
+                <button onclick="goToStep('desktop-setup-pin')" class="signup-btn">Yes, setup PIN</button>
+                <button onclick="finishSignupWithoutPin('desktop-setup-pin-choice')" class="signup-btn secondary-inline-btn">Skip for now</button>
+            </div>
+
+            <!-- Setup PIN -->
+            <div class="auth-step" id="desktop-setup-pin">
+                <h2>Create PIN</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Create your 6 digit PIN</p>
+
+                <input type="password" maxlength="6" inputmode="numeric" placeholder="Enter 6 digit PIN">
+                <input type="password" maxlength="6" inputmode="numeric" placeholder="Confirm PIN">
+
+                <button onclick="validatePinStep('desktop-setup-pin')" class="signup-btn">Finish</button>
+            </div>
+
+            <!-- Login -->
+            <div class="auth-step" id="desktop-login">
+                <h2>Welcome back</h2>
+                <p class="auth-subtitle">Login with your email and password</p>
+
+                <input type="email" placeholder="Email address">
+                <input type="password" placeholder="Password">
+
+                <button onclick="loginAccount('desktop-login')" class="signup-btn">Login</button>
+
+                <p class="signin">
+                    <a href="#" onclick="goToStep('desktop-forgot-email')">Forgot password?</a>
+                </p>
+
+                <p class="signin">
+                    New user?
+                    <a href="#" onclick="goToStep('desktop-signup-email')">Create account</a>
+                </p>
+            </div>
+
+            <!-- Forgot Email -->
+            <div class="auth-step" id="desktop-forgot-email">
+                <h2>Reset password</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Enter your registered email</p>
+
+                <input type="email" placeholder="Email address">
+
+                <button onclick="goToStep('desktop-forgot-otp')" class="signup-btn">Send OTP</button>
+            </div>
+
+            <!-- Forgot OTP -->
+            <div class="auth-step" id="desktop-forgot-otp">
+                <h2>Verify OTP</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Enter the OTP sent to your email</p>
+
+                <input type="text" maxlength="6" inputmode="numeric" placeholder="Enter OTP">
+
+                <button onclick="goToStep('desktop-forgot-password')" class="signup-btn">Verify OTP</button>
+            </div>
+
+            <!-- Forgot Password -->
+            <div class="auth-step" id="desktop-forgot-password">
+                <h2>Change password</h2>
+                <button class="back-btn" onclick="goBack()">← Back</button>
+                <p class="auth-subtitle">Create your new password</p>
+
+                <input type="password" placeholder="New password">
+                <input type="password" placeholder="Confirm password">
+
+                <button onclick="goToStep('desktop-login')" class="signup-btn">Update password</button>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            By continuing, you agree to our
+            <a href="#">Terms of Service</a> and
+            <a href="#">Privacy Policy</a>
+        </div>
+    </div>
+
+    <!-- Right Video Panel Desktop only -->
+    <div class="right-panel">
+        <video class="video-bg" autoplay muted loop playsinline>
+            <source src="./assets/videos/brand-based-hero-bg.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        <img src="./assets/images/Brandbased-icon-white.svg" alt="logo" class="center-logo">
+        <img src="./assets/images/BrandBased-Typeface-white.svg" alt="brandbased" class="bottom-brand">
+    </div>
+</div>
+
+<!-- MOBILE VERSION -->
+<div class="mobile-container">
+    <img src="./assets/images/Brandbased-icon.svg" alt="logo" class="mobile-logo">
+
+    <h1 class="brand-name">
+        <span class="brand-name-inner">
+            <img src="./assets/images/BrandBased-Typeface.svg" width="100%" height="100%" alt="brandbased">
+        </span>
+    </h1>
+
+    <div class="moving-subtitle">
+        <span class="text-slide active mobile-text1">Create your account</span>
+        <span class="text-slide mobile-text2">Join a <span style="font-style: italic;">Brand</span> - New Movement</span>
+    </div>
+
+    <!-- INLINE AUTH FLOW - MOBILE -->
+    <div class="auth-inline-box mobile-auth-box">
+
+        <!-- Start -->
+        <div class="auth-step active" id="mobile-start">
+            <button onclick="goToStep('mobile-signup-email')" class="mobile-signup-btn">
+                <img src="./assets/images/email-icon-login-signup.svg" alt="email" width="22">
+                Sign up with email
+            </button>
+
+            <p class="mobile-signin">
+                Already have an account?
+                <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
+            </p>
+        </div>
+
+        <!-- Signup Email -->
+        <div class="auth-step" id="mobile-signup-email">
+            <h2>Create account</h2>
+            <p class="auth-subtitle">Enter your email to continue</p>
+
+            <input type="email" placeholder="Email address">
+
+            <button onclick="sendSignupOtp('mobile-signup-email', 'mobile-signup-otp')" class="mobile-signup-btn">Continue</button>
+
+            <p class="mobile-signin">
+                Already have an account?
+                <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
+            </p>
+        </div>
+
+        <!-- Signup OTP -->
+        <div class="auth-step" id="mobile-signup-otp">
+            <h2>Verify email</h2>
+            <p class="auth-subtitle">Enter the OTP sent to your email</p>
+
+            <input type="text" maxlength="6" inputmode="numeric" placeholder="Enter OTP">
+
+            <button onclick="verifySignupOtp('mobile-signup-otp', 'mobile-signup-password')" class="mobile-signup-btn">Verify OTP</button>
+        </div>
+
+        <!-- Signup Password -->
+        <div class="auth-step" id="mobile-signup-password">
+            <h2>Create password</h2>
+            <p class="auth-subtitle">Set your account password</p>
+
+            <input type="password" placeholder="Password">
+            <input type="password" placeholder="Confirm password">
+
+            <button onclick="validateSignupPassword('mobile-signup-password', 'mobile-setup-pin-choice')" class="mobile-signup-btn">Continue</button>
+        </div>
+
+        <!-- PIN Choice -->
+        <div class="auth-step" id="mobile-setup-pin-choice">
+            <h2>Setup PIN code?</h2>
+            <p class="auth-subtitle">Use a 6 digit PIN for faster login</p>
+
+            <button onclick="goToStep('mobile-setup-pin')" class="mobile-signup-btn">Yes, setup PIN</button>
+            <button onclick="finishSignupWithoutPin('mobile-setup-pin-choice')" class="mobile-signup-btn secondary-inline-btn">Skip for now</button>
+        </div>
+
+        <!-- Setup PIN -->
+        <div class="auth-step" id="mobile-setup-pin">
+            <h2>Create PIN</h2>
+            <p class="auth-subtitle">Create your 6 digit PIN</p>
+
+            <input type="password" maxlength="6" inputmode="numeric" placeholder="Enter 6 digit PIN">
+            <input type="password" maxlength="6" inputmode="numeric" placeholder="Confirm PIN">
+
+            <button onclick="validatePinStep('mobile-setup-pin')" class="mobile-signup-btn">Finish</button>
+        </div>
+
+        <!-- Login -->
+        <div class="auth-step" id="mobile-login">
+            <h2>Welcome back</h2>
+            <p class="auth-subtitle">Login with your email and password</p>
+
+            <input type="email" placeholder="Email address">
+            <input type="password" placeholder="Password">
+
+            <button onclick="loginAccount('mobile-login')" class="mobile-signup-btn">Login</button>
+
+            <p class="mobile-signin">
+                <a href="#" onclick="goToStep('mobile-forgot-email')">Forgot password?</a>
+            </p>
+
+            <p class="mobile-signin">
+                New user?
+                <a href="#" onclick="goToStep('mobile-signup-email')">Create account</a>
+            </p>
+        </div>
+
+        <!-- Forgot Email -->
+        <div class="auth-step" id="mobile-forgot-email">
+            <h2>Reset password</h2>
+            <p class="auth-subtitle">Enter your registered email</p>
+
+            <input type="email" placeholder="Email address">
+
+            <button onclick="goToStep('mobile-forgot-otp')" class="mobile-signup-btn">Send OTP</button>
+        </div>
+
+        <!-- Forgot OTP -->
+        <div class="auth-step" id="mobile-forgot-otp">
+            <h2>Verify OTP</h2>
+            <p class="auth-subtitle">Enter the OTP sent to your email</p>
+
+            <input type="text" maxlength="6" inputmode="numeric" placeholder="Enter OTP">
+
+            <button onclick="goToStep('mobile-forgot-password')" class="mobile-signup-btn">Verify OTP</button>
+        </div>
+
+        <!-- Forgot Password -->
+        <div class="auth-step" id="mobile-forgot-password">
+            <h2>Change password</h2>
+            <p class="auth-subtitle">Create your new password</p>
+
+            <input type="password" placeholder="New password">
+            <input type="password" placeholder="Confirm password">
+
+            <button onclick="goToStep('mobile-login')" class="mobile-signup-btn">Update password</button>
+        </div>
+
+    </div>
+
+    <div class="mobile-footer">
+        By continuing, you agree to our
+        <a href="#" style="text-decoration: none;">Terms of Service</a> and
+        <a href="#" style="text-decoration: none;">Privacy Policy</a>
+    </div>
+</div>
+<script src="./assets/js/app-config.js"></script>
+<script src="./assets/js/signup.js"></script>
+</body>
+</html>

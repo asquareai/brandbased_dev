@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium BB Modal — standalone bundle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Favicons (no icon.svg in favicons/ in this bundle) -->
+  <link rel="icon" href="./favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="./brandbased-logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="./favicons/manifest.webmanifest" />
+
+  <!-- Slider -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+  <!-- Same pair as ui-demo-CORRECT-BACKUP (valid CSS — not the repo-root file that wrongly starts with &lt;style&gt;) -->
+  <!-- ?v= bumps cache for file:// and local http.server -->
+  <link rel="stylesheet" href="bb-shared-ui.css?v=premium-standalone-44" />
+  <link rel="stylesheet" href="bb-theme-standalone-popup.css?v=premium-standalone-44" />
+  <link rel="stylesheet" href="premium-bb-mobile-popup-chrome.css?v=premium-standalone-44" />
+
+  <style>
+    /* Shell matches ui-demo-CORRECT-BACKUP/Premium-BB-Modal.html (loads after bb-shared-ui.css) */
+    body { margin: 0; padding: 24px; padding-bottom: 96px; font-family: Roboto, system-ui, sans-serif; font-size: 18px; line-height: 1.6; overflow-x: hidden; }
+    .bb-module-nav a { color: #1030f5; margin-right: 14px; font-weight: 700; font-size: 13px; text-decoration: none; }
+    .bb-premium-wrap { max-width: 720px; margin-top: 80px; background: #f7f6f2; border: 1px solid silver; box-shadow: 0 18px 55px rgba(0,0,0,0.18); padding: 24px; border-radius: 24px; }
+
+    .bb-standalone-note {
+      margin: 0 0 12px 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(6, 8, 78, 0.18);
+      background: rgba(16, 48, 244, 0.06);
+      font-size: 14px;
+      line-height: 1.45;
+      color: rgba(15, 15, 18, 0.88);
+    }
+    .bb-standalone-note code { font-size: 12px; }
+    .bb-standalone-details { margin: 0 0 16px 0; font-size: 14px; }
+    .bb-standalone-details summary { cursor: pointer; font-weight: 700; color: #1030f5; }
+    .bb-standalone-details pre {
+      margin: 10px 0 0 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: #0b0b12;
+      color: #e8e8ee;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    .bb-standalone-nav-hint { font-size: 12px; color: rgba(15, 15, 18, 0.62); margin: 0 0 8px 0; }
+
+    /* ==========================================================
+       "Is this authentic?" verification system.
+      - The existing popup brand icon (.brand-icon — picks up the
+        active brand glyph, e.g. .bb-upload) is the trigger.
+        Clicking it opens the floating verification panel
+        (.bb-legit-panel) over the top-left corner of the product
+        modal, on both desktop and mobile.
+       - Panel matches the page theme: light mode = black text,
+         dark mode = white text. The tick badge and the
+         "Is this authentic?" line are always brand-blue #1030f5.
+       ========================================================== */
+
+    /* Make the brand icon act as the verification trigger. */
+    .popup .title-row .brand-icon {
+      cursor: pointer;
+      pointer-events: auto;
+      transition: filter 160ms ease, transform 160ms ease;
+    }
+    .popup .title-row .brand-icon:hover {
+      filter: drop-shadow(0 0 8px rgba(16, 48, 245, 0.35));
+      transform: scale(1.06);
+    }
+    .popup .title-row .brand-icon:active {
+      transform: scale(0.96);
+    }
+    .popup .title-row .brand-icon:focus-visible {
+      outline: 2px solid rgba(16, 48, 245, 0.55);
+      outline-offset: 3px;
+    }
+
+    /* Uploaded-brand mark in the title row: ~21% larger than the
+       shared-ui default (24px → 29.04px, two compounding +10% bumps).
+       Other .brand-icon variants keep the default size. */
+    .popup .title-row .brand-icon.bb-upload {
+      width: 29.04px !important;
+      height: 29.04px !important;
+    }
+
+    /* Desktop only (≥841px): nudge the upload-brand mark 5px to the
+       left so it sits flush with the title baseline. */
+    @media (min-width: 841px) {
+      .popup .title-row .brand-icon.bb-upload {
+        margin-left: -5px !important;
+      }
+    }
+
+    .bb-legit-panel {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      width: 240px;
+      /* Match the popup's own !important z-index. JS makes sure the
+         panel is appended after the popup in the DOM, so this tie
+         resolves in the panel's favour and it paints over the modal. */
+      z-index: 2147483647 !important;
+      pointer-events: none;       /* not interactive when hidden */
+      opacity: 0;
+      transform: translate(-10px, -10px) scale(0.96);
+      visibility: hidden;         /* hard-hide so it never blocks layout / clicks */
+      transition:
+        transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+        opacity   320ms ease,
+        visibility 0s linear 420ms;
+    }
+    .bb-legit-panel[data-open="true"] {
+      pointer-events: auto;
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+      visibility: visible;
+      transition:
+        transform 420ms cubic-bezier(0.22, 0.61, 0.36, 1),
+        opacity   320ms ease,
+        visibility 0s linear 0s;
+    }
+
+    .bb-legit-card {
+      position: relative;
+      padding: 14px 16px 16px;
+      border-radius: 18px;
+      /* Very translucent glass. Tint flips with theme below. */
+      background: rgba(255, 255, 255, 0.30);
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      -webkit-backdrop-filter: blur(28px) saturate(1.2);
+              backdrop-filter: blur(28px) saturate(1.2);
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+      color: #000000;       /* LIGHT MODE default: all contents black */
+      will-change: transform, box-shadow;
+    }
+    .bb-legit-panel[data-open="true"] .bb-legit-card {
+      animation:
+        bb-legit-pop 560ms cubic-bezier(0.16, 1, 0.3, 1) both,
+        bb-legit-breathe 4.6s ease-in-out 680ms infinite;
+    }
+
+    @keyframes bb-legit-pop {
+      0% {
+        transform: translateY(6px) scale(0.92);
+        filter: blur(1px);
+      }
+      42% {
+        transform: translateY(-2px) scale(1.055);
+        filter: blur(0);
+      }
+      70% {
+        transform: translateY(1px) scale(0.985);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes bb-legit-breathe {
+      0%, 100% {
+        transform: translateY(0) scale(1);
+        box-shadow:
+          0 10px 26px rgba(0, 0, 0, 0.14),
+          inset 0 1px 0 rgba(255, 255, 255, 0.55),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+      }
+      50% {
+        transform: translateY(-3px) scale(1.008);
+        box-shadow:
+          0 14px 32px rgba(0, 0, 0, 0.18),
+          0 0 18px rgba(16, 48, 245, 0.12),
+          inset 0 1px 0 rgba(255, 255, 255, 0.62),
+          inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+      }
+    }
+
+    .bb-legit-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      background: rgba(255, 255, 255, 0.40);
+      color: rgba(0, 0, 0, 0.78);
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-backdrop-filter: blur(10px) saturate(150%);
+              backdrop-filter: blur(10px) saturate(150%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      transition: transform 140ms ease, background 160ms ease, color 160ms ease;
+    }
+    .bb-legit-close:hover { background: rgba(255, 255, 255, 0.65); color: #000000; }
+    .bb-legit-close:active { transform: scale(0.94); }
+    .bb-legit-close svg { width: 12px; height: 12px; display: block; }
+
+    /* Question line — always brand-blue #1030f5 regardless of theme. */
+    .bb-legit-question {
+      margin: 2px 0 6px 0;
+      padding-right: 28px;       /* leave room for the X */
+      font: 800 13px/1.25 Roboto, system-ui, sans-serif;
+      letter-spacing: -0.005em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1030f5;
+    }
+    .bb-legit-mark {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+      margin-right: 1px;
+    }
+    .bb-legit-mark-circle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+      border-radius: 999px;
+      padding: 5px;
+      -webkit-backdrop-filter: blur(8px) saturate(150%);
+              backdrop-filter: blur(8px) saturate(150%);
+      box-shadow:
+        0 4px 12px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+    .bb-legit-mark-circle--lock {
+      background: rgba(255, 255, 255, 0.40);
+      border: 1px solid rgba(0, 0, 0, 0.16);
+    }
+    .bb-legit-mark-circle--tick {
+      margin-left: -8px;
+      /* Tick badge tinted with #1030f5 instead of green. */
+      background: rgba(16, 48, 245, 0.18);
+      border: 1px solid rgba(16, 48, 245, 0.55);
+      box-shadow:
+        0 5px 14px rgba(16, 48, 245, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+    .bb-legit-mark-circle img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+    }
+    /* Recolor both SVG glyphs to #1030f5 (lock is black-on-transparent,
+       tick is green-on-transparent — same brightness(0) reset, same
+       hue-rotate chain to the brand-blue target). */
+    .bb-legit-mark-circle img {
+      filter: brightness(0) saturate(100%) invert(13%) sepia(98%) saturate(7000%) hue-rotate(241deg) brightness(95%) contrast(110%);
+    }
+    /* Lock in the question line follows the theme contents colour
+       (overrides the blue filter above for the LOCK only). */
+    .bb-legit-mark-circle--lock img {
+      filter: brightness(0);    /* black in light mode */
+      opacity: 0.85;
+    }
+
+    .bb-legit-answer {
+      margin: 0 0 10px 0;
+      font: 500 11.5px/1.4 Roboto, system-ui, sans-serif;
+      color: rgba(0, 0, 0, 0.78);
+    }
+
+    /* URL glass pill — translucent chip; text colour follows theme. */
+    .bb-legit-pill {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.32);
+      border: 1px solid rgba(0, 0, 0, 0.10);
+      box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      color: #000000;
+      -webkit-text-fill-color: #000000;
+      font: 700 11px/1.2 Roboto, system-ui, sans-serif;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      max-width: 100%;
+      text-overflow: ellipsis;
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+              backdrop-filter: blur(14px) saturate(160%);
+      transition: transform 140ms ease, box-shadow 200ms ease;
+    }
+    .bb-legit-pill:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    }
+
+    /* Compact viewports: keep the panel anchored to the popup's
+       top-left corner (JS-positioned). Width tightens slightly. */
+    @media (max-width: 980px) {
+      .bb-legit-panel {
+        width: min(260px, calc(100vw - 32px));
+      }
+    }
+
+    /* ============================
+       Dark mode theming
+       ============================ */
+    @media (prefers-color-scheme: dark) {
+      .bb-legit-card {
+        background: rgba(8, 11, 26, 0.32);
+        border-color: rgba(255, 255, 255, 0.18);
+        box-shadow:
+          0 10px 26px rgba(0, 0, 0, 0.30),
+          inset 0 1px 0 rgba(255, 255, 255, 0.18),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+        color: #ffffff;          /* DARK MODE: all contents white */
+      }
+      .bb-legit-panel[data-open="true"] .bb-legit-card {
+        animation:
+          bb-legit-pop 560ms cubic-bezier(0.16, 1, 0.3, 1) both,
+          bb-legit-breathe-dark 4.6s ease-in-out 680ms infinite;
+      }
+      @keyframes bb-legit-breathe-dark {
+        0%, 100% {
+          transform: translateY(0) scale(1);
+          box-shadow:
+            0 10px 26px rgba(0, 0, 0, 0.30),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+        }
+        50% {
+          transform: translateY(-3px) scale(1.008);
+          box-shadow:
+            0 14px 32px rgba(0, 0, 0, 0.40),
+            0 0 18px rgba(16, 48, 245, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.22),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+        }
+      }
+      .bb-legit-close {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.30);
+        color: rgba(255, 255, 255, 0.86);
+      }
+      .bb-legit-close:hover { background: rgba(255, 255, 255, 0.22); color: #ffffff; }
+      .bb-legit-mark-circle--lock {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.30);
+      }
+      .bb-legit-mark-circle--lock img {
+        filter: brightness(0) invert(1);     /* white lock on dark panel */
+        opacity: 0.92;
+      }
+      /* Tick stays brand-blue #1030f5 — inherits the .bb-legit-mark-circle img filter. */
+      .bb-legit-answer { color: rgba(255, 255, 255, 0.86); }
+      .bb-legit-pill {
+        background: rgba(255, 255, 255, 0.10);
+        border-color: rgba(255, 255, 255, 0.22);
+        color: #ffffff;
+        -webkit-text-fill-color: #ffffff;
+        box-shadow:
+          0 6px 14px rgba(0, 0, 0, 0.30),
+          inset 0 1px 0 rgba(255, 255, 255, 0.20);
+      }
+      .bb-legit-pill:hover {
+        box-shadow:
+          0 8px 18px rgba(0, 0, 0, 0.40),
+          inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      }
+      /* Question line stays #1030f5 — kept here as a no-op so the
+         theming intent is explicit. */
+      .bb-legit-question { color: #1030f5; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bb-legit-panel,
+      .bb-legit-card,
+      .bb-legit-pill,
+      .popup .title-row .brand-icon {
+        animation: none !important;
+        transition: opacity 200ms ease, visibility 0s linear !important;
+      }
+    }
+
+    /* Mobile (≤840px):
+         – Nudge the title-row brand mark up 8px so it sits on the
+           title baseline on phone widths.
+         – Bump the upload-brand mark another +10% (31.94px → 35.13px)
+           on top of the desktop default; ~46% larger than the
+           shared-ui 24px baseline overall.
+         – Push the inline BrandBased lock logo 2px to the right. */
+    @media (max-width: 840px) {
+      .popup .title-row .brand-icon {
+        margin-top: -8px !important;
+      }
+      .popup .title-row .brand-icon.bb-upload {
+        width: 35.13px !important;
+        height: 35.13px !important;
+      }
+      .bb-lock-logo-inline {
+        transform: translateX(2px) !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <p class="bb-standalone-note" role="note">
+    <strong>Standalone bundle.</strong> Uses <code>bb-shared-ui.css</code>, <code>premium-bb-mobile-popup-chrome.css</code>, and <code>bb-smart-ui.js</code> in this folder (not the HTML alone). Mobile popup rules apply below <strong>840px</strong> width — narrow the window or use devtools device mode. Hard-refresh (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>) if styles/JS look stale on <code>file://</code>.
+  </p>
+
+  <details class="bb-standalone-details">
+    <summary>Run API + local server</summary>
+    <pre>cd premium-bb-modal-standalone
+python3 -m venv .venv &amp;&amp; . .venv/bin/activate &amp;&amp; pip install -r requirements.txt
+uvicorn bb_smart_sizing_server:app --port 8001
+python3 -m http.server 8090
+# http://localhost:8090/Premium-BB-Modal.html</pre>
+  </details>
+
+  <p class="bb-standalone-nav-hint">
+    Other modules live in the parent <code>ui-demo</code> repo (links use <code>../</code>).
+  </p>
+  <p class="bb-module-nav">
+    <a href="../brand-modules-bundle/start-now/Start-Now.html">Start Now</a>
+    <a href="../brand-modules-bundle/logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+    <a href="../brand-modules-bundle/brands/Brands.html">Brands</a>
+    <a href="../brand-modules-bundle/Brand-Settings-Module.html">Brand Settings</a>
+    <a href="../brand-modules-bundle/Brand-Theme-Settings-Module.html">Theme Styles</a>
+    <a href="../brand-modules-bundle/products/Products.html">Products</a>
+    <a href="../brand-modules-bundle/Product-Scheduling-Module.html">Scheduling</a>
+    <a href="../brand-modules-bundle/platforms/Platforms.html">Platforms</a>
+    <a href="../brand-modules-bundle/hotspots/Hotspots.html">Hotspots</a>
+    <a href="../brand-modules-bundle/ai-logic/AI-Logic.html">AI Logic</a>
+    <a href="../brand-modules-bundle/ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+    <a href="../brand-modules-bundle/metrics/Metrics.html">Metrics</a>
+    <a href="../brand-modules-bundle/payments/Payments.html">Payments</a>
+    <a href="../brand-modules-bundle/Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+  </p>
+
+  <div class="bb-premium-wrap">
+    <p>
+      <span class="brandbased brandbased-dynamic-logo-slot" data-brand="brandbased">BrandBased</span>
+      enables products like the new
+      <span class="brandbased brandbased-dynamic-logo-slot" data-brand="brandbased">BrandBased</span>
+      to be discovered directly within text content, allowing consumers to interact and shop directly in the text layer.
+    </p>
+  </div>
+
+  <!-- Floating "Is this authentic?" verification panel. Hidden by default;
+       only appears when the BrandBased product popup is open. JS anchors
+       it to the popup's right edge on desktop, and pins it above the
+       popup on mobile (where the popup is a bottom sheet). -->
+  <aside
+    class="bb-legit-panel"
+    id="bbLegitPanel"
+    data-open="false"
+    aria-labelledby="bbLegitQuestion"
+  >
+    <div class="bb-legit-card">
+      <button
+        class="bb-legit-close"
+        id="bbLegitClose"
+        type="button"
+        aria-label="Close verification panel"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        </svg>
+      </button>
+
+      <p class="bb-legit-question" id="bbLegitQuestion">
+        <span class="bb-legit-mark" aria-hidden="true">
+          <span class="bb-legit-mark-circle bb-legit-mark-circle--lock">
+            <img src="./lock-icon-verified.svg" alt="" />
+          </span>
+          <span class="bb-legit-mark-circle bb-legit-mark-circle--tick">
+            <img src="../brand-modules-bundle/logo-upload/verification-tick.svg" alt="" />
+          </span>
+        </span>
+        Is this authentic?
+      </p>
+
+      <p class="bb-legit-answer">
+        Yes &mdash; this brand has been verified and is associated with this URL:
+      </p>
+
+      <a
+        class="bb-legit-pill"
+        id="bbLegitUrl"
+        href="https://brandbased.ai/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >brandbased.ai</a>
+    </div>
+  </aside>
+
+  <script src="bb-theme-console-sync.js?v=premium-standalone-44"></script>
+  <script src="bb-smart-ui.js?v=premium-standalone-44"></script>
+  <script>
+    if (window.BBThemeConsoleSync && typeof window.BBThemeConsoleSync.install === "function") {
+      window.BBThemeConsoleSync.install();
+    }
+  </script>
+  <script>
+    // "Is this authentic?" panel wiring.
+    //
+    // - Pulls the brand URL (if the user has saved one on the Logo
+    //   Upload module) out of localStorage and renders it in the
+    //   pill + link.
+    // - Stays HIDDEN until the BrandBased product popup (.popup) is
+    //   opened (gains .popup-visible). Then anchors itself to the
+    //   popup's right edge (desktop) / above the popup (mobile).
+    // - X closes the panel only — popup is unaffected. Once closed,
+    //   the panel stays closed for the current popup-open session;
+    //   it reappears the next time the popup is opened.
+    (function () {
+      const panel = document.getElementById("bbLegitPanel");
+      const closeBtn = document.getElementById("bbLegitClose");
+      const urlEl = document.getElementById("bbLegitUrl");
+      if (!panel) return;
+
+      // -------- URL pill content from localStorage --------
+      function displayUrl(raw) {
+        if (!raw) return null;
+        try {
+          return String(raw).trim().replace(/^https?:\/\//i, "").replace(/\/$/, "");
+        } catch (_e) { return null; }
+      }
+      try {
+        const saved = localStorage.getItem("bbLuBrandUrl");
+        if (saved && urlEl) {
+          const pretty = displayUrl(saved);
+          if (pretty) {
+            urlEl.textContent = pretty;
+            urlEl.setAttribute("href", /^https?:\/\//i.test(saved) ? saved : "https://" + pretty);
+          }
+        }
+      } catch (_e) { /* localStorage unavailable — leave default */ }
+
+      // -------- Open/close lifecycle --------
+      let wasPopupOpen = false;
+      let activePopup = null;
+
+      function isPopupOpen(popup) {
+        return !!popup && popup.classList.contains("popup-visible");
+      }
+      function findPopup() {
+        return document.querySelector(".popup");
+      }
+
+      // Position the panel at the popup's TOP-LEFT corner, with a
+      // small inset so it sits "over" the modal rather than flush.
+      function positionPanel(popup) {
+        if (!popup) return;
+        const r = popup.getBoundingClientRect();
+        const vw = document.documentElement.clientWidth;
+        const vh = document.documentElement.clientHeight;
+        const inset = 12;
+        let left = r.left + inset;
+        let top  = r.top  + inset;
+        // Keep onscreen.
+        const panelW = panel.offsetWidth  || 240;
+        const panelH = panel.offsetHeight || 160;
+        if (left + panelW + 12 > vw) left = Math.max(12, vw - panelW - 12);
+        if (top  + panelH + 12 > vh) top  = Math.max(12, vh - panelH - 12);
+        if (left < 12) left = 12;
+        if (top  < 12) top  = 12;
+        panel.style.left = left + "px";
+        panel.style.top  = top  + "px";
+        panel.style.right = "auto";
+        panel.style.bottom = "auto";
+        panel.style.transform = "";
+      }
+
+      // Move the panel to be the very last element in <body> so it
+      // paints AFTER the popup (popup uses an !important max z-index;
+      // matching it and being later in source wins the tie).
+      function liftPanelOnTop() {
+        if (panel.parentElement !== document.body || panel !== document.body.lastElementChild) {
+          document.body.appendChild(panel);
+        }
+      }
+
+      function openPanel(popup) {
+        if (!isPopupOpen(popup)) return;     // only show while popup is up
+        liftPanelOnTop();
+        positionPanel(popup);
+        panel.setAttribute("data-open", "true");
+      }
+      function closePanel() {
+        panel.setAttribute("data-open", "false");
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener("click", function () {
+          closePanel();
+        });
+      }
+
+      // -------- Use the existing brand icon as the trigger --------
+      // .brand-icon lives in the popup's .title-row and picks up the
+      // active brand class (.bb-upload, etc). Bind once per popup;
+      // the popup itself is reused across opens so the listener
+      // persists.
+      function ensureBrandIconTrigger(popup) {
+        if (!popup) return;
+        const brandIcon = popup.querySelector(".title-row .brand-icon");
+        if (!brandIcon || brandIcon.dataset.bbLegitTrigger === "true") return;
+        brandIcon.dataset.bbLegitTrigger = "true";
+        // .brand-icon is rendered with aria-hidden="true" by the
+        // popup template; promote it to an interactive control.
+        brandIcon.removeAttribute("aria-hidden");
+        brandIcon.setAttribute("role", "button");
+        brandIcon.setAttribute("tabindex", "0");
+        brandIcon.setAttribute("aria-label", "Is this authentic? Verify");
+        brandIcon.setAttribute("title", "Is this authentic?");
+
+        function toggle(e) {
+          e.stopPropagation();
+          if (panel.getAttribute("data-open") === "true") {
+            closePanel();
+          } else {
+            openPanel(popup);
+          }
+        }
+
+        brandIcon.addEventListener("click", toggle);
+        brandIcon.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggle(e);
+          }
+        });
+      }
+
+      // -------- Wire the BB lock-corner icon to brandbased.ai --------
+      // The big BrandBased "B" (.lock-icon-bb-logo, hosting svg.bb-lock-logo-inline)
+      // should navigate to https://brandbased.ai/ in a new tab when clicked.
+      function ensureBbLockLogoLink(popup) {
+        if (!popup) return;
+        const host = popup.querySelector(".lock-icon-bb-logo");
+        if (!host || host.dataset.bbLogoLink === "true") return;
+        host.dataset.bbLogoLink = "true";
+        host.style.cursor = "pointer";
+        host.setAttribute("role", "link");
+        host.setAttribute("tabindex", "0");
+        host.setAttribute("aria-label", "Visit brandbased.ai");
+        host.setAttribute("title", "brandbased.ai");
+
+        function open(e) {
+          e.stopPropagation();
+          window.open("http://brandbased.ai/", "_blank", "noopener,noreferrer");
+        }
+        host.addEventListener("click", open);
+        host.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            open(e);
+          }
+        });
+      }
+
+      // -------- Watch the popup --------
+      function onPopupStateChange(popup) {
+        const open = isPopupOpen(popup);
+        if (open) {
+          activePopup = popup;
+          ensureBrandIconTrigger(popup);
+          ensureBbLockLogoLink(popup);
+        }
+        if (!open && wasPopupOpen) {
+          // Popup just closed → hide the panel (popup gone, trust mark gone).
+          closePanel();
+        }
+        wasPopupOpen = open;
+      }
+
+      const classObservers = new WeakMap();
+      function attachClassObserver(popup) {
+        if (!popup || classObservers.has(popup)) return;
+        const obs = new MutationObserver(function () {
+          onPopupStateChange(popup);
+        });
+        obs.observe(popup, { attributes: true, attributeFilter: ["class"] });
+        classObservers.set(popup, obs);
+        // Sync once on attach in case the popup was already visible.
+        onPopupStateChange(popup);
+      }
+
+      // Watch for the popup being added to the DOM (created on first
+      // brand-mark click by bb-smart-ui) and for the B trigger being
+      // rebuilt if the popup is rerendered.
+      const rootObserver = new MutationObserver(function () {
+        const popup = findPopup();
+        if (popup) {
+          attachClassObserver(popup);
+          if (isPopupOpen(popup)) {
+            ensureBrandIconTrigger(popup);
+            ensureBbLockLogoLink(popup);
+          }
+        }
+      });
+      rootObserver.observe(document.documentElement, { childList: true, subtree: true });
+
+      // If the popup already exists at load time, hook it up.
+      const initialPopup = findPopup();
+      if (initialPopup) attachClassObserver(initialPopup);
+
+      // Reposition while panel is open (window resize / scroll).
+      function repositionIfOpen() {
+        const popup = activePopup || findPopup();
+        if (popup && isPopupOpen(popup) && panel.getAttribute("data-open") === "true") {
+          positionPanel(popup);
+        }
+      }
+      window.addEventListener("resize", repositionIfOpen);
+      window.addEventListener("scroll", repositionIfOpen, { passive: true });
+    })();
+  </script>
+</body>
+</html>

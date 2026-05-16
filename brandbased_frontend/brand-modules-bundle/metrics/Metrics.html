@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metrics — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="../favicons/manifest.webmanifest" />
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+  <link rel="stylesheet" href="../platforms/platforms.css?v=platforms-50" />
+  <link rel="stylesheet" href="../hotspots/hotspots.css?v=hotspots-8" />
+  <link rel="stylesheet" href="./metrics.css?v=metrics-19" />
+  <link rel="stylesheet" href="../_shared/sync-popup.css?v=sync-popup-1" />
+  <link rel="stylesheet" href="./metrics-insight-popup.css?v=insight-4" />
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-platforms-page bb-hotspots-page bb-metrics-page bb-brand-theme-settings">
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <div id="bbMetricsMount" class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="../start-now/Start-Now.html">Start Now</a>
+        <a href="../logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="../brands/Brands.html">Brands</a>
+        <a href="../Brand-Settings-Module.html">Brand Settings</a>
+        <a href="../Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="../products/Products.html">Products</a>
+        <a href="../Product-Scheduling-Module.html">Scheduling</a>
+        <a href="../platforms/Platforms.html">Platforms</a>
+        <a href="../hotspots/Hotspots.html">Hotspots</a>
+        <a href="../ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="../ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+        <a href="Metrics.html">Metrics</a>
+        <a href="../payments/Payments.html">Payments</a>
+        <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <h1>Metrics</h1>
+    </header>
+
+    <div class="bb-bts-layout bb-hotspots-dash-layout" role="main" aria-label="Metrics">
+      <section class="bb-hotspots-center bb-plat-dash-col" aria-label="Metrics dashboard">
+
+        <!-- Status banner -->
+        <div class="bb-metrics-status">
+          <div class="bb-metrics-status-icons" aria-hidden="true">
+            <span class="bb-metrics-icon bb-metrics-icon--brain" title="AI">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+                <path d="M9.5 3a2.5 2.5 0 0 0-2.5 2.5v.18A3 3 0 0 0 4.5 8.5a3 3 0 0 0 .5 1.66A2.75 2.75 0 0 0 5 15.5a2.5 2.5 0 0 0 2 2.45V19a2 2 0 1 0 4 0V4.5A1.5 1.5 0 0 0 9.5 3Z"/>
+                <path d="M14.5 3a2.5 2.5 0 0 1 2.5 2.5v.18A3 3 0 0 1 19.5 8.5a3 3 0 0 1-.5 1.66A2.75 2.75 0 0 1 19 15.5a2.5 2.5 0 0 1-2 2.45V19a2 2 0 1 1-4 0V4.5A1.5 1.5 0 0 1 14.5 3Z"/>
+                <path d="M9 9h-1.5M16.5 9H15M9 13H7M17 13h-2"/>
+              </svg>
+            </span>
+            <span class="bb-metrics-icon bb-metrics-icon--logo" title="BrandBased">
+              <img src="../brandbased-logo.svg" alt="" />
+            </span>
+          </div>
+          <div class="bb-metrics-status-text">
+            <p class="bb-metrics-status-title">
+              <img class="bb-metrics-status-typeface" src="./BrandBased-Typeface.svg" alt="BrandBased" decoding="async" />
+              <span class="bb-metrics-status-title-rest">is reading the signals</span>
+            </p>
+            <p class="bb-metrics-status-sub">
+              <span class="bb-metrics-pulse-dot" aria-hidden="true"></span>
+              <span id="bbMetricsSignalCount" class="bb-metrics-tabular" data-target="184230" data-suffix="">0</span>
+              <span class="bb-metrics-status-sub-label">signals processed in the last 24 hours</span>
+            </p>
+          </div>
+          <div class="bb-metrics-status-trail" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Metric cards grid -->
+        <div class="bb-metrics-cards">
+
+          <!-- 1. Engagement Signal Strength -->
+          <div class="bb-metric-card bb-metric-card--col4" data-metric="engagement">
+            <div class="bb-metric-card-head">
+              <p class="bb-metric-card-label">Engagement Signal Strength</p>
+              <span class="bb-metric-card-pill"><span class="bb-metric-card-pill-dot"></span>Live</span>
+            </div>
+            <p class="bb-metric-card-value bb-metrics-tabular" data-target="86.4" data-decimals="1" data-suffix="%">0.0%</p>
+            <p class="bb-metric-card-delta bb-metric-card-delta--up">
+              <span class="bb-metric-card-delta-arrow">↑</span>
+              <span class="bb-metrics-tabular" data-target="3.2" data-decimals="1" data-suffix="%">0.0%</span>
+              <span class="bb-metric-card-delta-foot">vs yesterday</span>
+            </p>
+            <div class="bb-metric-card-chart bb-metric-card-chart--spark">
+              <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="bb-metric-spark-grad-eng" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.32"/>
+                    <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path class="bb-metric-spark-fill" data-spark="engagement-fill" d="" fill="url(#bb-metric-spark-grad-eng)"></path>
+                <path class="bb-metric-spark-line" data-spark="engagement-line" d="" fill="none" stroke="#22d3ee" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"></path>
+                <circle class="bb-metric-spark-cap" data-spark="engagement-cap" cx="0" cy="0" r="3" fill="#22d3ee"></circle>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 2. Purchase Intent Score -->
+          <div class="bb-metric-card bb-metric-card--col4" data-metric="intent">
+            <div class="bb-metric-card-head">
+              <p class="bb-metric-card-label">Purchase Intent Score</p>
+              <span class="bb-metric-card-pill"><span class="bb-metric-card-pill-dot"></span>Live</span>
+            </div>
+            <div class="bb-metric-card-ring-wrap">
+              <svg class="bb-metric-card-ring" viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="bb-metric-card-ring-track" cx="50" cy="50" r="42" fill="none" stroke-width="8"></circle>
+                <circle class="bb-metric-card-ring-fill" cx="50" cy="50" r="42" fill="none" stroke="#a78bfa" stroke-width="8" stroke-linecap="round" data-ring-target="72"></circle>
+                <circle class="bb-metric-card-ring-scan" cx="50" cy="50" r="42" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"></circle>
+              </svg>
+              <div class="bb-metric-card-ring-center">
+                <p class="bb-metric-card-ring-value bb-metrics-tabular" data-target="72" data-suffix="">0</p>
+                <p class="bb-metric-card-ring-suffix">/ 100</p>
+              </div>
+            </div>
+            <p class="bb-metric-card-delta bb-metric-card-delta--up">
+              <span class="bb-metric-card-delta-arrow">↑</span>
+              <span class="bb-metrics-tabular" data-target="5.1" data-decimals="1" data-suffix="">0.0</span>
+              <span class="bb-metric-card-delta-foot">pts this hour</span>
+            </p>
+          </div>
+
+          <!-- 3. Brand Interaction Rate -->
+          <div class="bb-metric-card bb-metric-card--col4" data-metric="interaction">
+            <div class="bb-metric-card-head">
+              <p class="bb-metric-card-label">Brand Interaction Rate</p>
+              <span class="bb-metric-card-pill"><span class="bb-metric-card-pill-dot"></span>Live</span>
+            </div>
+            <p class="bb-metric-card-value bb-metrics-tabular" data-target="148" data-suffix="/min">0/min</p>
+            <p class="bb-metric-card-delta bb-metric-card-delta--up">
+              <span class="bb-metric-card-delta-arrow">↑</span>
+              <span class="bb-metrics-tabular" data-target="12" data-suffix="%">0%</span>
+              <span class="bb-metric-card-delta-foot">surge in the last hour</span>
+            </p>
+            <div class="bb-metric-card-chart bb-metric-card-chart--spark">
+              <svg viewBox="0 0 200 60" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <linearGradient id="bb-metric-spark-grad-int" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#4ade80" stop-opacity="0.32"/>
+                    <stop offset="100%" stop-color="#4ade80" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path class="bb-metric-spark-fill" data-spark="interaction-fill" d="" fill="url(#bb-metric-spark-grad-int)"></path>
+                <path class="bb-metric-spark-line" data-spark="interaction-line" d="" fill="none" stroke="#4ade80" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"></path>
+                <circle class="bb-metric-spark-cap" data-spark="interaction-cap" cx="0" cy="0" r="3" fill="#4ade80"></circle>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 4. Platform Partners — signal strength per integrated platform -->
+          <div class="bb-metric-card bb-metric-card--col12" data-metric="partners">
+            <div class="bb-metric-card-head">
+              <p class="bb-metric-card-label">Platform Partner Signal Strength</p>
+              <span class="bb-metric-card-pill"><span class="bb-metric-card-pill-dot"></span>Live</span>
+            </div>
+            <ul class="bb-metric-partners" id="bbMetricsPartners">
+              <li class="bb-metric-partner" data-platform="google" data-share="96">
+                <img class="bb-metric-partner-logo" src="../platforms/google-color-icon.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Google Search</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 96%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="96" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="youtube" data-share="91">
+                <img class="bb-metric-partner-logo" src="../platforms/youtube-color-icon.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">YouTube</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 91%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="91" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="instagram" data-share="88">
+                <img class="bb-metric-partner-logo" src="../platforms/ig-instagram-icon (1).svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Instagram</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 88%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="88" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="facebook" data-share="82">
+                <img class="bb-metric-partner-logo" src="../platforms/facebook-round-color-icon (2).svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Facebook</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 82%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="82" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="x" data-share="76">
+                <img class="bb-metric-partner-logo" src="../platforms/x-social-media-round-icon (1).svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">X</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 76%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="76" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="reddit" data-share="71">
+                <img class="bb-metric-partner-logo" src="../platforms/reddit-icon.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Reddit</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 71%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="71" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="twitch" data-share="64">
+                <img class="bb-metric-partner-logo" src="../platforms/twitch-color-icon.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Twitch</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 64%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="64" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="substack" data-share="58">
+                <img class="bb-metric-partner-logo" src="../platforms/substack-icon.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Substack</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 58%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="58" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="wechat" data-share="54">
+                <img class="bb-metric-partner-logo" src="../platforms/wechat-logo-svgrepo-com.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">WeChat</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 54%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="54" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="medium" data-share="49">
+                <img class="bb-metric-partner-logo" src="../platforms/medium-logo-icon.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Medium</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 49%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="49" data-suffix="%">0%</span>
+              </li>
+              <li class="bb-metric-partner" data-platform="bleacher-report" data-share="41">
+                <img class="bb-metric-partner-logo" src="../platforms/bleacher-report-seeklogo.svg" width="22" height="22" alt="" decoding="async" />
+                <span class="bb-metric-partner-name">Bleacher Report</span>
+                <span class="bb-metric-partner-bar"><span class="bb-metric-partner-bar-fill" style="--bb-w: 41%"></span></span>
+                <span class="bb-metric-partner-val bb-metrics-tabular" data-target="41" data-suffix="%">0%</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 5. Behavioural Activity Index (bars) -->
+          <div class="bb-metric-card bb-metric-card--col12" data-metric="activity">
+            <div class="bb-metric-card-head">
+              <p class="bb-metric-card-label">Behavioural Activity Index</p>
+              <span class="bb-metric-card-pill"><span class="bb-metric-card-pill-dot"></span>Live</span>
+            </div>
+            <div class="bb-metric-card-row">
+              <p class="bb-metric-card-value bb-metrics-tabular" data-target="2.41" data-decimals="2" data-suffix="K">0.00K</p>
+              <p class="bb-metric-card-row-foot">events / minute · last 24h</p>
+            </div>
+            <div class="bb-metric-card-bars" id="bbMetricsActivityBars" aria-hidden="true">
+              <!-- JS injects 24 bars -->
+            </div>
+            <p class="bb-metric-card-bars-axis" aria-hidden="true">
+              <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>now</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Live signal feed (CSS-only infinite scroll, demo-safe) -->
+        <div class="bb-metric-card bb-metric-card--feed">
+          <div class="bb-metric-card-head">
+            <p class="bb-metric-card-label">Live signal feed</p>
+            <span class="bb-metric-card-pill"><span class="bb-metric-card-pill-dot"></span>Streaming</span>
+          </div>
+          <div class="bb-metrics-feed-window" aria-hidden="true">
+            <ul id="bbMetricsFeedList" class="bb-metrics-feed-track">
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Click on <strong>Google Search</strong> ad slot</span><span class="bb-metrics-feed-time">just now</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">View on <strong>YouTube</strong> embed</span><span class="bb-metrics-feed-time">2s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Dwell 14s on <strong>Reddit</strong> hotspot</span><span class="bb-metrics-feed-time">4s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Conversion intent · <strong>Instagram</strong></span><span class="bb-metrics-feed-time">6s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Impression served · <strong>Facebook</strong></span><span class="bb-metrics-feed-time">8s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Brand interaction · <strong>X</strong> popup</span><span class="bb-metrics-feed-time">10s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Story tap · <strong>Twitch</strong></span><span class="bb-metrics-feed-time">12s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Embedded view · <strong>Substack</strong></span><span class="bb-metrics-feed-time">14s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Hover · <strong>WeChat</strong> brand card</span><span class="bb-metrics-feed-time">16s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Scroll-depth 80% on <strong>Medium</strong></span><span class="bb-metrics-feed-time">18s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Replay viewed · <strong>Bleacher Report</strong></span><span class="bb-metrics-feed-time">20s ago</span></li>
+              <li class="bb-metrics-feed-item"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Share triggered · <strong>YouTube</strong></span><span class="bb-metrics-feed-time">22s ago</span></li>
+
+              <!-- Duplicate set for a seamless CSS loop. -->
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Click on <strong>Google Search</strong> ad slot</span><span class="bb-metrics-feed-time">just now</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">View on <strong>YouTube</strong> embed</span><span class="bb-metrics-feed-time">2s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Dwell 14s on <strong>Reddit</strong> hotspot</span><span class="bb-metrics-feed-time">4s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Conversion intent · <strong>Instagram</strong></span><span class="bb-metrics-feed-time">6s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Impression served · <strong>Facebook</strong></span><span class="bb-metrics-feed-time">8s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Brand interaction · <strong>X</strong> popup</span><span class="bb-metrics-feed-time">10s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Story tap · <strong>Twitch</strong></span><span class="bb-metrics-feed-time">12s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Embedded view · <strong>Substack</strong></span><span class="bb-metrics-feed-time">14s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Hover · <strong>WeChat</strong> brand card</span><span class="bb-metrics-feed-time">16s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Scroll-depth 80% on <strong>Medium</strong></span><span class="bb-metrics-feed-time">18s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Replay viewed · <strong>Bleacher Report</strong></span><span class="bb-metrics-feed-time">20s ago</span></li>
+              <li class="bb-metrics-feed-item" aria-hidden="true"><span class="bb-metrics-feed-dot"></span><span class="bb-metrics-feed-text">Share triggered · <strong>YouTube</strong></span><span class="bb-metrics-feed-time">22s ago</span></li>
+            </ul>
+            <span class="bb-metrics-feed-fade bb-metrics-feed-fade--top" aria-hidden="true"></span>
+            <span class="bb-metrics-feed-fade bb-metrics-feed-fade--bot" aria-hidden="true"></span>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </div>
+
+  <script src="./metrics-page.js?v=metrics-9"></script>
+  <script src="./metrics-insight-popup.js?v=metrics-insight-7"></script>
+</body>
+</html>

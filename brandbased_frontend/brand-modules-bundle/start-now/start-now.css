@@ -1,0 +1,879 @@
+/* ============================================================
+   Start Now — pitch page for the Free and Premium BrandBased
+   tiers. Two horizontal rows; each row has three columns on
+   desktop: pitch + CTA, stylized product-modal mockup, feature
+   list. Stacks to one column on narrow viewports. Honors light
+   and dark colour schemes via prefers-color-scheme.
+   ============================================================ */
+
+:root {
+  --bb-startnow-blue: #1030f5;
+  --bb-startnow-radius-card: 18px;
+  --bb-startnow-radius-pill: 999px;
+}
+
+/* ------------------------------------------------------------
+   Shine + breathing keyframes — declared up here so the CTA
+   and modal rules below can reference them. Shine uses the same
+   recipe as the bundle's other pills (B-icon, verified badge):
+   a 240%-wide gradient slides right→left across a translucent
+   background.
+   ------------------------------------------------------------ */
+@keyframes bb-startnow-cta-shine {
+  0%   { background-position: 200% center; }
+  100% { background-position: -100% center; }
+}
+
+/* Scale-only pulse for the CTAs — runs on :hover so the rest of
+   the time the pill sits still. Keeping it transform-only means
+   the pill background, border and content move together. */
+@keyframes bb-startnow-cta-breathe {
+  0%, 100% { transform: scale(1);    }
+  50%      { transform: scale(1.04); }
+}
+
+/* Modal breathe is now a wind-style scale pulse — the entire
+   card grows and recedes gently like a slow breath, identical in
+   light and dark. The blue glow no longer rides on this loop; it
+   only fires when the matching CTA is hovered (see :has() rules
+   further down). */
+@keyframes bb-startnow-modal-breathe {
+  0%, 100% { transform: scale(1);     }
+  50%      { transform: scale(1.045); }
+}
+
+@keyframes bb-startnow-modal-shine {
+  0%   { background-position: 200% center; }
+  100% { background-position: -100% center; }
+}
+
+body.bb-start-now-page {
+  /* Slightly off-white so the white feature panels read as cards
+     against the page background (same recipe Payments/Platforms
+     dashboards use). */
+  background: #f6f6f7;
+  color: #0c0c14;
+}
+
+/* Override the bundle's desktop viewport-lock so the page scrolls
+   naturally — Logo Upload uses the same pattern. */
+body.bb-start-now-page .bb-theme-shell {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  width: min(1620px, 100%);
+  margin: 0 auto;
+  padding: 14px 28px 96px;
+  box-sizing: border-box;
+}
+
+/* Align the module head + H1 with the main content's left edge. */
+body.bb-start-now-page .bb-module-head {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+body.bb-start-now-page .bb-module-head h1 {
+  margin: 18px 0 28px;
+  text-align: left;
+}
+
+.bb-startnow-main {
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.bb-startnow-row {
+  display: grid;
+  /* Modal column has a firm 380px floor so the mock popup never
+     drops below its natural ratio; right info-card column keeps
+     the wider share won last pass. */
+  grid-template-columns: minmax(240px, 1.05fr) minmax(380px, 1.5fr) minmax(560px, 2.45fr);
+  gap: 40px;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------
+   Left column: pitch + CTA
+   ------------------------------------------------------------ */
+.bb-startnow-pitch {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-right: 8px;
+}
+
+.bb-startnow-pitch__heading {
+  margin: 0;
+  font: 800 30px/1.12 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.bb-startnow-pitch__sub {
+  margin: 0;
+  font: 500 15px/1.5 Roboto, system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.66);
+  max-width: 432px;
+}
+
+/* CTA base — variant rules below supply the pill's background
+   colour + the shimmer linear-gradient. Shine animation runs in
+   both light and dark modes. */
+.bb-startnow-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 6px 24px 6px 6px;
+  border: 1.5px solid transparent;
+  border-radius: var(--bb-startnow-radius-pill);
+  color: inherit;
+  text-decoration: none;
+  font: 800 15px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  align-self: flex-start;
+  /* `cursor: pointer` stays for the href-less Premium CTA (Stripe
+     placeholder removed) so the pill still reads as actionable. */
+  cursor: pointer;
+
+  /* Shimmer plumbing — shared across variants. */
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% center;
+  animation: bb-startnow-cta-shine 2.8s linear infinite;
+
+  /* Hover stays as a subtle eased opacity change — no colour shift. */
+  transition: opacity 260ms ease;
+}
+
+/* Hover / focus: keep the shine running and layer a gentle
+   transform-only breathing pulse on top. */
+.bb-startnow-cta:hover,
+.bb-startnow-cta:focus-visible {
+  animation:
+    bb-startnow-cta-shine 2.8s linear infinite,
+    bb-startnow-cta-breathe 1.6s ease-in-out infinite;
+}
+
+.bb-startnow-cta:focus-visible {
+  outline: 2px solid var(--bb-startnow-blue);
+  outline-offset: 3px;
+}
+
+/* The bundle's shared vendor CSS forces `a:hover { color: white
+   !important }`. Re-pin the Free pill's label + arrow so the
+   text never goes white on hover in light mode. */
+.bb-startnow-cta--free:hover,
+.bb-startnow-cta--free:focus-visible,
+.bb-startnow-cta--free:hover .bb-startnow-cta__label,
+.bb-startnow-cta--free:focus-visible .bb-startnow-cta__label,
+.bb-startnow-cta--free:hover .bb-startnow-cta__arrow,
+.bb-startnow-cta--free:focus-visible .bb-startnow-cta__arrow {
+  color: #0c0c14 !important;
+}
+
+/* Premium stays white in both modes regardless of the global rule. */
+.bb-startnow-cta--premium:hover,
+.bb-startnow-cta--premium:focus-visible,
+.bb-startnow-cta--premium:hover .bb-startnow-cta__label,
+.bb-startnow-cta--premium:focus-visible .bb-startnow-cta__label,
+.bb-startnow-cta--premium:hover .bb-startnow-cta__arrow,
+.bb-startnow-cta--premium:focus-visible .bb-startnow-cta__arrow {
+  color: #ffffff !important;
+}
+
+/* Start FREE → frosted glass pill with a soft white shine. */
+.bb-startnow-cta--free {
+  background-color: rgba(255, 255, 255, 0.55);
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0)    0%,
+    rgba(255, 255, 255, 0)    35%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0)    65%,
+    rgba(255, 255, 255, 0)    100%
+  );
+  border-color: rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow:
+    0 8px 22px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  color: #0c0c14;
+}
+
+/* Go Premium → solid BrandBased blue with white text + shine. */
+.bb-startnow-cta--premium {
+  background-color: var(--bb-startnow-blue);
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0)    0%,
+    rgba(255, 255, 255, 0)    35%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0)    65%,
+    rgba(255, 255, 255, 0)    100%
+  );
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  box-shadow:
+    0 10px 26px rgba(16, 48, 245, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.bb-startnow-cta--premium .bb-startnow-cta__label,
+.bb-startnow-cta--premium .bb-startnow-cta__arrow {
+  color: #ffffff;
+}
+
+/* Glass "+" disc. Per-variant colour overrides below so the +
+   reads on each pill. */
+.bb-startnow-cta__plus {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font: 700 22px/1 Roboto, system-ui, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+}
+
+.bb-startnow-cta--free .bb-startnow-cta__plus {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0c0c14;
+  border: 1.5px solid rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.bb-startnow-cta--premium .bb-startnow-cta__plus {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.bb-startnow-cta__label { white-space: nowrap; }
+.bb-startnow-cta__arrow { font-weight: 700; opacity: 0.9; }
+
+/* ------------------------------------------------------------
+   Middle column: modal mockups
+   ------------------------------------------------------------ */
+.bb-startnow-mock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Clickable wrapper around each modal mock. Acts as the
+   accessible link; the mock itself stays aria-hidden because
+   the link's aria-label is the descriptive entry point. */
+.bb-startnow-modal-link {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  text-decoration: none;
+  color: inherit;
+  /* `cursor: pointer` stays even when the anchor has no href (the
+     Premium link's Stripe placeholder was removed) so the mock still
+     reads as actionable. */
+  cursor: pointer;
+  border-radius: var(--bb-startnow-radius-card);
+  transition: opacity 200ms ease;
+}
+
+.bb-startnow-modal-link--free    { max-width: 238px; }
+.bb-startnow-modal-link--premium { max-width: 396px; }
+
+.bb-startnow-modal-link:hover,
+.bb-startnow-modal-link:focus-visible {
+  opacity: 0.92;
+}
+
+.bb-startnow-modal-link:focus-visible {
+  outline: 2px solid var(--bb-startnow-blue);
+  outline-offset: 4px;
+}
+
+.bb-startnow-modal {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  border-radius: var(--bb-startnow-radius-card);
+  background: rgba(130, 132, 140, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10),
+              inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  padding: 22px;
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: 0 auto;
+  /* Wind-style breathe: the whole card scales gently up and down
+     on a slow loop. Blue glow is reserved for CTA hover and
+     transitions in smoothly via box-shadow. */
+  animation: bb-startnow-modal-breathe 3.6s ease-in-out infinite;
+  transform-origin: center;
+  /* Slow + heavily eased so the hover glow fades on/off softly
+     instead of snapping in. */
+  transition: box-shadow 1100ms cubic-bezier(0.16, 0.84, 0.30, 1);
+}
+
+/* Sync-purple glow only fires while the matching CTA is hovered or
+   focused. Uses :has() to climb up to the shared row and back down
+   to the sibling modal — Free CTA -> Free modal, Premium -> Premium.
+   Dialled lower than before so the eased-on entrance reads as a
+   subtle bloom, not a bang. */
+.bb-startnow-row:has(.bb-startnow-cta--free:hover) .bb-startnow-modal--free,
+.bb-startnow-row:has(.bb-startnow-cta--free:focus-visible) .bb-startnow-modal--free,
+.bb-startnow-row:has(.bb-startnow-cta--premium:hover) .bb-startnow-modal--premium,
+.bb-startnow-row:has(.bb-startnow-cta--premium:focus-visible) .bb-startnow-modal--premium,
+.bb-startnow-modal-link--free:hover .bb-startnow-modal--free,
+.bb-startnow-modal-link--free:focus-visible .bb-startnow-modal--free,
+.bb-startnow-modal-link--premium:hover .bb-startnow-modal--premium,
+.bb-startnow-modal-link--premium:focus-visible .bb-startnow-modal--premium {
+  box-shadow:
+    0 22px 60px rgba(99, 91, 255, 0.22),
+    0 10px 24px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.50);
+}
+
+.bb-startnow-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0)    0%,
+    rgba(255, 255, 255, 0)    35%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(255, 255, 255, 0)    65%,
+    rgba(255, 255, 255, 0)    100%
+  );
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% center;
+  pointer-events: none;
+  animation: bb-startnow-modal-shine 3.6s linear infinite;
+}
+
+.bb-startnow-modal__close {
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 400 16px/1 Roboto, system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.bb-startnow-modal__bicon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  box-shadow: 0 4px 10px rgba(16, 48, 245, 0.18),
+              inset 0 0 0 1px rgba(16, 48, 245, 0.55);
+  box-sizing: border-box;
+}
+
+.bb-startnow-modal__bicon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bb-startnow-modal__bicon--lg {
+  width: 60px;
+  height: 60px;
+  padding: 9px;
+}
+
+/* Free modal mock (compact card with B + Explore button).
+   Same proportions as the screenshot reference, just scaled down
+   to the 280px column so it sits next to the pitch + features. */
+.bb-startnow-modal--free {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  padding: 15px 19px 20px;
+  max-width: 238px;
+  min-height: 197px;
+  border-radius: 17px;
+  /* Light-mode smoky glass: close to the Premium mock, but a
+     little more opaque so it has the pale dark modal feel. */
+  background: rgba(130, 132, 140, 0.34);
+  border-color: rgba(255, 255, 255, 0.34);
+}
+
+.bb-startnow-modal--free .bb-startnow-modal__close {
+  top: 9px;
+  right: 9px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(0, 0, 0, 0.72);
+  font: 300 20px/1 Roboto, system-ui, sans-serif;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.bb-startnow-modal--free .bb-startnow-modal__bicon--lg {
+  width: 88px;
+  height: 88px;
+  margin-top: 9px;
+  padding: 17px;
+  background: var(--bb-startnow-blue);
+  box-shadow:
+    0 14px 30px rgba(16, 48, 245, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.bb-startnow-modal--free .bb-startnow-modal__bicon--lg img {
+  filter: brightness(0) invert(1);
+}
+
+.bb-startnow-modal__explore {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 19px;
+  border-radius: var(--bb-startnow-radius-pill);
+  border: 0;
+  background: var(--bb-startnow-blue);
+  color: #fff;
+  font: 800 17px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 22px rgba(16, 48, 245, 0.28);
+}
+
+/* Premium modal mock (full product modal) */
+.bb-startnow-modal--premium {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 374px;
+  padding: 11px;
+  border-radius: 22px;
+}
+
+.bb-startnow-modal__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 37px;
+  padding-right: 37px;
+  position: relative;
+}
+
+.bb-startnow-modal__head .bb-startnow-modal__close {
+  position: absolute;
+  top: -4px;
+  right: -3px;
+  transform: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(0, 0, 0, 0.78);
+  font: 300 24px/1 Roboto, system-ui, sans-serif;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.bb-startnow-modal--premium .bb-startnow-modal__bicon {
+  width: 35px;
+  height: 35px;
+  padding: 6px;
+  background: var(--bb-startnow-blue);
+  box-shadow:
+    0 7px 16px rgba(16, 48, 245, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.bb-startnow-modal--premium .bb-startnow-modal__bicon img {
+  filter: brightness(0) invert(1);
+}
+
+.bb-startnow-modal__title {
+  font: 900 15.4px/1.1 Roboto, system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.92);
+  letter-spacing: 0.01em;
+}
+
+.bb-startnow-modal__body {
+  display: flex;
+  gap: 13px;
+  align-items: flex-start;
+}
+
+.bb-startnow-modal__media {
+  flex: 0 0 141px;
+  height: 134px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.82);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+              0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.bb-startnow-modal__media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.bb-startnow-modal__desc {
+  margin: 0;
+  font: 700 9px/1.22 Roboto, system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.86);
+  flex: 1;
+  max-height: 134px;
+  overflow: hidden;
+  position: relative;
+  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+}
+
+.bb-startnow-modal__selectors {
+  display: flex;
+  gap: 9px;
+}
+
+.bb-startnow-modal__selectors span {
+  flex: 1;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: rgba(235, 237, 242, 0.92);
+  font: 800 11px/1 Roboto, system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.84);
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bb-startnow-modal__selectors i {
+  font-style: normal;
+  color: rgba(0, 0, 0, 0.5);
+  margin-left: 4px;
+}
+
+.bb-startnow-modal__buy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bb-startnow-modal__buy-compass {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  flex: 0 0 38px;
+  margin-left: -7px;
+}
+
+.bb-startnow-modal__buy-compass svg {
+  width: 25px;
+  height: 25px;
+  display: block;
+}
+
+.bb-startnow-modal__buy-pill {
+  flex: 1;
+  margin-right: 4px;
+  padding: 11px 22px;
+  border-radius: var(--bb-startnow-radius-pill);
+  background: var(--bb-startnow-blue);
+  color: #fff;
+  font: 900 13.2px/1 Roboto, system-ui, sans-serif;
+  text-align: center;
+  letter-spacing: 0.04em;
+  box-shadow: 0 6px 16px rgba(16, 48, 245, 0.28);
+}
+
+.bb-startnow-modal__ad {
+  position: relative;
+  height: 59px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #111;
+}
+
+.bb-startnow-modal__ad-video,
+.bb-startnow-modal__ad-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bb-startnow-modal__ad-label {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font: 800 9px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.14em;
+}
+
+/* Pagination dashes under each mock */
+.bb-startnow-modal-dots {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.bb-startnow-modal-dots span {
+  width: 22px;
+  height: 4px;
+  border-radius: var(--bb-startnow-radius-pill);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.bb-startnow-modal-dots span.is-active {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* ------------------------------------------------------------
+   Right column: feature list panel.
+   Background, border and shadow match the canonical bundle card
+   recipe used on Payments/Platforms/Ad Campaigns (light: white
+   on a hairline border; dark: navy gradient with a soft drop).
+   ------------------------------------------------------------ */
+.bb-startnow-features {
+  list-style: none;
+  margin: 0;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid #e1e3e5;
+  border-radius: 16px;
+  background: #f2f3f896 !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+  color: #202223;
+}
+
+.bb-startnow-features li {
+  display: block;
+}
+
+.bb-startnow-features li + li {
+  border-top: 1px solid #e1e3e5;
+  padding-top: 16px;
+}
+
+.bb-startnow-features h3 {
+  display: inline;
+  margin: 0;
+  font: 800 13.5px/1.55 Roboto, system-ui, sans-serif;
+  color: #202223;
+}
+
+.bb-startnow-features h3::after {
+  content: " – ";
+  font-weight: 500;
+  color: #6d7175;
+}
+
+.bb-startnow-features p {
+  display: inline;
+  margin: 0;
+  font: 500 13px/1.55 Roboto, system-ui, sans-serif;
+  color: #4a4d50;
+}
+
+/* ------------------------------------------------------------
+   Responsive: collapse to a single column. The mockup sits
+   between the pitch and the feature list when stacked.
+   Bumped from 1024px → 1550px so the page goes to its mobile
+   single-column layout on smaller laptops inside the dashboard
+   iframe too.
+   ------------------------------------------------------------ */
+@media (max-width: 1550px) {
+  .bb-startnow-row {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .bb-startnow-pitch { padding-right: 0; }
+  .bb-startnow-pitch__sub { max-width: none; }
+  .bb-startnow-mock { align-items: flex-start; }
+  .bb-startnow-modal-link--premium {
+    margin-left: 0;
+    margin-right: auto;
+  }
+  .bb-startnow-modal--premium {
+    margin-left: 0;
+    margin-right: auto;
+  }
+  .bb-startnow-modal { max-width: 360px; }
+}
+
+@media (max-width: 560px) {
+  body.bb-start-now-page .bb-module-head {
+    padding: 0 18px;
+  }
+  .bb-startnow-main { padding: 0 18px; gap: 48px; }
+  .bb-startnow-pitch__heading { font-size: 26px; }
+  .bb-startnow-modal { max-width: 100%; }
+}
+
+/* ------------------------------------------------------------
+   Dark mode — only the deltas; the glass / blue / shimmer
+   structure already lives in the base CTA rules above.
+   ------------------------------------------------------------ */
+@media (prefers-color-scheme: dark) {
+  body.bb-start-now-page {
+    /* Match the bundle's shared dark body (#060606ee) so the
+       navy-gradient feature panels sit on the same canvas as the
+       rest of the dashboards. */
+    background: #060606;
+    color: #f4f5fa;
+  }
+
+  .bb-startnow-pitch__sub { color: rgba(255, 255, 255, 0.66); }
+
+  /* Free pill on a dark canvas: darker glass tint, white text,
+     a touch more glow on the box-shadow. */
+  .bb-startnow-cta--free {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.30);
+    color: #ffffff;
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+  .bb-startnow-cta--free .bb-startnow-cta__plus {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.34);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 2px 6px rgba(0, 0, 0, 0.30);
+  }
+
+  /* Premium pill keeps the solid blue + white shimmer, with a
+     slightly stronger blue glow against the dark page. */
+  .bb-startnow-cta--premium {
+    box-shadow:
+      0 10px 26px rgba(16, 48, 245, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+
+  .bb-startnow-modal {
+    background: rgba(120, 122, 132, 0.22);
+    border-color: rgba(255, 255, 255, 0.10);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  }
+
+  /* Dark-mode tuned CTA-hover Sync-purple glow on the matching modal —
+     lower intensity so the eased ramp-on reads as a subtle bloom. */
+  .bb-startnow-row:has(.bb-startnow-cta--free:hover) .bb-startnow-modal--free,
+  .bb-startnow-row:has(.bb-startnow-cta--free:focus-visible) .bb-startnow-modal--free,
+  .bb-startnow-row:has(.bb-startnow-cta--premium:hover) .bb-startnow-modal--premium,
+  .bb-startnow-row:has(.bb-startnow-cta--premium:focus-visible) .bb-startnow-modal--premium,
+  .bb-startnow-modal-link--free:hover .bb-startnow-modal--free,
+  .bb-startnow-modal-link--free:focus-visible .bb-startnow-modal--free,
+  .bb-startnow-modal-link--premium:hover .bb-startnow-modal--premium,
+  .bb-startnow-modal-link--premium:focus-visible .bb-startnow-modal--premium {
+    box-shadow:
+      0 24px 64px rgba(99, 91, 255, 0.38),
+      0 12px 30px rgba(0, 0, 0, 0.40),
+      inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  }
+
+  /* In dark mode the Free pill keeps white text on hover. */
+  .bb-startnow-cta--free:hover,
+  .bb-startnow-cta--free:focus-visible,
+  .bb-startnow-cta--free:hover .bb-startnow-cta__label,
+  .bb-startnow-cta--free:focus-visible .bb-startnow-cta__label,
+  .bb-startnow-cta--free:hover .bb-startnow-cta__arrow,
+  .bb-startnow-cta--free:focus-visible .bb-startnow-cta__arrow {
+    color: #ffffff !important;
+  }
+  .bb-startnow-modal__close { color: rgba(255, 255, 255, 0.55); }
+  .bb-startnow-modal__title { color: rgba(255, 255, 255, 0.94); }
+  .bb-startnow-modal__desc { color: rgba(255, 255, 255, 0.72); }
+
+  .bb-startnow-modal__selectors span {
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.78);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  }
+  .bb-startnow-modal__selectors i { color: rgba(255, 255, 255, 0.6); }
+
+  .bb-startnow-modal__buy-compass {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .bb-startnow-modal-dots span { background: rgba(255, 255, 255, 0.22); }
+  .bb-startnow-modal-dots span.is-active { background: rgba(255, 255, 255, 0.55); }
+
+  /* Right info-card panel: canonical dark dashboard surface used
+     on Platforms / Hotspots / AI Logic / Ad Campaigns. !important
+     overrides the light-mode #f2f3f896 !important above. */
+  .bb-startnow-features {
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35) !important;
+    color: rgba(255, 255, 255, 0.96);
+  }
+  .bb-startnow-features li + li { border-top-color: rgba(255, 255, 255, 0.10); }
+  .bb-startnow-features h3 { color: rgba(255, 255, 255, 0.96); }
+  .bb-startnow-features h3::after { color: rgba(255, 255, 255, 0.55); }
+  .bb-startnow-features p { color: rgba(255, 255, 255, 0.78); }
+}
+
+/* Reduced motion: stop all decorative loops. */
+@media (prefers-reduced-motion: reduce) {
+  .bb-startnow-cta,
+  .bb-startnow-modal,
+  .bb-startnow-modal::before,
+  .bb-startnow-modal-link,
+  .bb-startnow-modal__ad-video {
+    transition: none !important;
+    animation: none !important;
+  }
+}

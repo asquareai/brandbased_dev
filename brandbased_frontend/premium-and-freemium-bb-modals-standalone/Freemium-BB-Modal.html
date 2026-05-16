@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freemium BB Modal — standalone bundle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+
+  <link rel="icon" href="./favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="./brandbased-logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="./favicons/manifest.webmanifest" />
+
+  <!-- Smart sizing & dynamic logo CSS (same pair Premium loads). Provides
+       .brandbased-dynamic-logo-slot rules, --bb-slot-w/h calculations,
+       and the `.bb-upload{--bb-logo:...}` consumption surface. Inline
+       <style> below intentionally comes AFTER this and overrides body/
+       link/etc. defaults that bb-shared-ui.css ships with. -->
+  <link rel="stylesheet" href="bb-shared-ui.css?v=premium-standalone-44" />
+  <link rel="stylesheet" href="bb-theme-standalone-popup.css?v=premium-standalone-44" />
+  <link rel="stylesheet" href="bb-legit-panel.css?v=premium-standalone-44" />
+
+  <style>
+    :root {
+      --bb-freemium-blue: #1030f5;
+      --bb-freemium-sync: #635bff;
+    }
+
+    @keyframes bb-freemium-pop {
+      0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.92);
+      }
+      58% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.04);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      padding-bottom: 96px;
+      font-family: Roboto, system-ui, sans-serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: #11131a;
+      overflow-x: hidden;
+    }
+
+    .bb-module-nav {
+      margin: 0 0 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+    }
+
+    .bb-module-nav a {
+      color: var(--bb-freemium-blue);
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .bb-standalone-note {
+      max-width: 760px;
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(6, 8, 78, 0.18);
+      background: rgba(16, 48, 244, 0.06);
+      font-size: 14px;
+      line-height: 1.45;
+      color: rgba(15, 15, 18, 0.88);
+    }
+
+    .bb-standalone-details {
+      max-width: 760px;
+      margin: 0 0 16px;
+      font-size: 14px;
+    }
+
+    .bb-standalone-details summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--bb-freemium-blue);
+    }
+
+    .bb-standalone-details pre {
+      margin: 10px 0 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: #0b0b12;
+      color: #e8e8ee;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+
+    .bb-freemium-wrap {
+      max-width: 720px;
+      margin-top: 80px;
+      padding: 24px;
+      border-radius: 24px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: #f7f6f2;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.18);
+    }
+
+    /* In-text Freemium trigger.
+       Uses bb-shared-ui.css's .brandbased-dynamic-logo-slot primitive
+       so bb-smart-ui can apply real smart sizing (em-based slot + AI
+       sizing data). We strip the drop-shadow / glow that the previous
+       <button> version added so the logo sits flat in the text — the
+       slot's own `pulse-dynamic-logos` hover animation (from
+       bb-shared-ui.css) is the only flourish kept. */
+    .bb-freemium-slot-trigger {
+      cursor: pointer;
+    }
+    .bb-freemium-slot-trigger::after {
+      filter: none !important;
+    }
+    .bb-freemium-slot-trigger:hover::after,
+    .bb-freemium-slot-trigger:focus-visible::after {
+      filter: none !important;
+    }
+    .bb-freemium-slot-trigger:focus-visible {
+      outline: 2px solid rgba(99, 91, 255, 0.55);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+    /* Belt-and-suspenders: hide any Premium-style .popup that
+       bb-smart-ui auto-appends to <body> for our brand marks. Click
+       interception below (registered before bb-smart-ui.js loads)
+       already stops the popup from being opened, but this guarantees
+       it can never paint on this Freemium page. */
+    body > .popup {
+      display: none !important;
+    }
+
+    /* No backdrop / dimming layer — overlay is just an invisible
+       full-viewport click-catcher so clicking outside the modal
+       can close it. The modal itself is JS-positioned next to
+       the trigger logo. */
+    .bb-freemium-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483646;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .bb-freemium-overlay[data-open="true"] {
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    /* Modal shell sizing/chrome: bb-theme-standalone-popup.css (matches
+       Freemium-Theme-Styles .bb-fm-preview-popup). */
+
+    /* Pop only — breathe fought pop's transform and jumped the modal off the trigger. */
+    .bb-freemium-overlay[data-open="true"] .bb-freemium-modal {
+      animation: bb-freemium-pop 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    button.bb-freemium-badge:hover {
+      filter: drop-shadow(0 0 8px rgba(16, 48, 245, 0.35));
+      transform: scale(1.06);
+    }
+
+    button.bb-freemium-badge:active {
+      transform: scale(0.96);
+    }
+
+    button.bb-freemium-badge:focus-visible {
+      outline: 2px solid rgba(16, 48, 245, 0.55);
+      outline-offset: 3px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        color: #f4f5fa;
+        background: #060606;
+      }
+
+      .bb-standalone-note {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.84);
+      }
+
+      .bb-freemium-wrap {
+        background: linear-gradient(165deg, rgba(15, 23, 42, 0.94), rgba(8, 11, 26, 0.96));
+        border-color: rgba(255, 255, 255, 0.14);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bb-freemium-modal,
+      .bb-freemium-trigger img,
+      button.bb-freemium-badge {
+        animation: none !important;
+        transition: opacity 200ms ease, visibility 0s linear !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <p class="bb-standalone-note" role="note">
+    <strong>Standalone Freemium bundle.</strong> This page is independent from
+    <code>Premium-BB-Modal.html</code>. Clicking the BrandBased logo opens the
+    Free-style popup only; it does not load or alter the Premium product modal.
+  </p>
+
+  <details class="bb-standalone-details">
+    <summary>Run local server</summary>
+    <pre>cd premium-bb-modal-standalone
+python3 -m http.server 8090
+# http://localhost:8090/Freemium-BB-Modal.html</pre>
+  </details>
+
+  <p class="bb-module-nav">
+    <a href="../brand-modules-bundle/start-now/Start-Now.html">Start Now</a>
+    <a href="Premium-BB-Modal.html">Premium Demo</a>
+    <a href="../brand-modules-bundle/logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+    <a href="../brand-modules-bundle/brands/Brands.html">Brands</a>
+    <a href="../brand-modules-bundle/Brand-Settings-Module.html">Brand Settings</a>
+    <a href="../brand-modules-bundle/Brand-Theme-Settings-Module.html">Theme Styles</a>
+    <a href="../brand-modules-bundle/products/Products.html">Products</a>
+    <a href="../brand-modules-bundle/Product-Scheduling-Module.html">Scheduling</a>
+    <a href="../brand-modules-bundle/platforms/Platforms.html">Platforms</a>
+    <a href="../brand-modules-bundle/hotspots/Hotspots.html">Hotspots</a>
+    <a href="../brand-modules-bundle/ai-logic/AI-Logic.html">AI Logic</a>
+    <a href="../brand-modules-bundle/ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+    <a href="../brand-modules-bundle/metrics/Metrics.html">Metrics</a>
+    <a href="../brand-modules-bundle/payments/Payments.html">Payments</a>
+    <a href="../brand-modules-bundle/Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+  </p>
+
+  <main class="bb-freemium-wrap">
+    <p>
+      <span
+        class="brandbased brandbased-dynamic-logo-slot bb-freemium-slot-trigger"
+        data-brand="brandbased"
+        data-bb-freemium-trigger
+        role="button"
+        tabindex="0"
+        aria-label="Open Freemium BrandBased popup"
+      >BrandBased</span>
+      lets shoppers explore a brand moment without leaving the page. This Freemium
+      version opens the lighter Free popup design instead of the full Premium
+      product modal.
+    </p>
+    <p>
+      Click the
+      <span
+        class="brandbased brandbased-dynamic-logo-slot bb-freemium-slot-trigger"
+        data-brand="brandbased"
+        data-bb-freemium-trigger
+        role="button"
+        tabindex="0"
+        aria-label="Open Freemium BrandBased popup"
+      >BrandBased</span>
+      logo to preview the Free interaction.
+    </p>
+  </main>
+
+  <div class="bb-freemium-overlay" id="bbFreemiumOverlay" data-open="false" aria-hidden="true">
+    <section class="bb-freemium-modal" role="dialog" aria-modal="true" aria-label="BrandBased Freemium popup">
+      <div class="bb-freemium-modal-bgwrap" aria-hidden="true">
+        <video class="bb-freemium-modal-bg" muted loop playsinline preload="metadata"></video>
+        <div class="bb-freemium-modal-blend" aria-hidden="true"></div>
+      </div>
+      <button class="bb-freemium-close" type="button" aria-label="Close Freemium popup">
+        <svg
+          class="bb-freemium-close__icon"
+          viewBox="0 0 14 14"
+          width="11"
+          height="11"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M2.4 2.4 L11.6 11.6 M11.6 2.4 L2.4 11.6"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            fill="none"
+          />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="bb-freemium-badge bb-upload"
+        id="bbFreemiumBadgeVerify"
+        aria-label="Is this authentic? Verify"
+        title="Is this authentic?"
+      >
+        <span class="bb-freemium-badge-glyph" aria-hidden="true"></span>
+      </button>
+      <a class="bb-freemium-explore" href="../brand-modules-bundle/logo-upload/Logo-upload-and-Crop-module.html">Explore</a>
+    </section>
+  </div>
+
+  <aside
+    class="bb-legit-panel"
+    id="bbLegitPanel"
+    data-open="false"
+    aria-labelledby="bbLegitQuestion"
+  >
+    <div class="bb-legit-card">
+      <button
+        class="bb-legit-close"
+        id="bbLegitClose"
+        type="button"
+        aria-label="Close verification panel"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        </svg>
+      </button>
+
+      <p class="bb-legit-question" id="bbLegitQuestion">
+        <span class="bb-legit-mark" aria-hidden="true">
+          <span class="bb-legit-mark-circle bb-legit-mark-circle--lock">
+            <img src="./lock-icon-verified.svg" alt="" />
+          </span>
+          <span class="bb-legit-mark-circle bb-legit-mark-circle--tick">
+            <img src="../brand-modules-bundle/logo-upload/verification-tick.svg" alt="" />
+          </span>
+        </span>
+        Is this authentic?
+      </p>
+
+      <p class="bb-legit-answer">
+        Yes &mdash; this brand has been verified and is associated with this URL:
+      </p>
+
+      <a
+        class="bb-legit-pill"
+        id="bbLegitUrl"
+        href="https://brandbased.ai/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >brandbased.ai</a>
+    </div>
+  </aside>
+
+  <!-- IMPORTANT: this script MUST run before bb-smart-ui.js so our
+       document-capture click listener is registered first. bb-smart-ui
+       also registers a document-capture "safety net" that would open a
+       Premium product modal for any .brandbased-dynamic-logo-slot click;
+       by firing first and calling stopImmediatePropagation() we kill
+       both that handler AND the per-mark bubble-phase handler
+       bb-smart-ui attaches inside attachBrandClick(). -->
+  <script>
+    (function () {
+      const overlay = document.getElementById("bbFreemiumOverlay");
+      if (!overlay) return;
+
+      const modal = overlay.querySelector(".bb-freemium-modal");
+      const closeBtn = overlay.querySelector(".bb-freemium-close");
+      let lastFocused = null;
+      let activeTrigger = null;
+
+      function triggers() {
+        return Array.from(
+          document.querySelectorAll(
+            ".brandbased-dynamic-logo-slot[data-bb-freemium-trigger]"
+          )
+        );
+      }
+
+      // Position the modal so it pops up AT the trigger logo's location
+      // in the text. The modal's top-left is anchored at the trigger's
+      // top-left, and the pop animation grows from that same origin so
+      // it visually emerges out of the clicked logo. Clamped to the
+      // viewport with a small margin so it never spills off-screen.
+      function positionAt(trigger) {
+        if (!trigger || !modal) return;
+        const margin = 12;
+        const r = trigger.getBoundingClientRect();
+        const vw = document.documentElement.clientWidth;
+        const vh = document.documentElement.clientHeight;
+        const mw = modal.offsetWidth  || 238;
+        const mh = modal.offsetHeight || 197;
+
+        let left = r.left;
+        let top  = r.top;
+
+        if (left + mw + margin > vw) left = vw - mw - margin;
+        if (top  + mh + margin > vh) top  = vh - mh - margin;
+        if (left < margin) left = margin;
+        if (top  < margin) top  = margin;
+
+        modal.style.left = left + "px";
+        modal.style.top  = top  + "px";
+      }
+
+      function openFrom(trigger) {
+        lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        activeTrigger = trigger;
+        overlay.setAttribute("data-open", "true");
+        overlay.setAttribute("aria-hidden", "false");
+        positionAt(trigger);
+        closeBtn?.focus({ preventScroll: true });
+      }
+
+      function closeModal() {
+        overlay.setAttribute("data-open", "false");
+        overlay.setAttribute("aria-hidden", "true");
+        activeTrigger = null;
+        const legit = document.getElementById("bbLegitPanel");
+        if (legit) legit.setAttribute("data-open", "false");
+        lastFocused?.focus?.({ preventScroll: true });
+      }
+
+      // Capture-phase click interceptor for Freemium triggers.
+      // Calling stopImmediatePropagation() here halts the whole event
+      // chain — including bb-smart-ui's safety-net listener and the
+      // per-mark listener that attachBrandClick() will install once the
+      // mark is enhanced. Because this listener is registered before
+      // <script src="bb-smart-ui.js"> runs, it sits ahead of bb-smart-ui's
+      // own document-capture listener in registration order and fires
+      // first.
+      document.addEventListener(
+        "click",
+        function (event) {
+          const t = event.target;
+          if (!(t instanceof Element)) return;
+          const slot = t.closest(
+            ".brandbased-dynamic-logo-slot[data-bb-freemium-trigger]"
+          );
+          if (!slot) return;
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          openFrom(slot);
+        },
+        true
+      );
+
+      // Keyboard activation on the slot (Enter / Space). Each slot
+      // already exposes role="button" + tabindex="0".
+      document.addEventListener(
+        "keydown",
+        function (event) {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          const t = event.target;
+          if (!(t instanceof Element)) return;
+          const slot = t.closest(
+            ".brandbased-dynamic-logo-slot[data-bb-freemium-trigger]"
+          );
+          if (!slot) return;
+          event.stopImmediatePropagation();
+          event.preventDefault();
+          openFrom(slot);
+        },
+        true
+      );
+
+      closeBtn?.addEventListener("click", closeModal);
+
+      // Outside-click close: any click outside the modal (and not on a
+      // trigger) closes the panel. Capture phase so it beats body-level
+      // listeners but runs AFTER the trigger interceptor above (which
+      // stopImmediatePropagations on triggers).
+      document.addEventListener(
+        "click",
+        function (event) {
+          if (overlay.getAttribute("data-open") !== "true") return;
+          const target = event.target;
+          if (!(target instanceof Node)) return;
+          if (modal?.contains(target)) return;
+          if (triggers().some((t) => t.contains(target))) return;
+          const legit = document.getElementById("bbLegitPanel");
+          if (legit && legit.contains(target)) return;
+          closeModal();
+        },
+        true
+      );
+
+      function repositionIfOpen() {
+        if (overlay.getAttribute("data-open") === "true") positionAt(activeTrigger);
+      }
+      window.addEventListener("resize", repositionIfOpen);
+      window.addEventListener("scroll", repositionIfOpen, { passive: true });
+
+      document.addEventListener("keydown", function (event) {
+        if (overlay.getAttribute("data-open") !== "true") return;
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeModal();
+          return;
+        }
+
+        if (event.key !== "Tab" || !modal) return;
+        const focusable = Array.from(
+          modal.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        );
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      });
+    })();
+  </script>
+
+  <!-- Dynamic brand logo + smart sizing engine. Reads the last
+       uploaded SVG out of localStorage (saved by the Logo Upload
+       module) and injects a global `.bb-upload{--bb-logo:url("blob:...")}`
+       style. Also enhances .brandbased-dynamic-logo-slot elements with
+       em-based + AI-driven sizing. Loaded AFTER the Freemium intercept
+       above so our handler fires first. -->
+  <script src="bb-theme-console-sync.js?v=premium-standalone-44"></script>
+  <script src="bb-smart-ui.js?v=premium-standalone-44"></script>
+  <script>
+    if (window.BBThemeConsoleSync && typeof window.BBThemeConsoleSync.install === "function") {
+      window.BBThemeConsoleSync.install();
+    }
+  </script>
+  <script>
+    // "Is this authentic?" — same verification panel as Premium; trigger = circle logo badge.
+    (function () {
+      const panel = document.getElementById("bbLegitPanel");
+      const closeBtn = document.getElementById("bbLegitClose");
+      const urlEl = document.getElementById("bbLegitUrl");
+      const overlay = document.getElementById("bbFreemiumOverlay");
+      const modal = overlay?.querySelector(".bb-freemium-modal");
+      const badgeBtn = document.getElementById("bbFreemiumBadgeVerify");
+      if (!panel || !overlay || !modal || !badgeBtn) return;
+
+      function displayUrl(raw) {
+        if (!raw) return null;
+        try {
+          return String(raw).trim().replace(/^https?:\/\//i, "").replace(/\/$/, "");
+        } catch (_e) {
+          return null;
+        }
+      }
+
+      try {
+        const saved = localStorage.getItem("bbLuBrandUrl");
+        if (saved && urlEl) {
+          const pretty = displayUrl(saved);
+          if (pretty) {
+            urlEl.textContent = pretty;
+            urlEl.setAttribute("href", /^https?:\/\//i.test(saved) ? saved : "https://" + pretty);
+          }
+        }
+      } catch (_e) {}
+
+      function isFreemiumOpen() {
+        return overlay.getAttribute("data-open") === "true";
+      }
+
+      function positionPanel() {
+        const r = modal.getBoundingClientRect();
+        const vw = document.documentElement.clientWidth;
+        const vh = document.documentElement.clientHeight;
+        const inset = 12;
+        let left = r.left + inset;
+        let top = r.top + inset;
+        const panelW = panel.offsetWidth || 240;
+        const panelH = panel.offsetHeight || 160;
+        if (left + panelW + 12 > vw) left = Math.max(12, vw - panelW - 12);
+        if (top + panelH + 12 > vh) top = Math.max(12, vh - panelH - 12);
+        if (left < 12) left = 12;
+        if (top < 12) top = 12;
+        panel.style.left = left + "px";
+        panel.style.top = top + "px";
+        panel.style.right = "auto";
+        panel.style.bottom = "auto";
+        panel.style.transform = "";
+      }
+
+      function liftPanelOnTop() {
+        if (panel.parentElement !== document.body || panel !== document.body.lastElementChild) {
+          document.body.appendChild(panel);
+        }
+      }
+
+      function openPanel() {
+        if (!isFreemiumOpen()) return;
+        liftPanelOnTop();
+        positionPanel();
+        panel.setAttribute("data-open", "true");
+      }
+
+      function closePanel() {
+        panel.setAttribute("data-open", "false");
+      }
+
+      closeBtn?.addEventListener("click", closePanel);
+
+      function toggleLegit(e) {
+        e.stopPropagation();
+        if (!isFreemiumOpen()) return;
+        if (panel.getAttribute("data-open") === "true") {
+          closePanel();
+        } else {
+          openPanel();
+        }
+      }
+
+      badgeBtn.addEventListener("click", toggleLegit);
+      badgeBtn.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleLegit(e);
+        }
+      });
+
+      function repositionIfOpen() {
+        if (isFreemiumOpen() && panel.getAttribute("data-open") === "true") {
+          positionPanel();
+        }
+      }
+      window.addEventListener("resize", repositionIfOpen);
+      window.addEventListener("scroll", repositionIfOpen, { passive: true });
+    })();
+  </script>
+</body>
+</html>

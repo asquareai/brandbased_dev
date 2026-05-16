@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      try {
+        if (new URLSearchParams(location.search).get("embed") === "admin") {
+          document.documentElement.classList.add("bb-platforms-admin-embed");
+        }
+      } catch (_e) {}
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Platforms — BrandBased</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Montserrat:ital,wght@0,300;0,500;0,700;1,500&family=Nunito:ital,wght@0,300;0,500;0,700;1,500&family=Open+Sans:ital,wght@0,300;0,500;0,700;1,500&family=Poppins:ital,wght@0,300;0,500;0,700;1,500&family=Raleway:ital,wght@0,300;0,500;0,700;1,500&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Work+Sans:ital,wght@0,300;0,500;0,700;1,500&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="icon" href="../favicons/favicon.ico" sizes="any" />
+  <link rel="icon" href="../favicons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicons/apple-touch-icon.png" />
+  <link rel="manifest" href="../favicons/manifest.webmanifest" />
+
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="stylesheet" href="./platforms.css?v=platforms-58" />
+  <link rel="stylesheet" href="../_shared/sync-popup.css?v=shared-2" />
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+<body class="bb-platforms-page bb-brand-theme-settings">
+  <div class="light-shard-ui-base" aria-hidden="true">
+    <div class="light-shard-ui-theme"></div>
+    <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+    <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+  </div>
+
+  <div id="bbPlatformsMount" class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="../start-now/Start-Now.html">Start Now</a>
+        <a href="../logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="../brands/Brands.html">Brands</a>
+        <a href="../Brand-Settings-Module.html">Brand Settings</a>
+        <a href="../Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="../products/Products.html">Products</a>
+        <a href="../Product-Scheduling-Module.html">Scheduling</a>
+        <a href="Platforms.html">Platforms</a>
+        <a href="../hotspots/Hotspots.html">Hotspots</a>
+        <a href="../ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="../ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+        <a href="../metrics/Metrics.html">Metrics</a>
+        <a href="../payments/Payments.html">Payments</a>
+        <a href="../Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <h1>Platforms</h1>
+    </header>
+
+    <div class="bb-bts-layout bb-plat-dash-layout" role="main" aria-label="Platforms distribution">
+      <section class="bb-bts-left bb-plat-dash-col" aria-label="Platforms controls">
+        <div class="bb-plat-left-stack">
+          <button
+            type="button"
+            class="bb-plat-excluded-collapse bb-plat-excluded-collapse--dock"
+            id="bbPlatExcludedCollapse"
+            aria-label="Collapse excluded URLs panel to default height"
+            title="Reset panel height"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 15l-6-6-6 6" />
+            </svg>
+          </button>
+          <div id="bbPlatExcludedPanel" class="bb-plat-dash-panel bb-plat-dash-panel--excluded">
+            <h2 class="bb-plat-dash-title bb-plat-dash-title--excluded-lockup">
+              <img
+                class="bb-plat-dash-title-icon bb-plat-dash-title-icon--excluded"
+                src="./bb-banned-url.svg"
+                width="52"
+                height="58"
+                alt=""
+                decoding="async"
+                aria-hidden="true"
+              />
+              <span class="bb-plat-dash-title-label">Excluded URLs Across Your Digital Platforms</span>
+            </h2>
+
+            <div class="bb-plat-dash-copy">
+              <p>
+                Prevent this brand from appearing on selected URLs across your website platforms.
+                This allows specific brands to appear on selected pages while restricting others across the same website or platform.
+                <button type="button" class="bb-plat-info-btn bb-plat-info-btn--inline" aria-label="About excluded URLs" title="About excluded URLs">
+                  <img src="./tool-tip.svg" width="18" height="18" alt="" decoding="async" />
+                </button>
+              </p>
+            </div>
+
+            <div class="bb-plat-excluded-scroll">
+              <div id="bbPlatExcludedUrlsRoot" class="bb-plat-excluded-urls">
+                <div class="bb-plat-url-field">
+                  <div class="bb-plat-url-field-main">
+                    <label class="bb-plat-visually-hidden" for="bbPlatExcludedUrl">Excluded URL</label>
+                    <div class="bb-plat-url-input-wrap">
+                      <input
+                        id="bbPlatExcludedUrl"
+                        class="bb-plat-url-input"
+                        type="text"
+                        inputmode="url"
+                        autocomplete="off"
+                        placeholder="Enter a URL where you'd like this brand to be excluded"
+                      />
+                      <span class="bb-plat-url-input-globe" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20" />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                  <button type="button" class="bb-plat-url-remove" aria-label="Remove this excluded URL row">×</button>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="bb-plat-add-url" id="bbPlatAddExcludedUrl">
+              <img
+                class="bb-plat-add-url__icon"
+                src="./plus-url.svg"
+                width="22"
+                height="22"
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+              />
+              <span class="bb-plat-add-url__label">Excluded URL</span>
+            </button>
+
+            <button type="button" class="bb-plat-sync-btn" id="bbPlatSyncExcluded">Sync</button>
+          </div>
+
+          <button
+            type="button"
+            class="bb-plat-excluded-resize-handle"
+            id="bbPlatExcludedResizeHandle"
+            aria-label="Drag to resize excluded URLs panel height. Double-click to reset height."
+          >
+            <span class="bb-plat-excluded-resize-handle__grip" aria-hidden="true"></span>
+          </button>
+
+          <div class="bb-bts-card bb-bts-cta bb-plat-hotspots-cta">
+            <h2>Enable Dynamic Hotspots</h2>
+            <p class="bb-bts-help bb-plat-hotspots-cta__help">Promote products and send consumers anywhere</p>
+            <div class="bb-bts-cta-actions">
+              <button type="button" id="bbPlatEnableHotspotsBtn" class="bb-bts-cta-btn">Enable Hotspots</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bb-bts-right bb-bts-right--platforms bb-plat-dash-col" aria-label="Platform partners">
+        <div class="bb-plat-dash-panel bb-plat-dash-panel--global">
+          <h2 class="bb-plat-dash-title bb-plat-dash-title--with-lockup">
+            <img
+              class="bb-plat-dash-title-typeface"
+              src="../payments/BrandBased-Typeface.svg"
+              width="160"
+              height="26"
+              alt="BrandBased"
+              decoding="async"
+            />
+            <span class="bb-plat-dash-title-text">Platform Partners</span>
+          </h2>
+
+          <p class="bb-plat-dash-lede">
+            Select the global platforms where your brand will be visible — BrandBased ensures your brand
+            <span class="bb-plat-dash-highlight">reaches audiences worldwide</span>
+            <button type="button" class="bb-plat-info-btn bb-plat-info-btn--inline" aria-label="About platform partners" title="About platform partners">
+              <img src="./tool-tip.svg" width="18" height="18" alt="" decoding="async" />
+            </button>
+          </p>
+
+          <div class="bb-plat-global-scroll">
+            <ul class="bb-plat-platform-list">
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./google-color-icon.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Google Search</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="google" aria-label="Google Search visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./reddit-icon.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Reddit</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="reddit" aria-label="Reddit visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./x-social-media-round-icon (1).svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">X</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="x" aria-label="X visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./wechat-logo-svgrepo-com.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">WeChat</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="wechat" aria-label="WeChat visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./facebook-round-color-icon (2).svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Facebook</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="facebook" aria-label="Facebook visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./twitch-color-icon.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Twitch</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="twitch" aria-label="Twitch visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./youtube-color-icon.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">YouTube</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="youtube" aria-label="YouTube visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./ig-instagram-icon (1).svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Instagram</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="instagram" aria-label="Instagram visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./medium-logo-icon.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Medium</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="medium" aria-label="Medium visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./substack-icon.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Substack</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="substack" aria-label="Substack visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+              <li class="bb-plat-platform-row">
+                <img class="bb-plat-platform-logo" src="./bleacher-report-seeklogo.svg" width="40" height="40" alt="" decoding="async" />
+                <span class="bb-plat-platform-name">Bleacher Report</span>
+                <div class="bb-plat-toggle">
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--left">Hidden</span>
+                  <label class="bb-plat-toggle__switch">
+                    <input type="checkbox" class="bb-plat-toggle__input" checked data-platform="bleacher-report" aria-label="Bleacher Report visibility" />
+                    <span class="bb-plat-toggle__track" aria-hidden="true"></span>
+                  </label>
+                  <span class="bb-plat-toggle__label bb-plat-toggle__label--right">Visible</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <button type="button" class="bb-plat-sync-btn" id="bbPlatSyncGlobal">Sync</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../_shared/sync-popup.js?v=shared-1"></script>
+  <script src="./platforms-page.js?v=platforms-28"></script>
+</body>
+</html>

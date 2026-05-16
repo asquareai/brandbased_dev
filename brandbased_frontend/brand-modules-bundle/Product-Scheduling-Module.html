@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scheduling — BrandBased</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
+    <!-- Shared UI foundation used across demos -->
+    <link rel="stylesheet" href="./brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+
+    <!-- Page-scoped styles (do not leak to other modules) -->
+    <link rel="stylesheet" href="./product-scheduling/product-scheduling.css?v=ps-58" />
+  <!-- bb-embed-mode-init: when this page is rendered inside an
+       iframe (e.g. the Brand Console dashboard), drop its own page
+       background + animated shards so it sits flush on the host
+       surface AND postMessage route changes up to the parent so its
+       sidebar can stay in sync with internal iframe navigation.
+       Runs cross-origin safely. Standalone load: no-op. -->
+  <script>
+  (function () {
+    try {
+      if (window.self === window.top) return;
+      /* Selectors include `body[class]` so they tie the specificity
+         of class-qualified body rules (e.g. `body.bb-start-now-page`)
+         that module CSS uses for dark/light backgrounds; we win the
+         tie because this stylesheet is appended last in the cascade. */
+      var EMBED_CSS =
+        ":root { color-scheme: light dark; }" +
+        "html, html body, body, body[class] {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html .bb-theme-shell, html .bb-theme-shell--root," +
+        "body .bb-theme-shell, body .bb-theme-shell--root {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}" +
+        "html, body { scrollbar-width: none !important; }" +
+        "html::-webkit-scrollbar, body::-webkit-scrollbar {" +
+        "  width: 0 !important; height: 0 !important; display: none !important;" +
+        "}" +
+        ".light-shard-ui-base, .light-shard-ui-theme," +
+        ".bb-bg-shards, .bb-bg-wash, .video-bg-content-header {" +
+        "  display: none !important; visibility: hidden !important; opacity: 0 !important;" +
+        "}" +
+        "html::before, html::after, body::before, body::after {" +
+        "  background: transparent !important;" +
+        "  background-color: transparent !important;" +
+        "  background-image: none !important;" +
+        "}";
+      var s = document.createElement("style");
+      s.id = "bb-embed-mode";
+      s.textContent = EMBED_CSS;
+      (document.head || document.documentElement).appendChild(s);
+
+      /* Sync color-scheme to the parent dashboard (its body has
+         `.light-mode` for light, no class for dark). Cross-origin
+         reads throw, so fall back to the CSS-set "light dark". */
+      try {
+        var parentBody = window.parent && window.parent.document && window.parent.document.body;
+        if (parentBody) {
+          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+          document.documentElement.style.colorScheme = scheme;
+        }
+      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+
+      document.documentElement.classList.add("bb-embedded");
+
+      function postToParent(msg) {
+        try { window.parent.postMessage(msg, "*"); } catch (_e) { /* ignore */ }
+      }
+      function sendRoute() {
+        postToParent({
+          type: "bb-dash-route",
+          path: location.pathname,
+          href: location.href
+        });
+      }
+      function sendNavStart() {
+        postToParent({ type: "bb-dash-nav-start" });
+      }
+
+      function dropDecor() {
+        try {
+          var nodes = document.querySelectorAll(
+            ".light-shard-ui-base, .bb-bg-shards, .bb-bg-wash, .video-bg-content-header"
+          );
+          for (var i = 0; i < nodes.length; i++) {
+            if (nodes[i] && nodes[i].parentNode) {
+              nodes[i].parentNode.removeChild(nodes[i]);
+            }
+          }
+          if (document.body) document.body.classList.add("bb-embedded");
+        } catch (_e) { /* ignore */ }
+        /* Announce where this iframe now is, so the dashboard's
+           sidebar can highlight the matching route. */
+        sendRoute();
+      }
+      if (document.readyState !== "loading") dropDecor();
+      else document.addEventListener("DOMContentLoaded", dropDecor, { once: true });
+
+      /* Signal that we're about to navigate away (link click,
+         form submit, location change) so the dashboard can pop
+         its loader during the transition. `pagehide` is more
+         reliable than `beforeunload` on iOS Safari. */
+      window.addEventListener("pagehide", sendNavStart, { once: false });
+      window.addEventListener("beforeunload", sendNavStart, { once: false });
+    } catch (_e) { /* never block standalone */ }
+  })();
+  </script>
+</head>
+  <body class="bb-brand-theme-settings bb-product-scheduling">
+    <!------------------------ Base Light More gradient light behind UI ---------------------->
+    <div class="light-shard-ui-base" aria-hidden="true">
+      <div class="light-shard-ui-theme"></div>
+      <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
+      <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
+    </div>
+
+    <div class="bb-theme-shell">
+    <header class="bb-module-head">
+      <p class="bb-module-nav">
+        <a href="../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
+        <a href="start-now/Start-Now.html">Start Now</a>
+        <a href="logo-upload/Logo-upload-and-Crop-module.html">Logo upload &amp; crop</a>
+        <a href="brands/Brands.html">Brands</a>
+        <a href="Brand-Settings-Module.html">Brand Settings</a>
+        <a href="Brand-Theme-Settings-Module.html">Theme Styles</a>
+        <a href="products/Products.html">Products</a>
+        <a href="Product-Scheduling-Module.html">Scheduling</a>
+        <a href="platforms/Platforms.html">Platforms</a>
+        <a href="hotspots/Hotspots.html">Hotspots</a>
+        <a href="ai-logic/AI-Logic.html">AI Logic</a>
+        <a href="ad-campaigns/Ad-Campaigns.html">Campaigns</a>
+        <a href="metrics/Metrics.html">Metrics</a>
+        <a href="payments/Payments.html">Payments</a>
+        <a href="Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
+      </p>
+      <div class="bb-ps-page-top">
+        <h1 class="bb-ps-page-title">Scheduling</h1>
+        <p id="bbPsCount" class="bb-ps-count-pill" role="status" aria-live="polite">0 Active Products in Rotation</p>
+      </div>
+    </header>
+
+    <main class="bb-ps-wrap" role="main" aria-label="Product scheduling">
+      <section id="bb-ps-rotation" class="bb-ps-list" aria-label="Product rotations">
+        <div id="bbPsRows" class="bb-ps-rows"></div>
+      </section>
+      <div class="bb-ps-hero-panel bb-ps-hero-panel--foot">
+        <h2 class="bb-ps-hero-title">Set Up Payments</h2>
+        <p class="bb-ps-hero-help">Add your payment method to get paid</p>
+        <div class="bb-ps-hero-actions">
+          <a class="bb-ps-setup-cta-btn" href="./payments/Payments.html">Add Payout Details</a>
+        </div>
+      </div>
+    </main>
+
+    <script src="./product-scheduling/product-scheduling.js?v=ps-30"></script>
+    </div>
+  </body>
+</html>
+

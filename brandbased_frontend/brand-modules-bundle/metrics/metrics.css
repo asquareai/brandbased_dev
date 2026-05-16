@@ -1,0 +1,1060 @@
+/* Metrics page — animated, Apple/AI-style dashboard.
+   Sits on top of platforms.css + hotspots.css base chrome. */
+
+/* ========================================================================
+   Layout: vertical-scroll-friendly, content stack centered at 70vw.
+   ======================================================================== */
+
+html:has(body.bb-metrics-page),
+body.bb-metrics-page {
+  height: auto !important;
+  min-height: 100%;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+}
+
+body.bb-metrics-page .bb-theme-shell,
+body.bb-metrics-page .bb-bts-layout.bb-hotspots-dash-layout,
+body.bb-metrics-page .bb-hotspots-center {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+body.bb-metrics-page .bb-theme-shell {
+  width: min(1480px, 100%);
+  max-width: 100%;
+}
+
+body.bb-metrics-page .bb-hotspots-center {
+  width: min(70vw, 1320px);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+body.bb-metrics-page .bb-bts-layout.bb-hotspots-dash-layout {
+  width: 100%;
+}
+
+body.bb-metrics-page .bb-module-head,
+body.bb-metrics-page .bb-module-head h1 {
+  width: min(70vw, 1320px);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.bb-metrics-page .bb-module-head h1 {
+  text-align: left;
+  margin: 0 0 16px 0;
+}
+
+@media (max-width: 900px) {
+  body.bb-metrics-page .bb-hotspots-center,
+  body.bb-metrics-page .bb-module-head,
+  body.bb-metrics-page .bb-module-head h1 {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  body.bb-metrics-page .bb-module-head h1 {
+    margin-bottom: -20px;
+  }
+}
+
+/* Tabular numerals everywhere we render values, so digits don't dance during tween. */
+body.bb-metrics-page .bb-metrics-tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* ========================================================================
+   Status banner (top): pulsing brain + BB chips, signals counter, soft trail
+   ======================================================================== */
+
+body.bb-metrics-page .bb-metrics-status {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  align-self: stretch;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+body.bb-metrics-page .bb-metrics-status-icons {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+body.bb-metrics-page .bb-metrics-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: #ffffff;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  animation: bb-metrics-icon-pulse 1.6s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform, box-shadow;
+}
+
+body.bb-metrics-page .bb-metrics-icon--brain {
+  background: #102ff5;
+  color: #ffffff;
+  animation-delay: -0.4s;
+}
+body.bb-metrics-page .bb-metrics-icon--brain svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+body.bb-metrics-page .bb-metrics-icon--logo {
+  padding: 5px;
+}
+body.bb-metrics-page .bb-metrics-icon--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@keyframes bb-metrics-icon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      0 0 0 0 rgba(99, 91, 255, 0.55);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow:
+      0 8px 22px rgba(0, 0, 0, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 18px 4px rgba(99, 91, 255, 0.55);
+  }
+}
+
+body.bb-metrics-page .bb-metrics-status-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-right: 92px;
+}
+
+body.bb-metrics-page .bb-metrics-status-title {
+  margin: 0 0 2px;
+  font: 800 14px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+body.bb-metrics-page .bb-metrics-status-typeface {
+  display: inline-block;
+  height: 16px;
+  width: auto;
+  vertical-align: -2px;
+}
+
+/* Vendor CSS in dark mode tints SVG <img> via opacity/filter; keep typeface
+   crisp by forcing it back to neutral. */
+@media (prefers-color-scheme: dark) {
+  body.bb-metrics-page .bb-metrics-status-typeface {
+    filter: brightness(0) invert(1);
+  }
+}
+body.dark-mode.bb-metrics-page .bb-metrics-status-typeface {
+  filter: brightness(0) invert(1);
+}
+
+body.bb-metrics-page .bb-metrics-status-sub {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: 600 13px/1.3 Roboto, system-ui, sans-serif;
+  opacity: 0.84;
+}
+
+body.bb-metrics-page .bb-metrics-status-sub-label {
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+body.bb-metrics-page .bb-metrics-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22d3ee;
+  display: inline-block;
+  position: relative;
+  flex: 0 0 auto;
+  align-self: center;
+  box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.6);
+  animation: bb-metrics-dot-pulse 1.8s ease-out infinite;
+}
+
+@keyframes bb-metrics-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.6);
+  }
+  60%, 100% {
+    box-shadow: 0 0 0 12px rgba(34, 211, 238, 0);
+  }
+}
+
+body.bb-metrics-page .bb-metrics-status-trail {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+
+body.bb-metrics-page .bb-metrics-status-trail span {
+  width: 6px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.55), rgba(167, 139, 250, 0.35));
+  opacity: 0.4;
+  animation: bb-metrics-trail 1.6s ease-in-out infinite;
+}
+body.bb-metrics-page .bb-metrics-status-trail span:nth-child(2) { animation-delay: 0.12s; }
+body.bb-metrics-page .bb-metrics-status-trail span:nth-child(3) { animation-delay: 0.24s; }
+body.bb-metrics-page .bb-metrics-status-trail span:nth-child(4) { animation-delay: 0.36s; }
+body.bb-metrics-page .bb-metrics-status-trail span:nth-child(5) { animation-delay: 0.48s; }
+
+@keyframes bb-metrics-trail {
+  0%, 100% {
+    transform: scaleY(0.5);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 0.85;
+  }
+}
+
+@media (max-width: 720px) {
+  body.bb-metrics-page .bb-metrics-status {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  body.bb-metrics-page .bb-metrics-status-text {
+    flex-basis: calc(100% - 92px);
+    padding-right: 0;
+  }
+
+  body.bb-metrics-page .bb-metrics-status-sub {
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  body.bb-metrics-page .bb-metrics-status-trail {
+    display: none;
+  }
+}
+
+/* ========================================================================
+   Metric cards grid (12-col)
+   ======================================================================== */
+
+body.bb-metrics-page .bb-metrics-cards {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+body.bb-metrics-page .bb-metric-card--col4  { grid-column: span 4; }
+body.bb-metrics-page .bb-metric-card--col6  { grid-column: span 6; }
+body.bb-metrics-page .bb-metric-card--col12 { grid-column: span 12; }
+body.bb-metrics-page .bb-metric-card--feed  { grid-column: span 12; }
+
+@media (max-width: 1100px) {
+  body.bb-metrics-page .bb-metric-card--col4 { grid-column: span 6; }
+  body.bb-metrics-page .bb-metric-card--col6 { grid-column: span 12; }
+}
+@media (max-width: 720px) {
+  body.bb-metrics-page .bb-metric-card--col4,
+  body.bb-metrics-page .bb-metric-card--col6 { grid-column: span 12; }
+}
+
+/* Card surface — light mode default. */
+body.bb-metrics-page .bb-metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease;
+}
+
+body.bb-metrics-page .bb-metric-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.6;
+  background: radial-gradient(circle at 80% -20%, rgba(99, 91, 255, 0.12), transparent 60%);
+}
+
+/* Continuous diagonal "scan" sweep across every card, like the partner-bar
+   shimmer but at the card-surface level. Each card gets a per-card delay so
+   the whole dashboard stays out of phase. */
+body.bb-metrics-page .bb-metric-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255, 255, 255, 0.07) 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% 0;
+  animation: bb-metrics-card-sweep 6.5s linear infinite;
+  animation-delay: var(--bb-card-sweep-delay, 0s);
+  mix-blend-mode: screen;
+}
+
+body.bb-metrics-page .bb-metric-card[data-metric="engagement"]  { --bb-card-sweep-delay: -0.0s; }
+body.bb-metrics-page .bb-metric-card[data-metric="intent"]      { --bb-card-sweep-delay: -1.2s; }
+body.bb-metrics-page .bb-metric-card[data-metric="interaction"] { --bb-card-sweep-delay: -2.4s; }
+body.bb-metrics-page .bb-metric-card[data-metric="partners"]    { --bb-card-sweep-delay: -3.6s; }
+body.bb-metrics-page .bb-metric-card[data-metric="activity"]    { --bb-card-sweep-delay: -4.8s; }
+body.bb-metrics-page .bb-metric-card--feed                       { --bb-card-sweep-delay: -5.4s; }
+
+@keyframes bb-metrics-card-sweep {
+  0%   { background-position: 200%  0; }
+  100% { background-position: -100% 0; }
+}
+
+/* Make sure card content sits above the sweep layer. */
+body.bb-metrics-page .bb-metric-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.bb-metrics-page .bb-metric-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Card head */
+body.bb-metrics-page .bb-metric-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+body.bb-metrics-page .bb-metric-card-label {
+  margin: 0;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+body.bb-metrics-page .bb-metric-card-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 700 10px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 8px 4px 6px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.14);
+  color: #0e7490;
+  border: 1px solid rgba(34, 211, 238, 0.32);
+}
+
+body.bb-metrics-page .bb-metric-card-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22d3ee;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7);
+  animation: bb-metrics-dot-pulse 1.8s ease-out infinite;
+}
+
+/* Big value */
+body.bb-metrics-page .bb-metric-card-value {
+  margin: 4px 0 0;
+  font: 800 36px/1.05 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  animation: bb-metrics-value-breathe 4.2s ease-in-out infinite;
+}
+
+@keyframes bb-metrics-value-breathe {
+  0%, 100% { opacity: 0.94; }
+  50%      { opacity: 1;    }
+}
+
+/* Delta line */
+body.bb-metrics-page .bb-metric-card-delta {
+  margin: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+}
+
+body.bb-metrics-page .bb-metric-card-delta--up {
+  color: #16a34a;
+}
+body.bb-metrics-page .bb-metric-card-delta--down {
+  color: #e11d48;
+}
+
+body.bb-metrics-page .bb-metric-card-delta-arrow {
+  display: inline-block;
+  font-weight: 900;
+}
+
+body.bb-metrics-page .bb-metric-card-delta-foot {
+  font-weight: 500;
+  opacity: 0.72;
+  letter-spacing: 0;
+}
+
+body.bb-metrics-page .bb-metric-card-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.bb-metrics-page .bb-metric-card-row .bb-metric-card-value {
+  margin: 0;
+}
+
+body.bb-metrics-page .bb-metric-card-row-foot {
+  margin: 0;
+  font: 500 12px/1.3 Roboto, system-ui, sans-serif;
+  opacity: 0.7;
+}
+
+/* ============ Sparkline ============ */
+body.bb-metrics-page .bb-metric-card-chart--spark {
+  position: relative;
+  height: 70px;
+  margin-top: 2px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+body.bb-metrics-page .bb-metric-card-chart--spark svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* Shimmer sweep over the chart so the sparkline area itself feels alive,
+   not just the cap dot. Same idea as the partner-bar shimmer. */
+body.bb-metrics-page .bb-metric-card-chart--spark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: bb-metrics-spark-shimmer 3.4s linear infinite;
+  animation-delay: var(--bb-spark-shimmer-delay, 0s);
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+body.bb-metrics-page [data-metric="engagement"]  .bb-metric-card-chart--spark { --bb-spark-shimmer-delay: -0.4s; }
+body.bb-metrics-page [data-metric="interaction"] .bb-metric-card-chart--spark { --bb-spark-shimmer-delay: -1.7s; }
+
+@keyframes bb-metrics-spark-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(120%);  }
+}
+
+/* The sparkline itself flows like a live data trace.
+   Dash + offset animation creates an ECG/oscilloscope-style stream. */
+body.bb-metrics-page .bb-metric-spark-line {
+  stroke-dasharray: 6 4;          /* short visible + tiny gap = "data segments" */
+  stroke-dashoffset: 0;
+  animation:
+    bb-metrics-spark-flow 1.6s linear infinite,
+    bb-metrics-spark-line-pulse 3.2s ease-in-out infinite;
+  will-change: stroke-dashoffset, opacity;
+}
+
+@keyframes bb-metrics-spark-flow {
+  /* Move the dash pattern by one full cycle (10 = 6+4) several times so the
+     loop is visually seamless. */
+  0%   { stroke-dashoffset:   0; }
+  100% { stroke-dashoffset: -50; }
+}
+
+@keyframes bb-metrics-spark-line-pulse {
+  0%, 100% { opacity: 0.78; }
+  50%      { opacity: 1;    }
+}
+
+/* The fill underneath the line softly breathes in opacity so the area chart
+   itself feels like it's expanding/contracting with the data. */
+body.bb-metrics-page .bb-metric-spark-fill {
+  animation: bb-metrics-spark-fill-breathe 4.8s ease-in-out infinite;
+  will-change: opacity;
+}
+
+@keyframes bb-metrics-spark-fill-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1;    }
+}
+
+/* Note: do NOT CSS-transition the `d` attribute. WebKit doesn't animate it and
+   re-applying it via JS still triggers full layer repaints — leave it as a
+   snap-update. We do animate cap motion via JS-set cx/cy. */
+body.bb-metrics-page .bb-metric-spark-cap {
+  filter: drop-shadow(0 0 6px currentColor);
+  animation: bb-metric-spark-cap-pulse 1.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@keyframes bb-metric-spark-cap-pulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.35);
+  }
+}
+
+/* ============ Ring gauge (Purchase Intent) ============ */
+body.bb-metrics-page .bb-metric-card-ring-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 0;
+}
+
+body.bb-metrics-page .bb-metric-card-ring {
+  width: 140px;
+  height: 140px;
+  transform: rotate(-90deg);
+}
+
+body.bb-metrics-page .bb-metric-card-ring-track {
+  stroke: rgba(0, 0, 0, 0.08);
+}
+
+body.bb-metrics-page .bb-metric-card-ring-fill {
+  stroke-dasharray: 264;
+  stroke-dashoffset: 264;
+  filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.55));
+  transition: stroke-dashoffset 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: bb-metrics-ring-glow 3.2s ease-in-out infinite;
+}
+
+@keyframes bb-metrics-ring-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px  rgba(167, 139, 250, 0.45)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(167, 139, 250, 0.85)); }
+}
+
+/* Orbiting scan arc — a small bright segment that travels around the ring
+   forever. Total perimeter ≈ 264, so a 14-long visible dash + 250 gap leaves
+   one short stripe; animating dashoffset makes that stripe orbit. */
+body.bb-metrics-page .bb-metric-card-ring-scan {
+  stroke-dasharray: 14 250;
+  stroke-dashoffset: 0;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.85));
+  animation: bb-metrics-ring-scan 3.2s linear infinite;
+  will-change: stroke-dashoffset;
+}
+
+@keyframes bb-metrics-ring-scan {
+  0%   { stroke-dashoffset:    0; }
+  100% { stroke-dashoffset: -264; }
+}
+
+body.bb-metrics-page .bb-metric-card-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+body.bb-metrics-page .bb-metric-card-ring-value {
+  margin: 0;
+  font: 800 32px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  animation: bb-metrics-value-breathe 4.2s ease-in-out infinite;
+  animation-delay: -1.2s;
+}
+
+body.bb-metrics-page .bb-metric-card-ring-suffix {
+  margin: 2px 0 0;
+  font: 600 11px/1 Roboto, system-ui, sans-serif;
+  opacity: 0.6;
+}
+
+/* ============ Activity bars (Behavioural Activity Index) ============ */
+body.bb-metrics-page .bb-metric-card-bars {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  gap: 4px;
+  height: 84px;
+  align-items: end;
+}
+
+body.bb-metrics-page .bb-metric-card-bar {
+  position: relative;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, #a78bfa, #635bff);
+  border-radius: 4px;
+  opacity: 0.85;
+  transform-origin: bottom;
+  transition: height 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              opacity 700ms ease,
+              filter 700ms ease;
+  animation: bb-metrics-bar-breathe 2.4s ease-in-out infinite;
+  animation-delay: var(--bb-bar-delay, 0s);
+  will-change: opacity;
+}
+
+body.bb-metrics-page .bb-metric-card-bar--current {
+  filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.55));
+  animation: bb-metrics-bar-breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes bb-metrics-bar-breathe {
+  0%, 100% { opacity: 0.55; transform: scaleY(0.94); }
+  50%      { opacity: 1;    transform: scaleY(1.04); }
+}
+
+body.bb-metrics-page .bb-metric-card-bars-axis {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  font: 500 10px/1 Roboto, system-ui, sans-serif;
+  opacity: 0.55;
+  padding-top: 2px;
+}
+
+/* ============ Platform Partners ============ */
+body.bb-metrics-page .bb-metric-partners {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+  row-gap: 8px;
+}
+
+@media (max-width: 720px) {
+  body.bb-metrics-page .bb-metric-partners {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+}
+
+body.bb-metrics-page .bb-metric-partner {
+  display: grid;
+  grid-template-columns: 28px minmax(110px, 1.3fr) minmax(0, 3fr) 44px;
+  align-items: center;
+  gap: 10px;
+  font: 500 13px/1.3 Roboto, system-ui, sans-serif;
+}
+
+/* Round chip behind every partner logo, matching the look of
+   .bb-plat-platform-logo on the Platforms page. */
+body.bb-metrics-page .bb-metric-partner-logo {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  display: block;
+  object-fit: contain;
+  flex: 0 0 auto;
+  background: #ffffff;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-metrics-page .bb-metric-partner-logo {
+    background: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+  }
+}
+body.dark-mode.bb-metrics-page .bb-metric-partner-logo {
+  background: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+body.bb-metrics-page .bb-metric-partner-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.bb-metrics-page .bb-metric-partner-bar {
+  position: relative;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+body.bb-metrics-page .bb-metric-partner-bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: linear-gradient(90deg, #22d3ee, #a78bfa);
+  border-radius: 999px;
+  transform-origin: left center;
+  transition: width 1200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+body.bb-metrics-page .bb-metric-partner-bar-fill--armed {
+  width: var(--bb-w);
+}
+
+body.bb-metrics-page .bb-metric-partner-bar-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  transform: translateX(-100%);
+  animation: bb-metrics-partner-shimmer 3.4s linear infinite;
+  animation-delay: var(--bb-shimmer-delay, 0s);
+  will-change: transform;
+}
+
+@keyframes bb-metrics-partner-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(120%);  }
+}
+
+body.bb-metrics-page .bb-metric-partner-val {
+  text-align: right;
+  font-weight: 800;
+  font-size: 12px;
+  opacity: 0.86;
+}
+
+/* ============ Live signal feed (CSS-only infinite scroll) ============ */
+body.bb-metrics-page .bb-metric-card--feed {
+  padding: 18px 20px;
+}
+
+body.bb-metrics-page .bb-metrics-feed-window {
+  position: relative;
+  margin-top: 4px;
+  height: 240px;
+  overflow: hidden;
+  border-radius: 10px;
+  /* Soft top/bottom mask so items fade as they enter/exit. */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+
+body.bb-metrics-page .bb-metrics-feed-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* Loop over half the height — the second half is a duplicate so the
+     transition from -50% back to 0% is invisible. */
+  animation: bb-metrics-feed-scroll 26s linear infinite;
+  will-change: transform;
+}
+
+@keyframes bb-metrics-feed-scroll {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -50%, 0); }
+}
+
+/* Pause on hover so people can read a row. */
+body.bb-metrics-page .bb-metrics-feed-window:hover .bb-metrics-feed-track {
+  animation-play-state: paused;
+}
+
+body.bb-metrics-page .bb-metrics-feed-item {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 80px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font: 500 13px/1.3 Roboto, system-ui, sans-serif;
+  flex: 0 0 auto;
+}
+
+/* Optional decorative top/bottom soft fades — kept for engines that
+   don't support mask-image cleanly. */
+body.bb-metrics-page .bb-metrics-feed-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 24px;
+  pointer-events: none;
+  z-index: 1;
+}
+body.bb-metrics-page .bb-metrics-feed-fade--top {
+  top: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+}
+body.bb-metrics-page .bb-metrics-feed-fade--bot {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0));
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-metrics-page .bb-metrics-feed-fade--top {
+    background: linear-gradient(180deg, rgba(8, 11, 26, 0.95), rgba(8, 11, 26, 0));
+  }
+  body.bb-metrics-page .bb-metrics-feed-fade--bot {
+    background: linear-gradient(0deg, rgba(8, 11, 26, 0.95), rgba(8, 11, 26, 0));
+  }
+}
+body.dark-mode.bb-metrics-page .bb-metrics-feed-fade--top {
+  background: linear-gradient(180deg, rgba(8, 11, 26, 0.95), rgba(8, 11, 26, 0));
+}
+body.dark-mode.bb-metrics-page .bb-metrics-feed-fade--bot {
+  background: linear-gradient(0deg, rgba(8, 11, 26, 0.95), rgba(8, 11, 26, 0));
+}
+
+body.bb-metrics-page .bb-metrics-feed-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7);
+  animation: bb-metrics-dot-pulse 1.8s ease-out infinite;
+}
+
+body.bb-metrics-page .bb-metrics-feed-text {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.bb-metrics-page .bb-metrics-feed-text strong {
+  font-weight: 800;
+}
+
+body.bb-metrics-page .bb-metrics-feed-time {
+  text-align: right;
+  font-weight: 500;
+  font-size: 11px;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+/* ========================================================================
+   Dark-mode overrides — vendor CSS forces all text to white in dark mode,
+   so any light backgrounds become unreadable. Re-skin every accent surface.
+   ======================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  body.bb-metrics-page .bb-metrics-status,
+  body.bb-metrics-page .bb-metric-card {
+    background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35) !important;
+  }
+  body.bb-metrics-page .bb-metric-card::before {
+    background: radial-gradient(circle at 80% -20%, rgba(99, 91, 255, 0.22), transparent 60%);
+    opacity: 0.7;
+  }
+  body.bb-metrics-page .bb-metric-card-pill {
+    background: rgba(34, 211, 238, 0.14) !important;
+    color: #67e8f9 !important;
+    border-color: rgba(34, 211, 238, 0.32) !important;
+  }
+  body.bb-metrics-page .bb-metric-card-delta--up {
+    color: #4ade80 !important;
+  }
+  body.bb-metrics-page .bb-metric-card-delta--down {
+    color: #fb7185 !important;
+  }
+  body.bb-metrics-page .bb-metric-card-ring-track {
+    stroke: rgba(255, 255, 255, 0.10) !important;
+  }
+  body.bb-metrics-page .bb-metric-partner-bar {
+    background: rgba(255, 255, 255, 0.10) !important;
+  }
+  body.bb-metrics-page .bb-metrics-feed-item {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+  }
+}
+
+body.dark-mode.bb-metrics-page .bb-metrics-status,
+body.dark-mode.bb-metrics-page .bb-metric-card {
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35) !important;
+}
+body.dark-mode.bb-metrics-page .bb-metric-card::before {
+  background: radial-gradient(circle at 80% -20%, rgba(99, 91, 255, 0.22), transparent 60%);
+  opacity: 0.7;
+}
+body.dark-mode.bb-metrics-page .bb-metric-card-pill {
+  background: rgba(34, 211, 238, 0.14) !important;
+  color: #67e8f9 !important;
+  border-color: rgba(34, 211, 238, 0.32) !important;
+}
+body.dark-mode.bb-metrics-page .bb-metric-card-delta--up {
+  color: #4ade80 !important;
+}
+body.dark-mode.bb-metrics-page .bb-metric-card-delta--down {
+  color: #fb7185 !important;
+}
+body.dark-mode.bb-metrics-page .bb-metric-card-ring-track {
+  stroke: rgba(255, 255, 255, 0.10) !important;
+}
+body.dark-mode.bb-metrics-page .bb-metric-partner-bar {
+  background: rgba(255, 255, 255, 0.10) !important;
+}
+body.dark-mode.bb-metrics-page .bb-metrics-feed-item {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+/* Partner row affordance — opens glass insight dialog (metrics-insight-popup.js). */
+body.bb-metrics-page #bbMetricsPartners .bb-metric-partner,
+body.bb-metrics-page #bbMetricsBrandPartners .bb-metric-partner {
+  cursor: pointer;
+}
+body.bb-metrics-page #bbMetricsPartners .bb-metric-partner:hover,
+body.bb-metrics-page #bbMetricsBrandPartners .bb-metric-partner:hover {
+  background: rgba(99, 91, 255, 0.06);
+}
+body.dark-mode.bb-metrics-page #bbMetricsPartners .bb-metric-partner:hover,
+body.dark-mode.bb-metrics-page #bbMetricsBrandPartners .bb-metric-partner:hover {
+  background: rgba(99, 91, 255, 0.12);
+}
+
+/* ========================================================================
+   Reduced motion — calm everything down.
+   ======================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  body.bb-metrics-page .bb-metrics-icon,
+  body.bb-metrics-page .bb-metrics-pulse-dot,
+  body.bb-metrics-page .bb-metric-card-pill-dot,
+  body.bb-metrics-page .bb-metrics-status-trail span,
+  body.bb-metrics-page .bb-metric-card-bar,
+  body.bb-metrics-page .bb-metric-card-bar--current,
+  body.bb-metrics-page .bb-metric-card-ring-fill,
+  body.bb-metrics-page .bb-metric-card-ring-scan,
+  body.bb-metrics-page .bb-metric-spark-cap,
+  body.bb-metrics-page .bb-metric-spark-line,
+  body.bb-metrics-page .bb-metric-spark-fill,
+  body.bb-metrics-page .bb-metric-card-value,
+  body.bb-metrics-page .bb-metric-card-ring-value,
+  body.bb-metrics-page .bb-metric-card::after,
+  body.bb-metrics-page .bb-metric-card-chart--spark::after,
+  body.bb-metrics-page .bb-metric-partner-bar-fill::after,
+  body.bb-metrics-page .bb-metrics-feed-dot {
+    animation: none !important;
+  }
+  body.bb-metrics-page .bb-metric-spark-line,
+  body.bb-metrics-page .bb-metric-spark-fill,
+  body.bb-metrics-page .bb-metric-spark-cap,
+  body.bb-metrics-page .bb-metric-card-ring-fill,
+  body.bb-metrics-page .bb-metric-card-bar,
+  body.bb-metrics-page .bb-metric-partner-bar-fill,
+  body.bb-metrics-page .bb-metrics-feed-item {
+    transition: none !important;
+  }
+  body.bb-metrics-page .bb-metrics-feed-track {
+    animation: none !important;
+  }
+}
+
+/* Dashboard iframe scroll cushion: Metrics has tall visual panels, so
+   give the iframe document extra room to scroll beyond the last row
+   instead of clipping behind the dashboard chrome. */
+html,
+body.bb-metrics-page {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+}
+
+body.bb-metrics-page .bb-theme-shell {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 220px !important;
+}

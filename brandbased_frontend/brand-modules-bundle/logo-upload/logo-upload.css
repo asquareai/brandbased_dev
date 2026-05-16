@@ -1,0 +1,1836 @@
+/* Logo Upload & Crop — bundle module
+   ==================================================================
+   Sits on top of vendor-bb-shared-ui.css. Mirrors the panel-card +
+   vertical-divider layout used by Brand Settings, with the two
+   columns being the brand form (left) and the verification preview
+   (right). Same dark-mode navy gradient cards as the rest of the
+   bundle, same translucent glass aesthetics.
+   ================================================================== */
+
+/* ============================================================
+   Page-level chrome — match the recent bundle pages so this
+   feels like part of the same family.
+   ============================================================ */
+html:has(body.bb-logo-upload-page),
+body.bb-logo-upload-page {
+  height: auto !important;
+  min-height: 100%;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+  margin: 0;
+  padding: 24px;
+  padding-bottom: 96px;
+  font-family: Roboto, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  box-sizing: border-box;
+}
+
+body.bb-logo-upload-page .bb-theme-shell {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  width: min(1360px, 100%);
+  margin: 0 auto;
+}
+
+body.bb-logo-upload-page .bb-module-head {
+  width: 100%;
+  margin-bottom: 18px;
+}
+body.bb-logo-upload-page .bb-module-head h1 {
+  text-align: left;
+  margin: 0 0 16px 0;
+  /* Brought down from 28px to 22px so "Upload Brand Assets" /
+     "Brand Verification" sit visually level with the other module
+     headings. The original 28px combined with the tight 1.15
+     line-height was reading heavier than the centered 28px
+     headings on Products / Theme Styles / Brand Settings (whose
+     heading line-height inherits the body's 1.6). */
+  font: 800 22px/1.15 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+body.bb-logo-upload-page .bb-module-nav a {
+  color: #1030f5;
+  margin-right: 14px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+body.bb-logo-upload-page .bb-module-nav a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Two-column layout with optional vertical divider — mirrors
+   Brand Settings' .bb-bs-layout pattern.
+   ============================================================ */
+body.bb-logo-upload-page .bb-lu-layout {
+  --bb-col-gap: 88px;
+  display: grid;
+  grid-template-columns: minmax(440px, 1fr) minmax(380px, 1fr);
+  column-gap: var(--bb-col-gap);
+  row-gap: 28px;
+  align-items: stretch;
+  position: relative;
+}
+
+@media (min-width: 1100px) {
+  body.bb-logo-upload-page .bb-lu-layout {
+    grid-template-columns: minmax(440px, 1fr) 3px minmax(380px, 1fr);
+    column-gap: calc(var(--bb-col-gap) / 2);
+  }
+
+  body.bb-logo-upload-page .bb-lu-layout > .bb-lu-card:first-of-type {
+    grid-column: 1;
+  }
+
+  body.bb-logo-upload-page .bb-lu-layout > .bb-lu-card:nth-of-type(2) {
+    grid-column: 3;
+  }
+
+  /* Vertical divider between the two top cards. It owns the narrow
+     middle grid column and is locked to row 1, so it cannot extend
+     down through the CTA panel that sits in row 2. */
+  body.bb-logo-upload-page .bb-lu-layout::before {
+    content: "";
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+    align-self: stretch;
+    margin: 5% 0;
+    width: 3px;
+    border-radius: 30px;
+    background: rgba(200, 200, 210, 0.55);
+    box-shadow:
+      0 10px 26px rgba(0, 0, 0, 0.10),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  body.bb-logo-upload-page .bb-lu-layout {
+    grid-template-columns: 1fr;
+    --bb-col-gap: 0;
+  }
+}
+
+/* ============================================================
+   Cards — light grey in light mode, navy gradient in dark mode
+   (matching the Platforms / Hotspots / Brands pattern).
+   The vendor `.bb-bs-card` rule force-paints these `#f2f3f896` in
+   light mode and `#00000054` in dark mode via `!important`, so we
+   override with `!important` here to land on the bundle's house
+   navy gradient.
+   ============================================================ */
+body.bb-logo-upload-page .bb-lu-card {
+  background: #f2f3f8 !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 22px;
+  /* Drop shadow softened by ~90% (alpha 0.12 → 0.012) so the panels
+     sit flatter on the dashboard surface — matches the Theme Styles /
+     Products visual weight after their own shadow reduction. */
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.012) !important;
+  padding: 44px 42px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  min-height: 520px;
+  color: #1a1a1a !important;
+}
+
+body.dark-mode.bb-logo-upload-page .bb-lu-card,
+body.bb-logo-upload-page.dark-mode .bb-lu-card {
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  /* Dark-mode shadow softened by ~90% (alpha 0.35 → 0.035). */
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.035) !important;
+  color: rgba(255, 255, 255, 0.96) !important;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page:not(.light-mode) .bb-lu-card {
+    background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.035) !important;
+    color: rgba(255, 255, 255, 0.96) !important;
+  }
+}
+
+body.bb-logo-upload-page .bb-lu-card-title {
+  margin: 0 0 10px 0;
+  font: 800 20px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: inherit;
+}
+
+/* ============================================================
+   Form rows (Brand name / URL) — text input + tooltip glyph.
+   The input is a translucent rounded pill; the glyph hangs at
+   the right edge of the row.
+   ============================================================ */
+body.bb-logo-upload-page .bb-lu-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+body.bb-logo-upload-page .bb-lu-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.86);
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a;
+  font: 500 15px/1.2 Roboto, system-ui, sans-serif;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  -webkit-appearance: none;
+  appearance: none;
+  color-scheme: light;
+  caret-color: #635bff;
+}
+body.bb-logo-upload-page .bb-lu-input::placeholder {
+  color: rgba(40, 50, 100, 0.55) !important;
+  -webkit-text-fill-color: rgba(40, 50, 100, 0.55);
+  opacity: 1;
+}
+body.bb-logo-upload-page .bb-lu-input:focus {
+  border-color: rgba(16, 48, 245, 0.55);
+  box-shadow: 0 0 0 3px rgba(16, 48, 245, 0.18);
+  background: #ffffff;
+}
+
+/* Typed text — brand purple, with a shimmer sweep across the
+   characters. Mirrors the platforms-page typed-URL treatment so
+   the whole bundle reads as one family. `!important` on color to
+   defeat both our defensive base override and any vendor cascade. */
+body.bb-logo-upload-page .bb-lu-input:not(:placeholder-shown) {
+  color: #635bff !important;
+  -webkit-text-fill-color: #635bff;
+  caret-color: #635bff;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  body.bb-logo-upload-page .bb-lu-input:not(:placeholder-shown) {
+    color: transparent !important;
+    -webkit-text-fill-color: transparent;
+    background-color: transparent;
+    background-image: linear-gradient(
+      95deg,
+      #635bff 0%,
+      #635bff 38%,
+      #ddd6fe 50%,
+      #635bff 62%,
+      #635bff 100%
+    );
+    background-size: 260% 100%;
+    background-position: 50% center;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+            background-clip: text;
+    animation: bb-lu-input-text-shine 2.6s ease-in-out infinite alternate;
+  }
+
+  /* Keep autofilled values shimmering too */
+  body.bb-logo-upload-page .bb-lu-input:-webkit-autofill:not(:placeholder-shown) {
+    -webkit-text-fill-color: transparent;
+    color: transparent !important;
+    background-image: linear-gradient(
+      95deg,
+      #635bff 0%,
+      #635bff 38%,
+      #ddd6fe 50%,
+      #635bff 62%,
+      #635bff 100%
+    );
+    background-size: 260% 100%;
+    background-position: 50% center;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+            background-clip: text;
+    animation: bb-lu-input-text-shine 2.6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes bb-lu-input-text-shine {
+  0%   { background-position: 68% center; }
+  100% { background-position: 32% center; }
+}
+
+/* Dark-mode tweak: only nudge the border colour so a white-ish input
+   reads as a soft pill on the navy card. We deliberately do NOT touch
+   `background` (would be the shorthand which wipes the typed-text
+   shimmer's gradient `background-image`) or `color` (the typed
+   shimmer rule below already wins via `!important`). */
+body.bb-logo-upload-page.dark-mode .bb-lu-input {
+  border-color: rgba(255, 255, 255, 0.20);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page:not(.light-mode) .bb-lu-input {
+    border-color: rgba(255, 255, 255, 0.20);
+  }
+}
+
+/* Globe icon inside the Brand URL input — matches the Hotspots /
+   Platforms pages so the URL inputs feel like one family. The
+   wrapper hosts the absolutely-positioned globe; the input gets
+   extra right-padding so typed text never overlaps the glyph. */
+body.bb-logo-upload-page .bb-lu-input-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+body.bb-logo-upload-page .bb-lu-input--url {
+  padding-right: 48px;
+}
+body.bb-logo-upload-page .bb-lu-input-globe {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  pointer-events: none;
+  opacity: 0.95;
+  line-height: 0;
+}
+body.bb-logo-upload-page .bb-lu-input-globe svg {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page:not(.light-mode) .bb-lu-input-globe svg {
+    stroke: #6b7bff;
+  }
+}
+body.bb-logo-upload-page.dark-mode .bb-lu-input-globe svg {
+  stroke: #6b7bff;
+}
+body.bb-logo-upload-page.light-mode .bb-lu-input-globe svg {
+  stroke: #2563eb;
+}
+
+/* "i" tooltip glyph — circular soft-glass pill */
+
+body.bb-logo-upload-page .bb-lu-tip {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(16, 48, 245, 0.45);
+  background: rgba(255, 255, 255, 0.55);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  flex: 0 0 auto;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+}
+body.bb-logo-upload-page .bb-lu-tip img {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+body.dark-mode .bb-logo-upload-page .bb-lu-tip,
+body.bb-logo-upload-page.dark-mode .bb-lu-tip {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+body.dark-mode .bb-logo-upload-page .bb-lu-tip img,
+body.bb-logo-upload-page.dark-mode .bb-lu-tip img {
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page:not(.light-mode) .bb-lu-tip {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  body.bb-logo-upload-page:not(.light-mode) .bb-lu-tip img {
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+  }
+}
+
+/* ============================================================
+   "Upload your brand logo" label + the two upload tiles.
+   Uses the vendor .bb-upload-card markup but overrides the
+   vendor's `position: fixed` on .bb-upload-inline so the tiles
+   sit naturally inside our card.
+   ============================================================ */
+body.bb-logo-upload-page .bb-lu-uploads-label {
+  margin: 8px 0 0 0;
+  font: 600 13px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: inherit;
+  opacity: 0.85;
+}
+
+body.bb-logo-upload-page .bb-lu-uploads {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  position: relative;
+  margin-top: 4px;
+}
+
+/* Override vendor .bb-upload-inline (which is position: fixed top/left). */
+body.bb-logo-upload-page .bb-upload-inline.bb-lu-upload {
+  position: static;
+  top: auto;
+  left: auto;
+  z-index: auto;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+/* Tile size — comfortable at the new card width. */
+body.bb-logo-upload-page .bb-lu-tile {
+  width: 180px;
+  height: 124px;
+  border-radius: 26px;
+  position: relative;
+  display: block;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.20);
+}
+/* Light-mode upload tile: softer shadow (matches Theme Styles slab weight). */
+body.bb-logo-upload-page .bb-upload-card.bb-lu-tile.bb-lu-tile--light {
+  box-shadow: 0 18px 40px rgb(0 0 0 / 8%);
+}
+body.bb-logo-upload-page .bb-lu-tile--light {
+  background: #d6d7dd;
+}
+body.bb-logo-upload-page .bb-lu-tile--dark {
+  background: #4a4d57;
+}
+
+body.bb-logo-upload-page .bb-lu-tile .bb-upload-plus {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 64px;
+  height: 64px;
+  transform: translate(-50%, -60%);
+}
+body.bb-logo-upload-page .bb-lu-tile .bb-upload-plus::before,
+body.bb-logo-upload-page .bb-lu-tile .bb-upload-plus::after {
+  width: 64px;
+  height: 6px;
+}
+/* Plus colour by tile theme */
+body.bb-logo-upload-page .bb-lu-tile--light .bb-upload-plus::before,
+body.bb-logo-upload-page .bb-lu-tile--light .bb-upload-plus::after {
+  background: rgba(120, 120, 120, 0.95);
+}
+body.bb-logo-upload-page .bb-lu-tile--dark .bb-upload-plus::before,
+body.bb-logo-upload-page .bb-lu-tile--dark .bb-upload-plus::after {
+  background: rgba(220, 220, 230, 0.95);
+}
+
+body.bb-logo-upload-page .bb-lu-tile-format {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font: 500 10px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+body.bb-logo-upload-page .bb-lu-tile--light .bb-lu-tile-format { color: rgba(60, 60, 70, 0.78); }
+body.bb-logo-upload-page .bb-lu-tile--dark  .bb-lu-tile-format { color: rgba(220, 220, 235, 0.78); }
+
+body.bb-logo-upload-page .bb-lu-tile-caption {
+  /* Space below the tile before the label line. */
+  margin-top: 10px;
+  font: 800 13px/1.1 Roboto, system-ui, sans-serif;
+  text-align: center;
+  color: inherit;
+}
+
+/* Lift the tooltip glyph for the upload group up to align with the tiles. */
+body.bb-logo-upload-page .bb-lu-tip--uploads {
+  align-self: center;
+  margin-top: 12px;
+}
+
+/* Hover/active feedback on the tiles. */
+body.bb-logo-upload-page .bb-upload-inline-btn:hover .bb-lu-tile {
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+}
+body.bb-logo-upload-page .bb-upload-inline-btn:hover .bb-upload-card.bb-lu-tile.bb-lu-tile--light {
+  box-shadow: 0 18px 40px rgb(0 0 0 / 8%);
+}
+body.bb-logo-upload-page .bb-upload-inline-btn:active .bb-lu-tile {
+  transform: translateY(1px);
+}
+
+/* ============================================================
+   Continue CTA — same brand-purple Sync button style as the
+   Hotspots / AI-Logic Sync buttons. Uses the vendor sync-btn
+   class hierarchy so the base look is inherited; we only override
+   colour, width, font-size and a soft glow.
+   ============================================================ */
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-lu-continue,
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-hotspots-sync-btn.bb-lu-continue {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  cursor: pointer;
+  width: 100%;
+  margin-top: auto;          /* push to bottom of the flex card */
+  padding: 16px 22px;
+  border-radius: 999px;
+  font: 800 18px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  --bb-plat-sync-bg: #635bff;
+  --bb-plat-sync-bg-hover: #5249e8;
+  background: var(--bb-plat-sync-bg);
+  box-shadow:
+    0 14px 34px rgba(99, 91, 255, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: transform 120ms ease, box-shadow 180ms ease, background 180ms ease, filter 180ms ease;
+}
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-lu-continue:hover,
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-hotspots-sync-btn.bb-lu-continue:hover {
+  background: var(--bb-plat-sync-bg-hover);
+  box-shadow:
+    0 18px 42px rgba(99, 91, 255, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-lu-continue:active,
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-hotspots-sync-btn.bb-lu-continue:active {
+  transform: translateY(1px);
+}
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-lu-continue:focus-visible,
+body.bb-logo-upload-page .bb-plat-sync-btn.bb-hotspots-sync-btn.bb-lu-continue:focus-visible {
+  outline: 3px solid rgba(99, 91, 255, 0.55);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   Right card — verification preview.
+   Uses two notes (light/dark variants) and only shows the one
+   appropriate to the current colour scheme, so the help text
+   always matches what the user is currently viewing.
+   ============================================================ */
+body.bb-logo-upload-page .bb-lu-verify {
+  align-items: center;
+  text-align: center;
+  justify-content: flex-start;
+}
+body.bb-logo-upload-page .bb-lu-verify-note {
+  margin: 0;
+  font: 600 13px/1.4 Roboto, system-ui, sans-serif;
+  color: #1030f5;
+  letter-spacing: 0.005em;
+}
+body.bb-logo-upload-page .bb-lu-verify-note strong {
+  font-weight: 800;
+}
+
+/* Light/dark switch for the help line */
+body.bb-logo-upload-page .bb-lu-verify-note--dark { display: none; }
+body.bb-logo-upload-page .bb-lu-verify-note--light { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page:not(.light-mode) .bb-lu-verify-note--light { display: none; }
+  body.bb-logo-upload-page:not(.light-mode) .bb-lu-verify-note--dark  { display: block; color: #6b7bff; }
+}
+body.bb-logo-upload-page.dark-mode .bb-lu-verify-note--light { display: none; }
+body.bb-logo-upload-page.dark-mode .bb-lu-verify-note--dark  { display: block; color: #6b7bff; }
+body.bb-logo-upload-page.light-mode .bb-lu-verify-note--light { display: block; color: #1030f5; }
+body.bb-logo-upload-page.light-mode .bb-lu-verify-note--dark  { display: none; }
+
+/* ============================================================
+   Brand-identity preview panels (right card).
+   Two stacked-or-side-by-side stages: the white one previews the
+   light-mode logo, the dark one previews the dark-mode logo.
+   Initially both show the BrandBased B icon as a reference; once
+   the user uploads a light/dark logo, the page JS swaps the
+   matching `<img src>` so this slot becomes a true preview.
+
+   Animations are written to be logo-agnostic:
+     - `.bb-lu-preview-img`  → `bb-lu-bicon-breathe` scale + glow
+     - `.bb-lu-preview-stage::after` → `bb-lu-bicon-shine` shimmer
+       clipped to the actual logo silhouette via a CSS variable
+       (`--bb-lu-bicon-src`) that the JS keeps in sync with the
+       current `<img>` src — so any uploaded logo gets the same
+       effect, not just the B.
+   ============================================================ */
+body.bb-logo-upload-page .bb-lu-previews {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  margin-top: 4px;
+  flex: 1 1 auto;
+  align-items: stretch;
+}
+
+@media (max-width: 540px) {
+  body.bb-logo-upload-page .bb-lu-previews {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.bb-logo-upload-page .bb-lu-preview {
+  --bb-lu-bicon-size: 92px;
+  --bb-lu-bicon-src: url("../../Brandbased-B-Icon.svg");
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 0;
+}
+
+body.bb-logo-upload-page .bb-lu-preview-stage {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 170px;
+  padding: 18px;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+body.bb-logo-upload-page .bb-lu-preview--light .bb-lu-preview-stage {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+body.bb-logo-upload-page .bb-lu-preview--dark .bb-lu-preview-stage {
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.98) 0%, rgba(8, 11, 26, 1) 100%);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+body.bb-logo-upload-page .bb-lu-preview-img {
+  display: block;
+  width: var(--bb-lu-bicon-size);
+  height: var(--bb-lu-bicon-size);
+  max-width: 70%;
+  max-height: 70%;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  transform-origin: center;
+  will-change: transform, filter;
+  animation: bb-lu-bicon-breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes bb-lu-bicon-breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 6px rgba(99, 91, 255, 0.18));
+  }
+  50% {
+    transform: scale(1.045);
+    filter: drop-shadow(0 0 16px rgba(99, 91, 255, 0.45));
+  }
+}
+
+/* Continuous shimmer clipped to the logo silhouette via mask-image.
+   `--bb-lu-shine-trough` and `--bb-lu-shine-peak` let each preview
+   panel pick its own shimmer colour (white on the light panel,
+   silver-grey on the dark panel — see overrides below). */
+body.bb-logo-upload-page .bb-lu-preview-stage {
+  --bb-lu-shine-trough: rgba(255, 255, 255, 0.55);
+  --bb-lu-shine-peak:   rgba(255, 255, 255, 0.95);
+  --bb-lu-shine-edge:   rgba(255, 255, 255, 0);
+}
+body.bb-logo-upload-page .bb-lu-preview-stage::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--bb-lu-bicon-size);
+  height: var(--bb-lu-bicon-size);
+  pointer-events: none;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  background-image: linear-gradient(
+    100deg,
+    var(--bb-lu-shine-edge)   0%,
+    var(--bb-lu-shine-edge)   30%,
+    var(--bb-lu-shine-trough) 45%,
+    var(--bb-lu-shine-peak)   50%,
+    var(--bb-lu-shine-trough) 55%,
+    var(--bb-lu-shine-edge)   70%,
+    var(--bb-lu-shine-edge)   100%
+  );
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% center;
+  -webkit-mask: var(--bb-lu-bicon-src) center / contain no-repeat;
+          mask: var(--bb-lu-bicon-src) center / contain no-repeat;
+  animation: bb-lu-bicon-shine 2.4s linear infinite;
+  will-change: background-position;
+}
+
+/* Dark preview: silver/grey shimmer so it reads on the typical
+   white/light logo placed on the dark stage (a white shimmer would
+   be invisible on a white logo). The trough is a dim slate, the
+   peak a brighter silver — together they produce a polished-metal
+   sweep across the masked silhouette. */
+body.bb-logo-upload-page .bb-lu-preview--dark .bb-lu-preview-stage {
+  --bb-lu-shine-edge:   rgba(120, 130, 150, 0);
+  --bb-lu-shine-trough: rgba(120, 130, 150, 0.55);
+  --bb-lu-shine-peak:   rgba(190, 200, 222, 0.92);
+}
+
+@keyframes bb-lu-bicon-shine {
+  0%   { background-position: 200% center; }
+  100% { background-position: -100% center; }
+}
+
+body.bb-logo-upload-page .bb-lu-preview-caption {
+  margin: 0;
+  text-align: center;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: inherit;
+  opacity: 0.78;
+}
+
+
+/* ---- Verification badges (top-right of each preview stage) -----------
+   Same glass treatment used on the Brands page badges: transparent
+   panel, soft inner highlight, sits *over* the stage's overflow:visible
+   bound so it floats slightly into the corner. We swap which badge is
+   visible by toggling `data-verified` on the parent figure. The
+   verified one carries an extra shimmer + green breathing pulse. */
+body.bb-logo-upload-page .bb-lu-preview-stage { overflow: visible; }
+
+body.bb-logo-upload-page .bb-lu-preview-badge {
+  position: absolute;
+  top: -16px;
+  right: -16px;
+  width: 52px;            /* 2× the previous 26px */
+  height: 52px;
+  border-radius: 999px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+          backdrop-filter: blur(10px) saturate(140%);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  z-index: 4;
+  pointer-events: none;
+  display: block;
+  box-sizing: border-box;
+  overflow: hidden;       /* clip the inner shimmer to the pill */
+  isolation: isolate;
+}
+
+body.bb-logo-upload-page .bb-lu-preview-badge img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+}
+
+/* Light-mode preview: bias the badge glass slightly darker so it
+   reads against the white stage. */
+body.bb-logo-upload-page .bb-lu-preview--light .bb-lu-preview-badge {
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(0, 0, 0, 0.18);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Toggle visibility via `data-verified` on the parent figure.
+   States:
+     "false"  → not yet attempted: not-verified badge, no pill
+     "true"   → success: verified tick badge, green pill
+     "failed" → failure: not-verified badge with red pulse, red pill,
+                support contact line */
+body.bb-logo-upload-page .bb-lu-preview .bb-lu-preview-badge--verified   { display: none; }
+body.bb-logo-upload-page .bb-lu-preview .bb-lu-preview-badge--unverified { display: block; }
+body.bb-logo-upload-page .bb-lu-preview[data-verified="true"]  .bb-lu-preview-badge--verified   { display: block; }
+body.bb-logo-upload-page .bb-lu-preview[data-verified="true"]  .bb-lu-preview-badge--unverified { display: none; }
+body.bb-logo-upload-page .bb-lu-preview[data-verified="failed"] .bb-lu-preview-badge--unverified { display: block; }
+body.bb-logo-upload-page .bb-lu-preview[data-verified="failed"] .bb-lu-preview-badge--verified   { display: none; }
+
+/* Verified badge: green pulse halo + sweeping shimmer over the tick.
+   Pulse is `box-shadow` only (no transform) so the badge stays
+   anchored at its corner offset. The shimmer is a `::after` band
+   sweeping diagonally across the tick. */
+body.bb-logo-upload-page .bb-lu-preview-badge--verified {
+  border-color: rgba(107, 190, 102, 0.65);
+  background: rgba(107, 190, 102, 0.16);
+  animation: bb-lu-badge-pulse 2.4s ease-in-out infinite;
+}
+body.bb-logo-upload-page .bb-lu-preview--light .bb-lu-preview-badge--verified {
+  background: rgba(107, 190, 102, 0.22);
+  border-color: rgba(107, 190, 102, 0.70);
+}
+body.bb-logo-upload-page .bb-lu-preview-badge--verified::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0)    0%,
+    rgba(255, 255, 255, 0)    35%,
+    rgba(255, 255, 255, 0.55) 48%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.55) 52%,
+    rgba(255, 255, 255, 0)    65%,
+    rgba(255, 255, 255, 0)    100%
+  );
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% center;
+  mix-blend-mode: screen;
+  animation: bb-lu-badge-shine 2.4s linear infinite;
+}
+
+@keyframes bb-lu-badge-pulse {
+  0%, 100% {
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.22),
+      0 0 0 0 rgba(107, 190, 102, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  }
+  50% {
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.26),
+      0 0 0 8px rgba(107, 190, 102, 0.05),
+      0 0 22px 4px rgba(107, 190, 102, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  }
+}
+@keyframes bb-lu-badge-shine {
+  0%   { background-position: 200% center; }
+  100% { background-position: -100% center; }
+}
+
+/* Larger, greener breathing on the logo when the panel is verified. */
+body.bb-logo-upload-page .bb-lu-preview[data-verified="true"] .bb-lu-preview-img {
+  animation: bb-lu-bicon-breathe-verified 3.0s ease-in-out infinite;
+}
+@keyframes bb-lu-bicon-breathe-verified {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(107, 190, 102, 0.30));
+  }
+  50% {
+    transform: scale(1.09);
+    filter:
+      drop-shadow(0 0 14px rgba(107, 190, 102, 0.55))
+      drop-shadow(0 0 28px rgba(107, 190, 102, 0.40));
+  }
+}
+
+/* "Brand Successfully Verified" pill — solid green pill, solid white
+   text, with a translucent white shine band sweeping across the pill
+   body. The text is *not* clipped to a gradient (which previously let
+   the green pill bleed through during the trough phase and made the
+   letters look greenish); it stays full-opaque white at all times. */
+body.bb-logo-upload-page .bb-lu-verified-pill {
+  display: none;
+  align-self: center;
+  margin: 8px auto 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background-color: #6bbe66;
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0)    0%,
+    rgba(255, 255, 255, 0)    32%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0)    68%,
+    rgba(255, 255, 255, 0)    100%
+  );
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% center;
+  border: 1px solid rgba(107, 190, 102, 0.85);
+  box-shadow:
+    0 8px 22px rgba(107, 190, 102, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  text-align: center;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  animation: bb-lu-verified-pill-shine 2.6s linear infinite;
+}
+body.bb-logo-upload-page .bb-lu-preview[data-verified="true"] .bb-lu-verified-pill {
+  display: inline-block;
+}
+
+@keyframes bb-lu-verified-pill-shine {
+  0%   { background-position: 200% center; }
+  100% { background-position: -100% center; }
+}
+
+/* ---- Failed state ----------------------------------------------------
+   When `data-verified="failed"`, the not-verified badge gets a red
+   pulse + red shimmer, the red "Brand Could Not Be Verified" pill
+   shows in the same slot as the green one, and a small support
+   contact line drops in below. Mirrors the verified styling so
+   the panels read as a clean pair of opposite states. */
+body.bb-logo-upload-page .bb-lu-preview[data-verified="failed"] .bb-lu-preview-badge--unverified {
+  border-color: rgba(231, 76, 60, 0.65);
+  background: rgba(231, 76, 60, 0.18);
+  animation: bb-lu-badge-pulse-red 2.4s ease-in-out infinite;
+}
+body.bb-logo-upload-page .bb-lu-preview--light[data-verified="failed"] .bb-lu-preview-badge--unverified {
+  background: rgba(231, 76, 60, 0.22);
+  border-color: rgba(231, 76, 60, 0.70);
+}
+body.bb-logo-upload-page .bb-lu-preview[data-verified="failed"] .bb-lu-preview-badge--unverified::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0)    0%,
+    rgba(255, 255, 255, 0)    35%,
+    rgba(255, 255, 255, 0.55) 48%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.55) 52%,
+    rgba(255, 255, 255, 0)    65%,
+    rgba(255, 255, 255, 0)    100%
+  );
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% center;
+  mix-blend-mode: screen;
+  animation: bb-lu-badge-shine 2.4s linear infinite;
+}
+
+@keyframes bb-lu-badge-pulse-red {
+  0%, 100% {
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.22),
+      0 0 0 0 rgba(231, 76, 60, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  }
+  50% {
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.26),
+      0 0 0 8px rgba(231, 76, 60, 0.05),
+      0 0 22px 4px rgba(231, 76, 60, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  }
+}
+
+/* Failed pill — solid red counterpart of the verified pill. Same
+   construction: solid white text, translucent white shine sweeping
+   across the red pill body. */
+body.bb-logo-upload-page .bb-lu-failed-pill {
+  display: none;
+  align-self: center;
+  margin: 8px auto 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background-color: #e74c3c;
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0)    0%,
+    rgba(255, 255, 255, 0)    32%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0)    68%,
+    rgba(255, 255, 255, 0)    100%
+  );
+  background-size: 240% 100%;
+  background-repeat: no-repeat;
+  background-position: 200% center;
+  border: 1px solid rgba(231, 76, 60, 0.85);
+  box-shadow:
+    0 8px 22px rgba(231, 76, 60, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  font: 800 11px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  animation: bb-lu-failed-pill-shine 2.6s linear infinite;
+}
+body.bb-logo-upload-page .bb-lu-preview[data-verified="failed"] .bb-lu-failed-pill {
+  display: inline-block;
+}
+
+@keyframes bb-lu-failed-pill-shine {
+  0%   { background-position: 200% center; }
+  100% { background-position: -100% center; }
+}
+
+/* Support contact line — only shown under the failed pill. */
+body.bb-logo-upload-page .bb-lu-failed-support {
+  display: none;
+  margin: 6px 0 0;
+  text-align: center;
+  font: 600 11px/1.4 Roboto, system-ui, sans-serif;
+  color: inherit;
+  opacity: 0.85;
+}
+body.bb-logo-upload-page .bb-lu-preview[data-verified="failed"] .bb-lu-failed-support {
+  display: block;
+}
+body.bb-logo-upload-page .bb-lu-failed-support a {
+  display: inline-block;
+  margin-left: 4px;
+  color: #e74c3c;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 700;
+}
+/* No hover colour change — `bb-shared-ui.css` forces white on all
+   `a:hover`; keep the support email visibly red. */
+body.bb-logo-upload-page .bb-lu-failed-support a:hover,
+body.bb-logo-upload-page .bb-lu-failed-support a:focus-visible {
+  color: #e74c3c !important;
+}
+
+/* Failed-state title — replaces "Verified Brand Identity" with a red
+   support-contact line when the dev override flag flips the page into
+   `data-verify-state="failed"`. Used on the Meta Verification cards
+   (Premium + Freemium). Smaller line for the email row so the title
+   stack reads as headline + helper. */
+body.bb-logo-upload-page .bb-lu-card-title--failed {
+  color: #e74c3c;
+}
+body.bb-logo-upload-page .bb-lu-card-title--failed .bb-lu-card-title-sub {
+  display: block;
+  margin-top: 4px;
+  font: 600 13px/1.35 Roboto, system-ui, sans-serif;
+  letter-spacing: 0;
+  color: #e74c3c;
+  opacity: 0.92;
+}
+body.bb-logo-upload-page .bb-lu-card-title--failed a {
+  color: #e74c3c !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 700;
+}
+/* No hover colour — matches surrounding failed copy; beats
+   `bb-shared-ui.css` global `a:hover { color: white !important }`. */
+body.bb-logo-upload-page .bb-lu-card-title--failed a:hover,
+body.bb-logo-upload-page .bb-lu-card-title--failed a:focus-visible {
+  color: #e74c3c !important;
+}
+
+/* The verify card's tooltip — pin to the bottom-right corner */
+body.bb-logo-upload-page .bb-lu-tip--verify {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+}
+
+/* ============================================================
+   Vendor crop overlay — ensure z-index sits above the page chrome
+   and lock the close-button cursor.
+   ============================================================ */
+body.bb-logo-upload-page .bb-crop-overlay {
+  z-index: 2000;
+  /* Fully transparent scrim so no extra dim / blur layer sits on top
+     of the iframe document (avoids the “iframe bg” banding behind the
+     modal when embedded in the Brand Console). Clicks still hit the
+     overlay element; the modal itself carries the visible chrome. */
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+/* While the cropper is open: strip page-level paints so the iframe is
+   visually empty outside the modal — the dashboard shows through. */
+body.bb-logo-upload-page:has(.bb-crop-overlay.open),
+html:has(body.bb-logo-upload-page .bb-crop-overlay.open) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+body.bb-logo-upload-page:has(.bb-crop-overlay.open) .bb-theme-shell,
+body.bb-logo-upload-page:has(.bb-crop-overlay.open) #bbLogoUploadMount {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+body.bb-logo-upload-page:has(.bb-crop-overlay.open) .light-shard-ui-base,
+body.bb-logo-upload-page:has(.bb-crop-overlay.open) .light-shard-ui-theme {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+/* Hide the page chrome entirely while cropping so the iframe reads as
+   empty outside the modal (dashboard shows through transparent html/body). */
+body.bb-logo-upload-page:has(.bb-crop-overlay.open) #bbLogoUploadMount {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+body.bb-logo-upload-page .bb-crop-modal {
+  background-color: rgba(43, 43, 44, 0.96) !important;
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+  border: 5px solid #ffffff !important;
+  box-shadow: 0 100px 250px rgb(0 0 0 / 63%) !important;
+  /* Width shrunk ~20% from vendor `min(980px, 96vw)`. Height kept at
+     the vendor maximum so the Konva stage row (1fr in the modal grid)
+     has enough vertical pixels for the uploaded logo to fit without
+     overflowing the cropper. */
+  width: min(784px, 76.8vw) !important;
+  height: min(720px, 88vh) !important;
+}
+/* Desktop only: modal 20px shorter than the base cap so the cropper
+   feels a touch tighter without shrinking the stage as aggressively
+   as a width-only change. */
+@media (min-width: 841px) {
+  body.bb-logo-upload-page .bb-crop-modal {
+    height: min(700px, calc(88vh - 20px)) !important;
+  }
+}
+body.bb-logo-upload-page .bb-crop-stage {
+  -webkit-backdrop-filter: none !important;
+          backdrop-filter: none !important;
+}
+
+/* Light-mode-only cropper surfaces: white-ish stage so the logo reads
+   on a paper-like canvas. Dark mode stage stays unchanged (dark stage
+   from .bb-crop-modal). The cropper footer uses solid brand-blue in
+   BOTH modes (rule below). */
+body.bb-logo-upload-page.light-mode .bb-crop-stage {
+  background: rgb(255 255 255 / 78%);
+}
+@media (prefers-color-scheme: light) {
+  body.bb-logo-upload-page:not(.dark-mode) .bb-crop-stage {
+    background: rgb(255 255 255 / 78%);
+  }
+}
+
+/* Cropper footer: neutral grey panel below the stage so it reads as
+   a single quiet bar in light mode. Dark mode swaps to solid black so
+   the action bar disappears into the surrounding dark chrome. */
+body.bb-logo-upload-page .bb-crop-footer {
+  background: rgb(139 139 139) !important;
+}
+
+body.bb-logo-upload-page.dark-mode .bb-crop-footer {
+  background: rgb(0 0 0) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page:not(.light-mode) .bb-crop-footer {
+    background: rgb(0 0 0) !important;
+  }
+}
+
+/* Cropper header chrome — re-tuned for the smaller (20% reduced) modal
+   so the title + B icon + Close button fit comfortably without
+   wrapping. */
+body.bb-logo-upload-page .bb-crop-header-title {
+  font-size: 13px !important;
+  margin-left: -5px !important;
+}
+/* Vendor B icon is 36px tall — too big inside the slimmer header. */
+body.bb-logo-upload-page .bb-crop-header-b {
+  height: 26px !important;
+}
+/* Close button: trim padding/font so the trailing group fits. */
+body.bb-logo-upload-page .bb-crop-close {
+  padding: 5px 10px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+}
+
+/* Mobile (≤840px): cropper sits at 90vw with desktop's rounded
+   corners + framed border preserved (just narrower side gutter so the
+   modal feels almost-full-width on phones without going edge-to-edge).
+   Header title is also tightened a touch so it fits inside the
+   narrower header band. */
+@media (max-width: 840px) {
+  body.bb-logo-upload-page .bb-crop-overlay {
+    padding: 5vw !important;
+  }
+  body.bb-logo-upload-page .bb-crop-modal {
+    width: 90vw !important;
+    max-width: 90vw !important;
+    height: min(640px, 88vh) !important;
+  }
+  body.bb-logo-upload-page .bb-crop-header-title {
+    font-size: 11px !important;
+  }
+}
+
+/* Dark-mode-only Save button: brand blue with white label so it stands
+   out on the dark cropper footer. Vendor default is the white pill (kept
+   for light mode). Toggle-driven `.dark-mode` and OS-level
+   `prefers-color-scheme: dark` (when the user hasn't forced light) both
+   apply. */
+body.bb-logo-upload-page.dark-mode .bb-crop-footer .bb-crop-save {
+  background: #1a47d9 !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+body.bb-logo-upload-page.dark-mode .bb-crop-footer .bb-crop-save:hover {
+  background: #2a57e9 !important;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page:not(.light-mode) .bb-crop-footer .bb-crop-save {
+    background: #1a47d9 !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+  }
+  body.bb-logo-upload-page:not(.light-mode) .bb-crop-footer .bb-crop-save:hover {
+    background: #2a57e9 !important;
+  }
+}
+
+/* ============================================================
+   Tighter mobile layout
+   ============================================================ */
+@media (max-width: 720px) {
+  body.bb-logo-upload-page {
+    padding: 16px 12px 80px;
+  }
+  body.bb-logo-upload-page .bb-lu-card {
+    padding: 22px 18px;
+  }
+  body.bb-logo-upload-page .bb-lu-tile {
+    width: 132px;
+    height: 100px;
+  }
+  body.bb-logo-upload-page .bb-lu-preview { --bb-lu-bicon-size: 78px; }
+  body.bb-logo-upload-page .bb-lu-preview-stage { min-height: 140px; padding: 14px; }
+}
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  body.bb-logo-upload-page .bb-lu-input,
+  body.bb-logo-upload-page .bb-lu-continue,
+  body.bb-logo-upload-page .bb-lu-tile,
+  body.bb-logo-upload-page .bb-lu-preview-img,
+  body.bb-logo-upload-page .bb-lu-preview-stage::after,
+  body.bb-logo-upload-page .bb-lu-preview-badge,
+  body.bb-logo-upload-page .bb-lu-preview-badge--verified::after,
+  body.bb-logo-upload-page .bb-lu-preview-badge--unverified::after,
+  body.bb-logo-upload-page .bb-lu-verified-pill,
+  body.bb-logo-upload-page .bb-lu-failed-pill,
+  body.bb-logo-upload-page .bb-upload-inline-btn,
+  body.bb-logo-upload-page .bb-upload-inline-btn:active .bb-lu-tile {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  /* Keep typed text brand-purple but flat (no shimmer sweep). */
+  body.bb-logo-upload-page .bb-lu-input:not(:placeholder-shown) {
+    background-image: none !important;
+    color: #635bff !important;
+    -webkit-text-fill-color: #635bff !important;
+  }
+  /* Keep status pills solid (no moving shine) when motion is reduced,
+     and keep the white text on the coloured pill backgrounds. */
+  body.bb-logo-upload-page .bb-lu-verified-pill {
+    background-image: none !important;
+    background-color: #6bbe66 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+  body.bb-logo-upload-page .bb-lu-failed-pill {
+    background-image: none !important;
+    background-color: #e74c3c !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+  }
+}
+
+/* ============================================================
+   Meta Verification (stage 2) — scoped to .bb-meta-verification-page
+   Reuses the two-column layout, card chrome and preview tiles
+   from stage 1 (Logo Upload & Crop). Adds the meta-tag snippet
+   card on the left and the "Continue to Brand Settings" pill on
+   the right.
+   ============================================================ */
+/* Desktop only: lift the mount 20px so the stage sits a touch higher.
+   Matches the existing 841px desktop breakpoint used elsewhere in
+   this file. */
+@media (min-width: 841px) {
+  body.bb-meta-verification-page #bbMetaVerificationMount {
+    margin-top: -20px;
+  }
+}
+
+body.bb-meta-verification-page .bb-lu-card.bb-mv-left,
+body.bb-meta-verification-page .bb-lu-card.bb-mv-right {
+  gap: 14px;
+}
+
+body.bb-meta-verification-page .bb-lu-card.bb-mv-left {
+  align-items: stretch;
+}
+
+body.bb-meta-verification-page .bb-mv-lede-title {
+  margin: 6px 0 2px 0;
+  font: 800 18px/1.25 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  color: inherit;
+}
+
+body.bb-meta-verification-page .bb-mv-lede-body {
+  margin: 0;
+  font: 500 14px/1.5 Roboto, system-ui, sans-serif;
+  color: inherit;
+  opacity: 0.92;
+}
+
+body.bb-meta-verification-page .bb-mv-tip-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  vertical-align: -4px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 160ms ease;
+}
+body.bb-meta-verification-page .bb-mv-tip-inline:hover,
+body.bb-meta-verification-page .bb-mv-tip-inline:focus-visible {
+  opacity: 1;
+}
+
+/* -- Snippet card ------------------------------------------------ */
+body.bb-meta-verification-page .bb-mv-code-card {
+  position: relative;
+  margin: 6px 0 4px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+body.dark-mode.bb-meta-verification-page .bb-mv-code-card,
+body.bb-meta-verification-page.dark-mode .bb-mv-code-card {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(255, 255, 255, 0.30);
+  box-shadow:
+    0 16px 36px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-meta-verification-page:not(.light-mode) .bb-mv-code-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(255, 255, 255, 0.30);
+    box-shadow:
+      0 16px 36px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  }
+}
+
+body.bb-meta-verification-page .bb-mv-code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 12px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-tag * {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-tag svg {
+  color: #000000 !important;
+}
+
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-copy {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.96);
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-copy svg {
+  color: #000000 !important;
+  stroke: currentColor;
+}
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-copy:hover,
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-copy:focus-visible {
+  background: #ffffff;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  border-color: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  outline: none;
+}
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-copy--bump {
+  transform: scale(0.92);
+}
+
+/* Dark mode: invert the copy button so it reads in the dark UI — a
+   deep-purple pill with a white glyph, instead of the light-mode
+   white pill with a black glyph. */
+body.bb-logo-upload-page.bb-meta-verification-page.dark-mode .bb-mv-code-copy {
+  background: #1a0a55;
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.40),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+body.bb-logo-upload-page.bb-meta-verification-page.dark-mode .bb-mv-code-copy svg {
+  color: #ffffff !important;
+}
+body.bb-logo-upload-page.bb-meta-verification-page.dark-mode .bb-mv-code-copy:hover,
+body.bb-logo-upload-page.bb-meta-verification-page.dark-mode .bb-mv-code-copy:focus-visible {
+  background: #261278;
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.50),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  outline: none;
+}
+@media (prefers-color-scheme: dark) {
+  body.bb-logo-upload-page.bb-meta-verification-page:not(.light-mode) .bb-mv-code-copy {
+    background: #1a0a55;
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.40),
+      inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  }
+  body.bb-logo-upload-page.bb-meta-verification-page:not(.light-mode) .bb-mv-code-copy svg {
+    color: #ffffff !important;
+  }
+  body.bb-logo-upload-page.bb-meta-verification-page:not(.light-mode) .bb-mv-code-copy:hover,
+  body.bb-logo-upload-page.bb-meta-verification-page:not(.light-mode) .bb-mv-code-copy:focus-visible {
+    background: #261278;
+    border-color: rgba(255, 255, 255, 0.45);
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    box-shadow:
+      0 6px 14px rgba(0, 0, 0, 0.50),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    outline: none;
+  }
+}
+
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-body {
+  margin: 0;
+  padding: 14px 16px;
+  font: 500 12.5px/1.6 "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+        Consolas, "Liberation Mono", monospace;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  background: #ffffff;
+  white-space: pre;
+  overflow-x: auto;
+  max-height: 140px;
+}
+body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-body * {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+body.bb-meta-verification-page .bb-mv-copy-toast {
+  position: absolute;
+  top: 8px;
+  right: 56px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font: 700 11px/1.4 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: rgba(16, 48, 245, 0.92);
+  box-shadow: 0 6px 16px rgba(16, 48, 245, 0.35);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+body.bb-meta-verification-page .bb-mv-copy-toast--show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* -- Instructions line above Sync ------------------------------- */
+body.bb-meta-verification-page .bb-mv-instructions {
+  margin: 4px 0 8px 0;
+  font: 500 13.5px/1.5 Roboto, system-ui, sans-serif;
+  color: inherit;
+  opacity: 0.86;
+}
+
+/* -- Sync button — wide pill, full width of the left card ------- */
+body.bb-meta-verification-page .bb-plat-sync-btn.bb-mv-sync {
+  width: 100%;
+  margin-top: auto;
+}
+
+/* -- Right card layout: stays simple, no inline continue pill --- */
+body.bb-meta-verification-page .bb-lu-card.bb-mv-right {
+  align-items: stretch;
+  justify-content: flex-start;
+}
+body.bb-meta-verification-page .bb-mv-right .bb-lu-previews {
+  flex: 1 1 auto;
+}
+
+/* ============================================================
+   Full-width purple "Go to Brand Settings" CTA panel.
+   Sits under both columns of the .bb-lu-layout grid.
+   ============================================================ */
+body.bb-logo-upload-page .bb-mv-cta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 28px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(135deg, #1a0a55 0%, #261278 55%, #34199e 100%);
+  color: #ffffff !important;
+  box-shadow:
+    0 22px 48px rgba(26, 10, 85, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+body.bb-logo-upload-page .bb-mv-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 25%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0) 75%
+  );
+  background-size: 220% 100%;
+  background-repeat: no-repeat;
+  background-position: -120% 0;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  animation: bb-mv-cta-shimmer 6.5s ease-in-out infinite;
+}
+
+@keyframes bb-mv-cta-shimmer {
+  0%   { background-position: -120% 0; }
+  60%  { background-position: 220% 0; }
+  100% { background-position: 220% 0; }
+}
+
+body.bb-logo-upload-page .bb-mv-cta-text {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+body.bb-logo-upload-page .bb-mv-cta-title {
+  margin: 0 0 6px 0;
+  font: 900 18px/1.2 Roboto, system-ui, sans-serif;
+  letter-spacing: -0.005em;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff;
+}
+
+body.bb-logo-upload-page .bb-mv-cta-help {
+  margin: 0;
+  font: 500 14px/1.5 Roboto, system-ui, sans-serif;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff;
+  opacity: 0.92;
+}
+
+body.bb-logo-upload-page .bb-mv-cta-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+body.bb-logo-upload-page .bb-mv-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 26px;
+  min-width: 240px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1a0a55 !important;
+  -webkit-text-fill-color: #1a0a55 !important;
+  font: 900 14.5px/1 Roboto, system-ui, sans-serif;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease;
+  cursor: pointer;
+}
+body.bb-logo-upload-page .bb-mv-cta-btn:hover,
+body.bb-logo-upload-page .bb-mv-cta-btn:focus-visible {
+  background: #ffffff;
+  color: #1a0a55 !important;
+  -webkit-text-fill-color: #1a0a55 !important;
+  border-color: #ffffff;
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+  outline: none;
+}
+body.bb-logo-upload-page .bb-mv-cta-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ============================================================
+   Mobile responsive — Brand Verification (stage 2) page.
+   Tightens the header, layout, snippet card, and CTA panel for
+   phones / narrow tablets.
+   ============================================================ */
+@media (max-width: 900px) {
+  /* Tablet / small laptop: keep the desktop 22px base (smaller would
+     be too tight here) and only adjust line-height + margin. */
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-module-head h1 {
+    line-height: 1.2;
+    margin: 0 0 12px 0;
+  }
+  /* Drop the column gap before the layout collapses to one column. */
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-lu-layout {
+    row-gap: 20px;
+  }
+}
+
+@media (max-width: 720px) {
+  /* Page chrome: tighter outer padding + smaller header. */
+  body.bb-logo-upload-page.bb-meta-verification-page {
+    padding: 14px 12px 72px;
+  }
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-module-head h1 {
+    font-size: 22px;
+    margin: 0 0 10px 0;
+  }
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-lu-layout {
+    --bb-col-gap: 0;
+    row-gap: 16px;
+  }
+  /* Cards: looser min-height so they don't reserve empty space. */
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-lu-card {
+    min-height: 0;
+    padding: 22px 18px;
+  }
+
+  /* Lede typography. */
+  body.bb-meta-verification-page .bb-mv-lede-title  { font-size: 16px; }
+  body.bb-meta-verification-page .bb-mv-lede-body   { font-size: 13.5px; line-height: 1.5; }
+  body.bb-meta-verification-page .bb-mv-instructions { font-size: 13px; line-height: 1.5; }
+
+  /* Snippet card: smaller mono + tighter padding so long meta lines
+     fit before falling back to horizontal scroll inside the card. */
+  body.bb-meta-verification-page .bb-mv-code-card  { border-radius: 12px; }
+  body.bb-meta-verification-page .bb-mv-code-head  { padding: 8px 12px; }
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-body {
+    padding: 12px 14px;
+    font-size: 11.5px !important;
+    line-height: 1.55;
+    max-height: 200px;
+  }
+  body.bb-meta-verification-page .bb-mv-copy-toast {
+    top: -8px;
+    right: 8px;
+  }
+
+  /* CTA panel: tighter padding, stacked layout, full-width button. */
+  body.bb-logo-upload-page .bb-mv-cta {
+    padding: 18px 18px;
+    gap: 14px;
+    border-radius: 16px;
+  }
+  body.bb-logo-upload-page .bb-mv-cta-text   { flex-basis: 100%; }
+  body.bb-logo-upload-page .bb-mv-cta-title  { font-size: 17px; }
+  body.bb-logo-upload-page .bb-mv-cta-help   { font-size: 13.5px; line-height: 1.45; }
+  body.bb-logo-upload-page .bb-mv-cta-actions { width: 100%; }
+  body.bb-logo-upload-page .bb-mv-cta-btn {
+    width: 100%;
+    min-width: 0;
+    padding: 14px 22px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Extra tight: phones at iPhone SE width and below. */
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-module-head h1 {
+    font-size: 20px;
+  }
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-lu-card {
+    padding: 18px 14px;
+    border-radius: 18px;
+  }
+  body.bb-meta-verification-page .bb-mv-lede-title { font-size: 15px; }
+  body.bb-meta-verification-page .bb-mv-lede-body  { font-size: 13px; }
+  body.bb-meta-verification-page .bb-mv-instructions { font-size: 12.5px; }
+
+  body.bb-logo-upload-page.bb-meta-verification-page .bb-mv-code-body {
+    font-size: 10.5px !important;
+    padding: 10px 12px;
+  }
+  body.bb-meta-verification-page .bb-mv-code-head { padding: 7px 10px; }
+  body.bb-meta-verification-page .bb-mv-code-copy {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  body.bb-logo-upload-page .bb-mv-cta {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+  body.bb-logo-upload-page .bb-mv-cta-title { font-size: 16px; }
+  body.bb-logo-upload-page .bb-mv-cta-help  { font-size: 13px; }
+  body.bb-logo-upload-page .bb-mv-cta-btn   { padding: 13px 18px; font-size: 13.5px; }
+}
+
+/* Belt-and-braces: never let the snippet card push the page wider
+   than its parent grid track. Long meta-tag lines scroll inside
+   the card via .bb-mv-code-body's own overflow-x. */
+body.bb-meta-verification-page .bb-mv-code-card,
+body.bb-meta-verification-page .bb-lu-card.bb-mv-left,
+body.bb-meta-verification-page .bb-lu-card.bb-mv-right {
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.bb-logo-upload-page .bb-mv-cta::after {
+    animation: none;
+    opacity: 0;
+  }
+  body.bb-logo-upload-page .bb-mv-cta-btn {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   Brand Verification only — soften the "Go to Brand Settings"
+   CTA panel + its button shadow by ~90% (alpha × 0.1) so the
+   purple slab sits flatter against the dashboard surface.
+   Brand Upload (stage 1) gets its outer purple drop shadow
+   removed entirely (rule below) so the "Let's Verify your
+   identity" panel also sits flat.
+   ============================================================ */
+body.bb-logo-upload-page:not(.bb-meta-verification-page) .bb-mv-cta {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+body.bb-meta-verification-page .bb-mv-cta {
+  box-shadow:
+    0 22px 48px rgba(26, 10, 85, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+body.bb-meta-verification-page .bb-mv-cta-btn {
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.028),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+body.bb-meta-verification-page .bb-mv-cta-btn:hover,
+body.bb-meta-verification-page .bb-mv-cta-btn:focus-visible {
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.034),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
