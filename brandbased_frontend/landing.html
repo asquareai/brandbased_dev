@@ -36,7 +36,7 @@
     rel="stylesheet">
 
   <!-- JS -->
-  <script src="./assets/js/app-config.js"></script>
+  <script src="./assets/js/app-config.js?v=brandapi-1"></script>
   <script src="./assets/js/jquery-3.7.1.min.js"></script>
   <script src="./assets/js/main-js.js"></script>
 </head>
@@ -490,8 +490,6 @@ async function sendResetOtp() {
       showPinError(data.message || "Unable to send OTP.");
       return;
     }
-
-    console.log("Reset PIN OTP:", data.otp);
 
     showResetStep("otp");
 

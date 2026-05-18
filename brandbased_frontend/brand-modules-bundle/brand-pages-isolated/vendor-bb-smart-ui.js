@@ -17,7 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // =============================
   // BrandBased Smart Logo Sizing Engine (prototype)
   // =============================
-  const BB_SMART_SIZE_API = "http://localhost:8001/api/bb/smart-size";
+  function bbSmartSizeOrigin() {
+    const g = typeof window !== "undefined" ? window : globalThis;
+    if (g.BB_APP && g.BB_APP.smartSizeOrigin) {
+      return String(g.BB_APP.smartSizeOrigin).replace(/\/$/, "");
+    }
+    const host = (typeof location !== "undefined" && location.hostname) || "";
+    const isLocal =
+      !host || host === "localhost" || host === "127.0.0.1" || host.endsWith(".local");
+    return isLocal ? "http://127.0.0.1:8001" : "https://api.brandbased.ai/smart";
+  }
+  const BB_SMART_SIZE_API = bbSmartSizeOrigin() + "/api/bb/smart-size";
   // Bump version to invalidate any cached defaults
   const BB_SMART_SIZE_CACHE_PREFIX = "bbSmartSize:v32:";
   const BB_AI_SIZE_CLASS = "BB-AI-Size";
@@ -428,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const BB_ASSET_LAB_CROP_SAVED_KEY = "bbAssetLab:cropSaved:v1";
   /** Saved Custom Size & Placement slider values (upload marks only). */
   const BB_PLACEMENT_KEY = "bbPlacement:panel:v1";
-  const BB_SAVE_CROPPED_API = "http://localhost:8001/api/bb/save-cropped";
+  const BB_SAVE_CROPPED_API = bbSmartSizeOrigin() + "/api/bb/save-cropped";
   let bbAssetLabBlobUrl = "";
   let bbAssetLabSvgText = "";
   let bbAssetLabTrimViewBox = "";

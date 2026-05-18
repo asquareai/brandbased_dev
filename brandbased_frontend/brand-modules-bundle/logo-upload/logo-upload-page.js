@@ -6,7 +6,8 @@
  *   - Dark Mode SVG uploads forward into #bbUploadInput so the Konva cropper
  *     runs; `bbLuLastUploadMode` routes the saved SVG into the correct preview.
  *   - Dark raster (PNG/JPG) still uses a direct FileReader path (no cropper).
- *   - Light persistence of the brand name + URL fields across reloads (demo).
+ *   - Brand name / URL / logos persist only during the current page visit (for Sync).
+ *     Each new load of this page starts empty — no previous test draft.
  *   - Sync button — opens shared popup ("Syncing brand data.." → "Synced")
  *     then navigates to Meta Verification.
  */
@@ -23,16 +24,64 @@
   const LS_MODE       = "bbLuLastUploadMode"; // "light" | "dark"
   const LS_LIGHT_LOGO = "bbLuLightLogoData";  // data: URL of light-mode upload
   const LS_DARK_LOGO  = "bbLuDarkLogoData";   // data: URL of dark-mode upload
+  const LS_VERIFICATION_REQUEST = "bbCurrentBrandVerificationRequest";
+  const SS_START_FRESH = "bbLuStartFresh";
+  const LS_ASSET_LAB_SVG = "bbAssetLab:svg:v1";
+  const LS_ASSET_LAB_FILENAME = "bbAssetLab:filename:v1";
+  const LS_ASSET_LAB_CROP_SAVED = "bbAssetLab:cropSaved:v1";
+
+  function shouldStartFreshFromStartNow() {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("fresh") === "1" || q.get("bb_fresh") === "1") return true;
+      if (sessionStorage.getItem(SS_START_FRESH) === "1") {
+        sessionStorage.removeItem(SS_START_FRESH);
+        return true;
+      }
+    } catch (_e) {
+      return false;
+    }
+    return false;
+  }
+
+  function stripFreshQueryFromUrl() {
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.has("fresh") && !url.searchParams.has("bb_fresh")) return;
+      url.searchParams.delete("fresh");
+      url.searchParams.delete("bb_fresh");
+      window.history.replaceState(
+        null,
+        "",
+        url.pathname + (url.searchParams.toString() ? "?" + url.searchParams.toString() : "") + url.hash
+      );
+    } catch (_e) { /* ignore */ }
+  }
+
+  function clearLogoUploadDraft() {
+    try {
+      localStorage.removeItem(LS_NAME);
+      localStorage.removeItem(LS_URL);
+      localStorage.removeItem(LS_MODE);
+      localStorage.removeItem(LS_LIGHT_LOGO);
+      localStorage.removeItem(LS_DARK_LOGO);
+      localStorage.removeItem(LS_VERIFICATION_REQUEST);
+      localStorage.removeItem(LS_ASSET_LAB_SVG);
+      localStorage.removeItem(LS_ASSET_LAB_FILENAME);
+      localStorage.removeItem(LS_ASSET_LAB_CROP_SAVED);
+    } catch (_e) { /* ignore */ }
+  }
 
   function init() {
     try {
-      // ---- Brand name + URL persistence ----------------------------------
+      clearLogoUploadDraft();
+      stripFreshQueryFromUrl();
+
+      // ---- Brand name + URL (empty on each page load) --------------------
       const nameEl = document.getElementById("bbLuBrandName");
       const urlEl  = document.getElementById("bbLuBrandUrl");
-      try {
-        if (nameEl && localStorage.getItem(LS_NAME)) nameEl.value = localStorage.getItem(LS_NAME);
-        if (urlEl  && localStorage.getItem(LS_URL))  urlEl.value  = localStorage.getItem(LS_URL);
-      } catch (_e) { /* localStorage may be unavailable */ }
+      if (nameEl) nameEl.value = "";
+      if (urlEl) urlEl.value = "";
 
       if (nameEl) {
         nameEl.addEventListener("input", function () {
@@ -81,6 +130,13 @@
       const previewLight = document.getElementById("bbLuPreviewLight");
       const previewDark  = document.getElementById("bbLuPreviewDark");
 
+      const TERMINAL_IDENTITY = new Set([
+        "verified",
+        "under_review",
+        "rejected",
+        "flagged",
+      ]);
+
       function syncPreviewMask(imgEl) {
         if (!imgEl) return;
         const panel = imgEl.closest(".bb-lu-preview");
@@ -102,6 +158,136 @@
         fig.setAttribute("data-verified", value);
       }
 
+      function setVerifiedBoth(state) {
+        setVerified("light", state);
+        setVerified("dark", state);
+      }
+
+      const verifyTitle = document.getElementById("bbLuVerifyTitle");
+      const identityStatusEl = document.getElementById("bbLuIdentityStatus");
+      const metaCtaBtn = document.getElementById("bbLuVerifyCtaBtn");
+      const TITLE_DEFAULT = "Brand Identity";
+      const TITLE_FAILED_HTML =
+        "Unable to Verify Brand." +
+        '<span class="bb-lu-card-title-sub">Please contact ' +
+        '<a href="mailto:support@brandbased.ai">support@brandbased.ai</a>' +
+        "</span>";
+
+      function setMetaCtaEnabled(enabled) {
+        if (!metaCtaBtn) return;
+        if (enabled) {
+          metaCtaBtn.removeAttribute("aria-disabled");
+          metaCtaBtn.classList.remove("bb-mv-cta-btn--disabled");
+          metaCtaBtn.style.pointerEvents = "";
+        } else {
+          metaCtaBtn.setAttribute("aria-disabled", "true");
+          metaCtaBtn.classList.add("bb-mv-cta-btn--disabled");
+          metaCtaBtn.style.pointerEvents = "none";
+        }
+      }
+
+      function setIdentityStatusMessage(text, tone) {
+        if (!identityStatusEl) return;
+        if (!text) {
+          identityStatusEl.hidden = true;
+          identityStatusEl.textContent = "";
+          identityStatusEl.className = "bb-lu-identity-status";
+          return;
+        }
+        identityStatusEl.hidden = false;
+        identityStatusEl.textContent = text;
+        identityStatusEl.className = "bb-lu-identity-status";
+        if (tone) identityStatusEl.classList.add("bb-lu-identity-status--" + tone);
+      }
+
+      function applyIdentityOutcome(brandRequest) {
+        if (!brandRequest || !brandRequest.identity_status) return;
+        const status = brandRequest.identity_status;
+
+        if (verifyTitle) {
+          verifyTitle.classList.remove("bb-lu-card-title--failed");
+        }
+
+        if (status === "verified") {
+          setVerifiedBoth("true");
+          if (verifyTitle) verifyTitle.textContent = "Verified Brand Identity";
+          setIdentityStatusMessage(
+            "Identity verified. You can continue to website verification.",
+            ""
+          );
+          setMetaCtaEnabled(true);
+          return;
+        }
+
+        if (status === "rejected" || status === "flagged") {
+          setVerifiedBoth("failed");
+          if (verifyTitle) {
+            verifyTitle.classList.add("bb-lu-card-title--failed");
+            verifyTitle.innerHTML = TITLE_FAILED_HTML;
+          }
+          setIdentityStatusMessage(
+            "Unable to verify this brand association.",
+            "failed"
+          );
+          setMetaCtaEnabled(false);
+          return;
+        }
+
+        if (status === "under_review") {
+          setVerifiedBoth("false");
+          if (verifyTitle) verifyTitle.textContent = "Verification Under Review";
+          setIdentityStatusMessage(
+            "Your brand needs manual review before you can continue. We will notify you when review is complete.",
+            "review"
+          );
+          setMetaCtaEnabled(false);
+          return;
+        }
+
+        setVerifiedBoth("false");
+        if (verifyTitle) verifyTitle.textContent = TITLE_DEFAULT;
+        setIdentityStatusMessage("", "");
+        setMetaCtaEnabled(false);
+      }
+
+      async function finishProgressModal(modal, finishOpts) {
+        if (!modal || typeof modal.finish !== "function") return;
+        try {
+          await Promise.race([
+            modal.finish(finishOpts || {}),
+            new Promise(function (resolve) {
+              window.setTimeout(resolve, 4500);
+            }),
+          ]);
+        } catch (_e) {
+          try {
+            if (typeof modal.dismiss === "function") modal.dismiss();
+          } catch (_d) { /* ignore */ }
+        }
+      }
+
+      function clearStoredVerificationRequest() {
+        try {
+          localStorage.removeItem(LS_VERIFICATION_REQUEST);
+          const api = window.BBBrandVerification;
+          if (api && api.LS_CURRENT_REQUEST) {
+            localStorage.removeItem(api.LS_CURRENT_REQUEST);
+          }
+        } catch (_e) { /* ignore */ }
+      }
+
+      /** Fresh upload screen — previews may stay, identity UI waits for Sync. */
+      function resetIdentityUiForNewUpload() {
+        clearStoredVerificationRequest();
+        if (verifyTitle) {
+          verifyTitle.classList.remove("bb-lu-card-title--failed");
+          verifyTitle.textContent = TITLE_DEFAULT;
+        }
+        setIdentityStatusMessage("", "");
+        setVerifiedBoth("false");
+        setMetaCtaEnabled(false);
+      }
+
       // Demo helper: lets you flip a panel between states from the
       // browser console, e.g.:
       //   bbLuSetVerified("light", "failed")
@@ -118,7 +304,6 @@
         opts = opts || {};
         const imgEl = mode === "dark" ? previewDark : previewLight;
         if (!imgEl) return;
-        const isUserUpload = !!dataUrl;
         const onLoad = function () {
           syncPreviewMask(imgEl);
           imgEl.removeEventListener("load", onLoad);
@@ -126,21 +311,31 @@
         imgEl.addEventListener("load", onLoad);
         imgEl.src = dataUrl || imgEl.getAttribute("data-default-src") || imgEl.src;
         if (imgEl.complete) onLoad();
-        if (opts.markVerified !== false) setVerified(mode, isUserUpload);
+        if (opts.markVerified === true || opts.markVerified === "true") {
+          setVerified(mode, "true");
+        } else if (opts.markVerified === "failed") {
+          setVerified(mode, "failed");
+        } else {
+          setVerified(mode, false);
+        }
       }
 
-      // Restore previously-uploaded previews (so a refresh keeps state).
-      try {
-        const lightSaved = localStorage.getItem(LS_LIGHT_LOGO);
-        const darkSaved  = localStorage.getItem(LS_DARK_LOGO);
-        if (lightSaved) setPreview("light", lightSaved);
-        else if (previewLight) { syncPreviewMask(previewLight); setVerified("light", false); }
-        if (darkSaved) setPreview("dark", darkSaved);
-        else if (previewDark) { syncPreviewMask(previewDark); setVerified("dark", false); }
-      } catch (_e) {
-        if (previewLight) { syncPreviewMask(previewLight); setVerified("light", false); }
-        if (previewDark)  { syncPreviewMask(previewDark);  setVerified("dark", false); }
+      function resetPreviewToDefaults() {
+        if (previewLight) {
+          const defL = previewLight.getAttribute("data-default-src");
+          if (defL) previewLight.src = defL;
+          syncPreviewMask(previewLight);
+          setVerified("light", false);
+        }
+        if (previewDark) {
+          const defD = previewDark.getAttribute("data-default-src");
+          if (defD) previewDark.src = defD;
+          syncPreviewMask(previewDark);
+          setVerified("dark", false);
+        }
       }
+
+      resetPreviewToDefaults();
 
       // Read a file from one of our inputs and mirror it to the matching
       // preview slot. Persisted to localStorage as a data URL so a refresh
@@ -156,7 +351,8 @@
         reader.onload = function () {
           const dataUrl = String(reader.result || "");
           if (!dataUrl) return;
-          setPreview(mode, dataUrl);
+          resetIdentityUiForNewUpload();
+          setPreview(mode, dataUrl, { markVerified: false });
           try {
             localStorage.setItem(mode === "dark" ? LS_DARK_LOGO : LS_LIGHT_LOGO, dataUrl);
           } catch (_e) { /* quota or unavailable — preview still updates in-memory */ }
@@ -174,7 +370,8 @@
         r.onload = function () {
           const dataUrl = String(r.result || "");
           if (!dataUrl) return;
-          setPreview("dark", dataUrl);
+          resetIdentityUiForNewUpload();
+          setPreview("dark", dataUrl, { markVerified: false });
           try {
             localStorage.setItem(LS_DARK_LOGO, dataUrl);
           } catch (_e) {}
@@ -192,7 +389,8 @@
             mode = localStorage.getItem(LS_MODE) || "light";
           } catch (_e) {}
           const dataUrl = svgTextToDataUrl(svg);
-          setPreview(mode, dataUrl);
+          resetIdentityUiForNewUpload();
+          setPreview(mode, dataUrl, { markVerified: false });
           try {
             localStorage.setItem(mode === "dark" ? LS_DARK_LOGO : LS_LIGHT_LOGO, dataUrl);
           } catch (_e2) {}
@@ -245,44 +443,183 @@
         });
       }
 
-      // ---- Sync button → "Syncing brand data…" → "Synced" → Meta Verification
-      // Stage 1 hands off to stage 2 once the shared sync popup completes.
-      //
-      // Two flows share this script: the standard Brands flow
-      // (../logo-upload/Logo-upload-and-Crop-module.html → Meta-Verification.html)
-      // and the Start FREE / freemium flow (../freemium/Freemium-Logo-upload-
-      // and-Crop-module.html → Freemium-Meta-Verification.html). We pick the
-      // right next page from the current pathname so the freemium flow stays
-      // self-contained and the Brand Verification page in that flow can hand
-      // off to Freemium-Brand-Settings.html without any flag-passing.
+      resetIdentityUiForNewUpload();
+
+      // ---- Sync → Laravel brand verification (Stage 1 AI) → Meta Verification
+      // Premium: Meta-Verification.html | Freemium: Freemium-Meta-Verification.html
       const continueBtn = document.getElementById("bbLuContinue");
+
+      function loginUrlFromModules() {
+        if (window.BB_APP && window.BB_APP.routes && window.BB_APP.routes.loginFromModules) {
+          return window.BB_APP.routes.loginFromModules;
+        }
+        return "../../index.html";
+      }
+
+      async function runBrandVerificationSync() {
+        const api = window.BBBrandVerification;
+        if (!api) {
+          alert("Verification is unavailable. Please refresh and try again.");
+          return;
+        }
+
+        if (!localStorage.getItem("auth_token")) {
+          window.location.href = loginUrlFromModules();
+          return;
+        }
+
+        const nameEl = document.getElementById("bbLuBrandName");
+        const urlEl = document.getElementById("bbLuBrandUrl");
+        const brandName = nameEl && nameEl.value ? nameEl.value.trim() : "";
+        let websiteUrl = urlEl && urlEl.value ? urlEl.value.trim() : "";
+
+        if (!brandName) {
+          alert("Please enter your brand name.");
+          return;
+        }
+        if (!websiteUrl) {
+          alert("Please enter your brand website URL.");
+          return;
+        }
+        if (!/^https?:\/\//i.test(websiteUrl)) {
+          websiteUrl = "https://" + websiteUrl;
+          if (urlEl) urlEl.value = websiteUrl;
+          try { localStorage.setItem(LS_URL, websiteUrl); } catch (_e) {}
+        }
+
+        let lightSvg = "";
+        let darkSvg = "";
+        try {
+          lightSvg = api.dataUrlToSvgString(localStorage.getItem(LS_LIGHT_LOGO));
+          darkSvg = api.dataUrlToSvgString(localStorage.getItem(LS_DARK_LOGO));
+        } catch (_e) { /* ignore */ }
+
+        if (!lightSvg || lightSvg.toLowerCase().indexOf("<svg") < 0) {
+          alert("Please upload and crop your light mode logo.");
+          return;
+        }
+        if (!darkSvg || darkSvg.toLowerCase().indexOf("<svg") < 0) {
+          alert("Please upload and crop your dark mode logo.");
+          return;
+        }
+
+        const isFree = /\/freemium\//i.test(window.location.pathname);
+        const nextUrl = isFree
+          ? "./Freemium-Meta-Verification.html"
+          : "./Meta-Verification.html";
+
+        const prevLabel = continueBtn.textContent;
+        continueBtn.disabled = true;
+
+        const progressModal =
+          typeof window.bbOpenSyncProgressModal === "function"
+            ? window.bbOpenSyncProgressModal({
+                label: "Submitting for verification..",
+                progress: 8,
+                barColor: "#635bff",
+                logoSrc: "../brandbased-logo.svg",
+                shineLabel: true,
+              })
+            : null;
+
+        try {
+          if (progressModal) {
+            progressModal.update({
+              label: "Submitting for verification..",
+              progress: 12,
+            });
+          }
+
+          const brandRequest = await api.submitBrandVerificationRequest({
+            brandName: brandName,
+            websiteUrl: websiteUrl,
+            lightLogoSvg: lightSvg,
+            darkLogoSvg: darkSvg,
+          });
+
+          if (progressModal) {
+            progressModal.update({
+              label: "AI verification in progress..",
+              progress: Math.max(15, Number(brandRequest.identity_progress || 0)),
+            });
+          }
+
+          const finalRequest = await api.pollBrandVerificationUntilTerminal(
+            brandRequest.id,
+            {
+              pollIntervalMs: 2500,
+              maxMs: 300000,
+              onUpdate: function (br) {
+                try {
+                  localStorage.setItem(
+                    api.LS_CURRENT_REQUEST,
+                    JSON.stringify(br)
+                  );
+                } catch (_save) { /* ignore */ }
+                if (!progressModal) return;
+                progressModal.update({
+                  label: api.identityStatusLabel(br.identity_status),
+                  progress: Number(br.identity_progress || 0),
+                });
+              },
+            }
+          );
+
+          try {
+            localStorage.setItem(
+              api.LS_CURRENT_REQUEST,
+              JSON.stringify(finalRequest)
+            );
+          } catch (_saveFin) { /* ignore */ }
+
+          applyIdentityOutcome(finalRequest);
+
+          if (api.isIdentityRejected(finalRequest.identity_status)) {
+            await finishProgressModal(progressModal, {
+              label: "Unable to verify this brand association.",
+              doneLabel: "Unable to Verify",
+              barColor: "#e5484d",
+              doneHoldMs: 1600,
+            });
+            return;
+          }
+
+          if (finalRequest.identity_status === "under_review") {
+            await finishProgressModal(progressModal, {
+              label: "Verification requires manual review.",
+              doneLabel: "Under Review",
+              doneHoldMs: 1400,
+            });
+            return;
+          }
+
+          if (api.canProceedToMetaVerification(finalRequest.identity_status)) {
+            await finishProgressModal(progressModal, {
+              label: "Identity verified",
+              doneLabel: "Verified",
+              barColor: "#635bff",
+              doneHoldMs: 1100,
+            });
+            window.location.href = nextUrl;
+          }
+        } catch (err) {
+          console.error(err);
+          await finishProgressModal(progressModal, {
+            label: err.message || "Verification failed",
+            doneLabel: "Error",
+            barColor: "#e5484d",
+            doneHoldMs: 1200,
+          });
+          alert(err.message || "Verification failed. Please try again.");
+        } finally {
+          continueBtn.disabled = false;
+          continueBtn.textContent = prevLabel;
+        }
+      }
+
       if (continueBtn) {
         continueBtn.addEventListener("click", function () {
-          const isFree = /\/freemium\//i.test(window.location.pathname);
-          const nextUrl = isFree
-            ? "./Freemium-Meta-Verification.html"
-            : "./Meta-Verification.html";
-          const goNext = function () {
-            window.location.href = nextUrl;
-          };
-          if (typeof window.bbShowSyncPopup === "function") {
-            const result = window.bbShowSyncPopup({
-              label: "Syncing brand data..",
-              doneLabel: "Synced",
-              barColor: "#635bff",
-              logoSrc: "../brandbased-logo.svg",
-              duration: 4500,
-              doneHoldMs: 1500,
-              shineLabel: true,
-            });
-            if (result && typeof result.then === "function") {
-              result.then(goNext, goNext);
-            } else {
-              window.setTimeout(goNext, 6500);
-            }
-          } else {
-            goNext();
-          }
+          runBrandVerificationSync();
         });
       }
     } catch (_e) {

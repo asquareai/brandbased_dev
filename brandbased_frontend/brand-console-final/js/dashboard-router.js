@@ -696,6 +696,61 @@
         return;
       }
 
+      /* API-driven verification progress — same glass modal as Sync,
+         bar + label updated from the iframe during Laravel polling. */
+      if (data.type === "bb-dash-sync-progress-open") {
+        if (typeof window.bbOpenSyncProgressModal !== "function") return;
+        if (!window.__bbDashProgressModals) window.__bbDashProgressModals = {};
+        const id = data.id;
+        const opts = Object.assign({}, data.opts || {});
+        if (!opts.logoSrc) opts.logoSrc = "./images/b-white.svg";
+        const ctrl = window.bbOpenSyncProgressModal(opts);
+        window.__bbDashProgressModals[id] = ctrl;
+        relocateLatestSyncPopupIntoScreen();
+        return;
+      }
+      if (data.type === "bb-dash-sync-progress-update") {
+        const store = window.__bbDashProgressModals;
+        const ctrl = store && store[data.id];
+        if (ctrl && typeof ctrl.update === "function") {
+          ctrl.update({
+            label: data.label,
+            progress: data.progress,
+            barColor: data.barColor
+          });
+        }
+        return;
+      }
+      if (data.type === "bb-dash-sync-progress-finish") {
+        const store = window.__bbDashProgressModals;
+        const ctrl = store && store[data.id];
+        const source = e.source;
+        if (!ctrl || typeof ctrl.finish !== "function") return;
+        ctrl.finish(data.opts || {}).then(function () {
+          try {
+            if (store) delete store[data.id];
+          } catch (_del) { /* ignore */ }
+          try {
+            if (source) source.postMessage({
+              type: "bb-dash-sync-progress-done",
+              id: data.id
+            }, "*");
+          } catch (_post) { /* ignore */ }
+        });
+        return;
+      }
+      if (data.type === "bb-dash-sync-progress-dismiss") {
+        const store = window.__bbDashProgressModals;
+        const ctrl = store && store[data.id];
+        if (ctrl && typeof ctrl.dismiss === "function") {
+          ctrl.dismiss();
+          try {
+            if (store) delete store[data.id];
+          } catch (_del2) { /* ignore */ }
+        }
+        return;
+      }
+
       /* Confirm popup forwarded up from an iframe. Render at the
          dashboard level so its blur covers chrome + iframe (just
          like sync/publish popups), then post the user's choice

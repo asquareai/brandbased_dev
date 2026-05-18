@@ -1,0 +1,17 @@
+# Upload these to /var/www/brandbased_smart_sizing/ on EC2
+# Source folder:
+#   brandbased_frontend/premium-and-freemium-bb-modals-standalone/
+
+bb_smart_sizing_server.py
+bb_trim_svg_viewbox.py
+requirements.txt
+.env                    # create on server (OPENAI_API_KEY=...)
+
+# On EC2:
+#   python3 -m venv venv && source venv/bin/activate
+#   pip install -r requirements.txt
+#   sudo cp deploy/brandbased-smart-size.service /etc/systemd/system/
+#   sudo systemctl enable --now brandbased-smart-size
+#   Add deploy/nginx-smart-size.conf to nginx for api.brandbased.ai
+#   sudo nginx -t && sudo systemctl reload nginx
+# Test: curl https://api.brandbased.ai/smart/api/bb/ping

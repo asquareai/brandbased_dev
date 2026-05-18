@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BrandVerificationRequestController;
 use App\Http\Controllers\Api\InternalBrandVerificationController;
 use App\Http\Controllers\Api\InternalBrandAiPromptController;
+use App\Http\Controllers\Api\BrandAiPromptController;
 
 Route::get('/internal/brand-ai-prompts/{promptKey}', [InternalBrandAiPromptController::class, 'show']);
 
@@ -22,6 +23,9 @@ Route::post('/auth/reset-pin/update', [AuthController::class, 'updateResetPin'])
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/brand-verification-requests', [BrandVerificationRequestController::class, 'store']);
     Route::get('/brand-verification-requests/{id}/status', [BrandVerificationRequestController::class, 'status']);
+
+    Route::get('/brand-ai-prompts/{promptKey}', [BrandAiPromptController::class, 'show']);
+    Route::put('/brand-ai-prompts/{promptKey}', [BrandAiPromptController::class, 'upsert']);
 });
 
 

@@ -239,6 +239,7 @@
       <!-- RIGHT: verification column ===================================== -->
       <section class="bb-bs-card bb-lu-card bb-lu-verify" aria-labelledby="bbLuVerifyTitle">
         <h2 id="bbLuVerifyTitle" class="bb-lu-card-title">Brand Identity</h2>
+        <p id="bbLuIdentityStatus" class="bb-lu-identity-status" hidden></p>
 
         <!-- Two preview panels: the uploaded light/dark logos drop in
              here, replacing the BrandBased B reference. Each panel
@@ -340,8 +341,21 @@
     </div>
   </div>
 
-  <script src="../bb-smart-ui.js?v=20260503-brand-theme-gallery-portal"></script>
-  <script src="../_shared/sync-popup.js?v=shared-2"></script>
-  <script src="../logo-upload/logo-upload-page.js?v=logoupload-14"></script>
+  <script src="../../assets/js/app-config.js?v=brandapi-2"></script>
+  <script>
+    (function () {
+      [
+        "bbLuBrandName", "bbLuBrandUrl", "bbLuLastUploadMode",
+        "bbLuLightLogoData", "bbLuDarkLogoData", "bbCurrentBrandVerificationRequest",
+        "bbAssetLab:svg:v1", "bbAssetLab:filename:v1", "bbAssetLab:cropSaved:v1"
+      ].forEach(function (k) {
+        try { localStorage.removeItem(k); } catch (_e) { /* ignore */ }
+      });
+    })();
+  </script>
+  <script src="../bb-smart-ui.js?v=smartsize-prod-1"></script>
+  <script src="../_shared/sync-popup.js?v=shared-4"></script>
+  <script src="../_shared/brand-verification-api.js?v=brandverify-1"></script>
+  <script src="../logo-upload/logo-upload-page.js?v=logoupload-20"></script>
 </body>
 </html>

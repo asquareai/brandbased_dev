@@ -153,7 +153,7 @@
           <h2 id="bbStartFreeHeading" class="bb-startnow-pitch__heading">Discover &amp; Promote Free</h2>
           <p class="bb-startnow-pitch__sub">Reach new audiences and build your brand at no cost.</p>
           <a class="bb-startnow-cta bb-startnow-cta--free"
-             href="../freemium/Freemium-Logo-upload-and-Crop-module.html">
+             href="../freemium/Freemium-Logo-upload-and-Crop-module.html?fresh=1">
             <span class="bb-startnow-cta__plus" aria-hidden="true">+</span>
             <span class="bb-startnow-cta__label">Start FREE</span>
             <span class="bb-startnow-cta__arrow" aria-hidden="true">→</span>
@@ -162,7 +162,7 @@
 
         <div class="bb-startnow-mock">
           <a class="bb-startnow-modal-link bb-startnow-modal-link--free"
-             href="../freemium/Freemium-Logo-upload-and-Crop-module.html"
+             href="../freemium/Freemium-Logo-upload-and-Crop-module.html?fresh=1"
              aria-label="Start FREE — open the Logo Upload &amp; Crop module">
             <div class="bb-startnow-modal bb-startnow-modal--free" aria-hidden="true">
               <span class="bb-startnow-modal__close">×</span>
@@ -213,7 +213,7 @@
                and `data-bb-stripe-checkout="premium"` here AND on the
                matching .bb-startnow-modal-link--premium below. -->
           <a class="bb-startnow-cta bb-startnow-cta--premium"
-             href="../logo-upload/Logo-upload-and-Crop-module.html">
+             href="../logo-upload/Logo-upload-and-Crop-module.html?fresh=1">
             <span class="bb-startnow-cta__plus" aria-hidden="true">+</span>
             <span class="bb-startnow-cta__label">Go Premium</span>
             <span class="bb-startnow-cta__arrow" aria-hidden="true">→</span>
@@ -222,7 +222,7 @@
 
         <div class="bb-startnow-mock bb-startnow-mock--premium">
           <a class="bb-startnow-modal-link bb-startnow-modal-link--premium"
-             href="../logo-upload/Logo-upload-and-Crop-module.html"
+             href="../logo-upload/Logo-upload-and-Crop-module.html?fresh=1"
              aria-label="Go Premium — open the Logo Upload &amp; Crop module">
             <div class="bb-startnow-modal bb-startnow-modal--premium" aria-hidden="true">
             <div class="bb-startnow-modal__head">
@@ -299,5 +299,21 @@
     </main>
   </div>
 
+  <script>
+    (function () {
+      function markFreshStart(ev) {
+        var a = ev.currentTarget;
+        if (!a || !a.getAttribute) return;
+        var href = a.getAttribute("href") || "";
+        if (href.indexOf("Logo-upload") < 0 && href.indexOf("logo-upload") < 0) return;
+        try { sessionStorage.setItem("bbLuStartFresh", "1"); } catch (_e) { /* ignore */ }
+      }
+      document.querySelectorAll(
+        'a[href*="Logo-upload"], a[href*="logo-upload"]'
+      ).forEach(function (link) {
+        link.addEventListener("click", markFreshStart);
+      });
+    })();
+  </script>
 </body>
 </html>

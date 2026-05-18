@@ -1,0 +1,38 @@
+BrandBased — frontend-only (UI work on localhost)
+================================================
+
+WHAT TO SHARE
+  Zip the folder: brandbased_frontend/
+  (Do not need brandbased-api or brandbased_py_processor for UI-only work.)
+
+RUN LOCALLY
+  1. Open terminal in brandbased_frontend
+  2. python -m http.server 5500
+  3. Browser: http://127.0.0.1:5500/index.html
+
+POINT TO PRODUCTION API (already set for client handoff)
+  Edit: assets/js/app-config.js
+    USE_PRODUCTION_BACKEND = true   ← use live API from localhost
+    USE_PRODUCTION_BACKEND = false  ← full local dev (needs API on :8000)
+
+  Production URLs (change here if needed):
+    PRODUCTION_API = "https://api.brandbased.ai/api"
+    PRODUCTION_SMART_SIZE = "https://api.brandbased.ai/smart"
+
+PYTHON
+  Client does NOT run Python. Brand Verify uses the live API + server worker.
+  Crop/smart-size uses PRODUCTION_SMART_SIZE (live server), not localhost :8001.
+
+REQUIREMENTS
+  - Python 3 installed (for the simple static server only)
+  - Internet access to api.brandbased.ai
+  - Valid login on production (signup/login hit live API)
+
+CORS
+  If browser shows CORS errors, production Laravel must allow:
+    http://127.0.0.1:5500
+    http://localhost:5500
+
+EXCLUDE FROM ZIP (optional, smaller)
+  premium-and-freemium-bb-modals-standalone/  (only needed on server for smart-size)
+  brand-modules-bundle/dev/

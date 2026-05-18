@@ -1,7 +1,7 @@
 // ================= API CONFIG =================
 const API_BASE_URL =
     (typeof BB_APP !== "undefined" && BB_APP.apiBaseUrl) ||
-    "http://127.0.0.1:8000/api";
+    "https://api.brandbased.ai/api";
 
 const ROUTES =
     (typeof BB_APP !== "undefined" && BB_APP.routes) || {
@@ -201,7 +201,6 @@ async function sendSignupOtp(currentStepId, nextStepId) {
 
         authState.email = email;
 
-        console.log("Signup OTP:", data.otp); // remove later after email setup
 
         goToStep(nextStepId);
 

@@ -10,7 +10,17 @@ class InternalBrandVerificationController extends Controller
 {
     public function pending(Request $request)
     {
-        $items = BrandVerificationRequest::where('identity_status', 'pending')
+        $staleBefore = now()->subMinutes(3);
+
+        $items = BrandVerificationRequest::query()
+            ->where(function ($query) use ($staleBefore) {
+                $query->where('identity_status', 'pending')
+                    ->orWhere(function ($stale) use ($staleBefore) {
+                        $stale->where('identity_status', 'processing')
+                            ->where('identity_progress', '<', 100)
+                            ->where('updated_at', '<', $staleBefore);
+                    });
+            })
             ->orderBy('created_at', 'asc')
             ->limit(5)
             ->get();
@@ -23,8 +33,17 @@ class InternalBrandVerificationController extends Controller
 
     public function claim(Request $request, string $id)
     {
+        $staleBefore = now()->subMinutes(3);
+
         $brandRequest = BrandVerificationRequest::where('id', $id)
-            ->where('identity_status', 'pending')
+            ->where(function ($query) use ($staleBefore) {
+                $query->where('identity_status', 'pending')
+                    ->orWhere(function ($stale) use ($staleBefore) {
+                        $stale->where('identity_status', 'processing')
+                            ->where('identity_progress', '<', 100)
+                            ->where('updated_at', '<', $staleBefore);
+                    });
+            })
             ->first();
 
         if (!$brandRequest) {

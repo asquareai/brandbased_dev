@@ -239,6 +239,7 @@
       <!-- RIGHT: verification column ===================================== -->
       <section class="bb-bs-card bb-lu-card bb-lu-verify" aria-labelledby="bbLuVerifyTitle">
         <h2 id="bbLuVerifyTitle" class="bb-lu-card-title">Brand Identity</h2>
+        <p id="bbLuIdentityStatus" class="bb-lu-identity-status" hidden></p>
 
         <!-- Two preview panels: the uploaded light/dark logos drop in
              here, replacing the BrandBased B reference. Each panel
@@ -256,8 +257,16 @@
                 alt=""
                 data-default-src="../../Brandbased-B-Icon.svg"
               />
+              <span class="bb-lu-preview-badge bb-lu-preview-badge--unverified" aria-hidden="true">
+                <img src="./not-verified.svg" alt="" />
+              </span>
+              <span class="bb-lu-preview-badge bb-lu-preview-badge--verified" aria-hidden="true">
+                <img src="./verification-tick.svg" alt="" />
+              </span>
             </div>
             <figcaption class="bb-lu-preview-caption">Light Mode</figcaption>
+            <p class="bb-lu-verified-pill" aria-hidden="true">Brand Successfully Verified</p>
+            <p class="bb-lu-failed-pill" aria-hidden="true">Brand Not Verified</p>
           </figure>
 
           <figure class="bb-lu-preview bb-lu-preview--dark">
@@ -269,8 +278,16 @@
                 alt=""
                 data-default-src="../../Brandbased-B-Icon.svg"
               />
+              <span class="bb-lu-preview-badge bb-lu-preview-badge--unverified" aria-hidden="true">
+                <img src="./not-verified.svg" alt="" />
+              </span>
+              <span class="bb-lu-preview-badge bb-lu-preview-badge--verified" aria-hidden="true">
+                <img src="./verification-tick.svg" alt="" />
+              </span>
             </div>
             <figcaption class="bb-lu-preview-caption">Dark Mode</figcaption>
+            <p class="bb-lu-verified-pill" aria-hidden="true">Brand Successfully Verified</p>
+            <p class="bb-lu-failed-pill" aria-hidden="true">Brand Not Verified</p>
           </figure>
         </div>
 
@@ -340,8 +357,22 @@
     </div>
   </div>
 
-  <script src="../bb-smart-ui.js?v=20260503-brand-theme-gallery-portal"></script>
-  <script src="../_shared/sync-popup.js?v=shared-2"></script>
-  <script src="./logo-upload-page.js?v=logoupload-14"></script>
+  <script src="../../assets/js/app-config.js?v=brandapi-2"></script>
+  <script>
+    /* Before bb-smart-ui runs — every visit starts empty (no last-test draft). */
+    (function () {
+      [
+        "bbLuBrandName", "bbLuBrandUrl", "bbLuLastUploadMode",
+        "bbLuLightLogoData", "bbLuDarkLogoData", "bbCurrentBrandVerificationRequest",
+        "bbAssetLab:svg:v1", "bbAssetLab:filename:v1", "bbAssetLab:cropSaved:v1"
+      ].forEach(function (k) {
+        try { localStorage.removeItem(k); } catch (_e) { /* ignore */ }
+      });
+    })();
+  </script>
+  <script src="../bb-smart-ui.js?v=smartsize-prod-1"></script>
+  <script src="../_shared/sync-popup.js?v=shared-4"></script>
+  <script src="../_shared/brand-verification-api.js?v=brandverify-2"></script>
+  <script src="./logo-upload-page.js?v=logoupload-21"></script>
 </body>
 </html>

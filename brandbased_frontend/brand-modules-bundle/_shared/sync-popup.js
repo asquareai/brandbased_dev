@@ -44,7 +44,120 @@
  * Returns a Promise that resolves once the popup has fully dismissed.
  */
 (function () {
-  if (window.bbShowSyncPopup && window.bbShowConfirmPopup) return;
+  if (window.bbShowSyncPopup && window.bbShowConfirmPopup && window.bbOpenSyncProgressModal) {
+    return;
+  }
+
+  function clampProgress(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(100, n));
+  }
+
+  function cleanProgressModalOpts(opts) {
+    const cleaned = {};
+    const o = opts || {};
+    if (typeof o.label === "string") cleaned.label = o.label;
+    if (typeof o.barColor === "string") cleaned.barColor = o.barColor;
+    if (Number.isFinite(o.progress)) cleaned.progress = o.progress;
+    if (o.shineLabel) cleaned.shineLabel = true;
+    if (typeof o.logoSrc === "string" && o.logoSrc) {
+      try {
+        cleaned.logoSrc = new URL(o.logoSrc, location.href).href;
+      } catch (_e) {
+        cleaned.logoSrc = o.logoSrc;
+      }
+    }
+    return cleaned;
+  }
+
+  function dismissOverlayParts(parts) {
+    return new Promise(function (resolve) {
+      try {
+        parts.backdrop.classList.remove("bb-sync-popup-backdrop--show");
+      } catch (_e) { /* ignore */ }
+      window.setTimeout(function () {
+        try { parts.backdrop.remove(); } catch (_e2) { /* ignore */ }
+        resolve();
+      }, 240);
+    });
+  }
+
+  function openSyncProgressModalTopLevel(opts) {
+    const o = opts || {};
+    const parts = buildOverlay(o);
+    parts.fill.classList.add("bb-sync-popup__bar-fill--driven");
+    parts.fill.style.animation = "none";
+    parts.fill.style.transition = "width 0.5s cubic-bezier(0.45, 0.05, 0.55, 0.95)";
+    parts.fill.style.width = clampProgress(o.progress) + "%";
+
+    if (o.shineLabel) {
+      parts.label.classList.add("bb-sync-popup__label--shine");
+    }
+
+    document.body.appendChild(parts.backdrop);
+    parts.backdrop.setAttribute("aria-busy", "true");
+
+    requestAnimationFrame(function () {
+      parts.backdrop.classList.add("bb-sync-popup-backdrop--show");
+    });
+
+    let closed = false;
+
+    function update(updateOpts) {
+      if (closed || !updateOpts) return;
+      if (typeof updateOpts.label === "string") {
+        parts.label.textContent = updateOpts.label;
+        if (!parts.label.classList.contains("bb-sync-popup__label--done")) {
+          parts.label.classList.add("bb-sync-popup__label--shine");
+        }
+      }
+      if (Number.isFinite(updateOpts.progress)) {
+        parts.fill.style.width = clampProgress(updateOpts.progress) + "%";
+      }
+      if (typeof updateOpts.barColor === "string") {
+        parts.popup.style.setProperty("--bb-sync-popup-bar-color", updateOpts.barColor);
+      }
+    }
+
+    function dismiss() {
+      if (closed) return Promise.resolve();
+      closed = true;
+      return dismissOverlayParts(parts);
+    }
+
+    function finish(finishOpts) {
+      if (closed) return Promise.resolve();
+      const fo = finishOpts || {};
+      const doneLabel = String(fo.doneLabel || deriveDoneLabel(fo.label || parts.label.textContent));
+      const doneHoldMs = Number.isFinite(fo.doneHoldMs) ? fo.doneHoldMs : 1200;
+
+      if (typeof fo.label === "string") {
+        parts.label.textContent = fo.label;
+      }
+
+      try {
+        parts.label.classList.remove("bb-sync-popup__label--shine");
+        parts.label.classList.add("bb-sync-popup__label--done");
+        parts.fill.style.width = "100%";
+        parts.logoWrap.classList.add("bb-sync-popup__logo--done");
+        parts.backdrop.setAttribute("aria-busy", "false");
+        parts.backdrop.setAttribute("aria-label", doneLabel);
+        window.setTimeout(function () {
+          parts.label.textContent = doneLabel;
+        }, 120);
+      } catch (_e) { /* ignore */ }
+
+      return new Promise(function (resolve) {
+        window.setTimeout(function () {
+          closed = true;
+          dismissOverlayParts(parts).then(resolve);
+        }, doneHoldMs);
+      });
+    }
+
+    return { update: update, finish: finish, dismiss: dismiss, _parts: parts };
+  }
 
   /* --------------------------------------------------------------
      Iframe forwarding mode.
@@ -149,6 +262,15 @@
         }
       });
     };
+
+    /* Verification progress modal — render inside the iframe so it is
+       always visible over the module (parent postMessage was unreliable
+       and could sit behind the iframe). Timed bbShowSyncPopup still
+       forwards to the dashboard. */
+    window.bbOpenSyncProgressModal = function (opts) {
+      return openSyncProgressModalTopLevel(cleanProgressModalOpts(opts || {}));
+    };
+
     return;
   }
 
@@ -249,6 +371,7 @@
   }
 
   window.bbShowSyncPopup = bbShowSyncPopup;
+  window.bbOpenSyncProgressModal = openSyncProgressModalTopLevel;
 
   /* ------------------------------------------------------------
      Top-level confirm popup. Same glass / full-viewport language

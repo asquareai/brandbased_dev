@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountRegistration;
+use App\Models\AccountOtp;
+use App\Services\OtpDeliveryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\AccountOtp;
 
 class AuthController extends Controller
 {
@@ -35,7 +36,7 @@ class AuthController extends Controller
             ], 409);
         }
 
-        $otp = rand(100000, 999999);
+        $otp = OtpDeliveryService::generateCode();
 
         AccountRegistration::updateOrCreate(
             ['email' => $email],
@@ -47,11 +48,29 @@ class AuthController extends Controller
             ]
         );
 
-        return response()->json([
+        try {
+            app(OtpDeliveryService::class)->sendOrFail(
+                $email,
+                $otp,
+                'BrandBased account signup'
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unable to send verification email. Please try again later.',
+            ], 503);
+        }
+
+        $payload = [
             'status' => true,
-            'message' => 'OTP sent successfully.',
-            'otp' => $otp // remove later after email setup
-        ]);
+            'message' => 'OTP sent successfully. Check your email.',
+        ];
+
+        if (config('app.debug')) {
+            $payload['otp'] = $otp;
+        }
+
+        return response()->json($payload);
     }
     public function verifySignupOtp(Request $request)
     {
@@ -279,7 +298,7 @@ class AuthController extends Controller
             ], 404);
         }
 
-        $otp = rand(100000, 999999);
+        $otp = OtpDeliveryService::generateCode();
 
         AccountOtp::updateOrCreate(
             [
@@ -295,11 +314,29 @@ class AuthController extends Controller
             ]
         );
 
-        return response()->json([
+        try {
+            app(OtpDeliveryService::class)->sendOrFail(
+                $email,
+                $otp,
+                'BrandBased PIN reset'
+            );
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unable to send verification email. Please try again later.',
+            ], 503);
+        }
+
+        $payload = [
             'status' => true,
-            'message' => 'OTP sent successfully.',
-            'otp' => $otp // remove after email setup
-        ]);
+            'message' => 'OTP sent successfully. Check your email.',
+        ];
+
+        if (config('app.debug')) {
+            $payload['otp'] = $otp;
+        }
+
+        return response()->json($payload);
     }
     public function verifyResetPinOtp(Request $request)
     {

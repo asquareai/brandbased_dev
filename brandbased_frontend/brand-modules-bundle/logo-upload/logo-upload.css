@@ -534,6 +534,18 @@ body.bb-logo-upload-page .bb-plat-sync-btn.bb-hotspots-sync-btn.bb-lu-continue:f
    appropriate to the current colour scheme, so the help text
    always matches what the user is currently viewing.
    ============================================================ */
+body.bb-logo-upload-page .bb-lu-identity-status {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #6b7bff;
+}
+body.bb-logo-upload-page .bb-lu-identity-status--failed {
+  color: #e5484d;
+}
+body.bb-logo-upload-page .bb-lu-identity-status--review {
+  color: #c9a227;
+}
 body.bb-logo-upload-page .bb-lu-verify {
   align-items: center;
   text-align: center;
@@ -1676,6 +1688,13 @@ body.bb-logo-upload-page .bb-mv-cta-btn:focus-visible {
   transform: translateY(-1px);
   outline: none;
 }
+body.bb-logo-upload-page .bb-mv-cta-btn--disabled,
+body.bb-logo-upload-page .bb-mv-cta-btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+}
+
 body.bb-logo-upload-page .bb-mv-cta-btn:active {
   transform: translateY(0) scale(0.98);
 }

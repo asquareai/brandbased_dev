@@ -5,12 +5,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 
-def svg_url_to_png_data_url(svg_url: str) -> str:
-    response = requests.get(svg_url, timeout=30)
-    response.raise_for_status()
-
-    svg_text = response.text
-
+def svg_text_to_png_data_url(svg_text: str) -> str:
     with tempfile.TemporaryDirectory() as tmpdir:
         html_path = Path(tmpdir) / "logo.html"
         png_path = Path(tmpdir) / "logo.png"
@@ -26,7 +21,7 @@ def svg_url_to_png_data_url(svg_url: str) -> str:
             </body>
             </html>
             """,
-            encoding="utf-8"
+            encoding="utf-8",
         )
 
         with sync_playwright() as p:
@@ -40,3 +35,9 @@ def svg_url_to_png_data_url(svg_url: str) -> str:
         encoded = base64.b64encode(png_bytes).decode("utf-8")
 
         return f"data:image/png;base64,{encoded}"
+
+
+def svg_url_to_png_data_url(svg_url: str) -> str:
+    response = requests.get(svg_url, timeout=30)
+    response.raise_for_status()
+    return svg_text_to_png_data_url(response.text)
