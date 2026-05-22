@@ -13,6 +13,7 @@
 
     <!-- styles -->
     <link rel="stylesheet" href="signup-page.css">
+    <link rel="stylesheet" href="brand-modules-bundle/_shared/sync-popup.css?v=auth-popup-1">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -43,7 +44,7 @@
 
             <!-- Animated Moving Subtitle -->
             <div class="moving-subtitle">
-                <span class="text-slide active desktop-text1">Create your account</span>
+                <span class="text-slide active desktop-text1">The Shopping Cart is Dead</span>
                 <span class="text-slide desktop-text2">Join a <span style="font-style: italic;">Brand</span> - New Movement</span>
             </div>
         </div>
@@ -136,7 +137,7 @@
                 <button onclick="loginAccount('desktop-login')" class="signup-btn">Login</button>
 
                 <p class="signin">
-                    <a href="#" onclick="goToStep('desktop-forgot-email')">Forgot password?</a>
+                    <a href="#" onclick="event.preventDefault(); goToStep('desktop-forgot-email');">Forgot password?</a>
                 </p>
 
                 <p class="signin">
@@ -153,7 +154,7 @@
 
                 <input type="email" placeholder="Email address">
 
-                <button onclick="goToStep('desktop-forgot-otp')" class="signup-btn">Send OTP</button>
+                <button type="button" class="signup-btn" data-auth-action="reset-password-send" data-step="desktop-forgot-email" data-next="desktop-forgot-otp">Send OTP</button>
             </div>
 
             <!-- Forgot OTP -->
@@ -164,7 +165,7 @@
 
                 <input type="text" maxlength="6" inputmode="numeric" placeholder="Enter OTP">
 
-                <button onclick="goToStep('desktop-forgot-password')" class="signup-btn">Verify OTP</button>
+                <button type="button" class="signup-btn" data-auth-action="reset-password-verify" data-step="desktop-forgot-otp" data-next="desktop-forgot-password">Verify OTP</button>
             </div>
 
             <!-- Forgot Password -->
@@ -176,7 +177,7 @@
                 <input type="password" placeholder="New password">
                 <input type="password" placeholder="Confirm password">
 
-                <button onclick="goToStep('desktop-login')" class="signup-btn">Update password</button>
+                <button type="button" class="signup-btn" data-auth-action="reset-password-update" data-step="desktop-forgot-password" data-next="desktop-login">Update password</button>
             </div>
 
         </div>
@@ -191,7 +192,7 @@
     <!-- Right Video Panel Desktop only -->
     <div class="right-panel">
         <video class="video-bg" autoplay muted loop playsinline>
-            <source src="./assets/videos/brand-based-hero-bg.mp4" type="video/mp4">
+            <source src="./assets/videos/BB-background-video-theme-signup.mp4" type="video/mp4">
         </video>
         <div class="overlay"></div>
         <img src="./assets/images/Brandbased-icon-white.svg" alt="logo" class="center-logo">
@@ -210,7 +211,7 @@
     </h1>
 
     <div class="moving-subtitle">
-        <span class="text-slide active mobile-text1">Create your account</span>
+        <span class="text-slide active mobile-text1">The Shopping Cart is Dead</span>
         <span class="text-slide mobile-text2">Join a <span style="font-style: italic;">Brand</span> - New Movement</span>
     </div>
 
@@ -224,8 +225,8 @@
                 Sign up with email
             </button>
 
-            <p class="mobile-signin">
-                Already have an account?
+            <p class="mobile-signin mobile-auth-switch mobile-auth-switch--signin">
+                <span class="mobile-auth-switch-label">Already have an account?</span>
                 <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
             </p>
         </div>
@@ -233,14 +234,15 @@
         <!-- Signup Email -->
         <div class="auth-step" id="mobile-signup-email">
             <h2>Create account</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Enter your email to continue</p>
 
             <input type="email" placeholder="Email address">
 
             <button onclick="sendSignupOtp('mobile-signup-email', 'mobile-signup-otp')" class="mobile-signup-btn">Continue</button>
 
-            <p class="mobile-signin">
-                Already have an account?
+            <p class="mobile-signin mobile-auth-switch mobile-auth-switch--signin">
+                <span class="mobile-auth-switch-label">Already have an account?</span>
                 <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
             </p>
         </div>
@@ -248,47 +250,72 @@
         <!-- Signup OTP -->
         <div class="auth-step" id="mobile-signup-otp">
             <h2>Verify email</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Enter the OTP sent to your email</p>
 
             <input type="text" maxlength="6" inputmode="numeric" placeholder="Enter OTP">
 
             <button onclick="verifySignupOtp('mobile-signup-otp', 'mobile-signup-password')" class="mobile-signup-btn">Verify OTP</button>
+
+            <p class="mobile-signin mobile-auth-switch mobile-auth-switch--signin">
+                <span class="mobile-auth-switch-label">Already have an account?</span>
+                <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
+            </p>
         </div>
 
         <!-- Signup Password -->
         <div class="auth-step" id="mobile-signup-password">
             <h2>Create password</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Set your account password</p>
 
             <input type="password" placeholder="Password">
             <input type="password" placeholder="Confirm password">
 
             <button onclick="validateSignupPassword('mobile-signup-password', 'mobile-setup-pin-choice')" class="mobile-signup-btn">Continue</button>
+
+            <p class="mobile-signin mobile-auth-switch mobile-auth-switch--signin">
+                <span class="mobile-auth-switch-label">Already have an account?</span>
+                <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
+            </p>
         </div>
 
         <!-- PIN Choice -->
         <div class="auth-step" id="mobile-setup-pin-choice">
             <h2>Setup PIN code?</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Use a 6 digit PIN for faster login</p>
 
             <button onclick="goToStep('mobile-setup-pin')" class="mobile-signup-btn">Yes, setup PIN</button>
             <button onclick="finishSignupWithoutPin('mobile-setup-pin-choice')" class="mobile-signup-btn secondary-inline-btn">Skip for now</button>
+
+            <p class="mobile-signin mobile-auth-switch mobile-auth-switch--signin">
+                <span class="mobile-auth-switch-label">Already have an account?</span>
+                <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
+            </p>
         </div>
 
         <!-- Setup PIN -->
         <div class="auth-step" id="mobile-setup-pin">
             <h2>Create PIN</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Create your 6 digit PIN</p>
 
             <input type="password" maxlength="6" inputmode="numeric" placeholder="Enter 6 digit PIN">
             <input type="password" maxlength="6" inputmode="numeric" placeholder="Confirm PIN">
 
             <button onclick="validatePinStep('mobile-setup-pin')" class="mobile-signup-btn">Finish</button>
+
+            <p class="mobile-signin mobile-auth-switch mobile-auth-switch--signin">
+                <span class="mobile-auth-switch-label">Already have an account?</span>
+                <a href="#" onclick="goToStep('mobile-login')">Sign in</a>
+            </p>
         </div>
 
         <!-- Login -->
         <div class="auth-step" id="mobile-login">
             <h2>Welcome back</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Login with your email and password</p>
 
             <input type="email" placeholder="Email address">
@@ -297,11 +324,11 @@
             <button onclick="loginAccount('mobile-login')" class="mobile-signup-btn">Login</button>
 
             <p class="mobile-signin">
-                <a href="#" onclick="goToStep('mobile-forgot-email')">Forgot password?</a>
+                <a href="#" onclick="event.preventDefault(); goToStep('mobile-forgot-email');">Forgot password?</a>
             </p>
 
-            <p class="mobile-signin">
-                New user?
+            <p class="mobile-signin mobile-auth-switch mobile-auth-switch--signup">
+                <span class="mobile-auth-switch-label">New user?</span>
                 <a href="#" onclick="goToStep('mobile-signup-email')">Create account</a>
             </p>
         </div>
@@ -309,32 +336,35 @@
         <!-- Forgot Email -->
         <div class="auth-step" id="mobile-forgot-email">
             <h2>Reset password</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Enter your registered email</p>
 
             <input type="email" placeholder="Email address">
 
-            <button onclick="goToStep('mobile-forgot-otp')" class="mobile-signup-btn">Send OTP</button>
+            <button type="button" class="mobile-signup-btn" data-auth-action="reset-password-send" data-step="mobile-forgot-email" data-next="mobile-forgot-otp">Send OTP</button>
         </div>
 
         <!-- Forgot OTP -->
         <div class="auth-step" id="mobile-forgot-otp">
             <h2>Verify OTP</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Enter the OTP sent to your email</p>
 
             <input type="text" maxlength="6" inputmode="numeric" placeholder="Enter OTP">
 
-            <button onclick="goToStep('mobile-forgot-password')" class="mobile-signup-btn">Verify OTP</button>
+            <button type="button" class="mobile-signup-btn" data-auth-action="reset-password-verify" data-step="mobile-forgot-otp" data-next="mobile-forgot-password">Verify OTP</button>
         </div>
 
         <!-- Forgot Password -->
         <div class="auth-step" id="mobile-forgot-password">
             <h2>Change password</h2>
+            <button type="button" class="back-btn" onclick="goBack()">← Back</button>
             <p class="auth-subtitle">Create your new password</p>
 
             <input type="password" placeholder="New password">
             <input type="password" placeholder="Confirm password">
 
-            <button onclick="goToStep('mobile-login')" class="mobile-signup-btn">Update password</button>
+            <button type="button" class="mobile-signup-btn" data-auth-action="reset-password-update" data-step="mobile-forgot-password" data-next="mobile-login">Update password</button>
         </div>
 
     </div>
@@ -346,6 +376,7 @@
     </div>
 </div>
 <script src="./assets/js/app-config.js?v=brandapi-1"></script>
-<script src="./assets/js/signup.js"></script>
+<script src="brand-modules-bundle/_shared/sync-popup.js?v=auth-popup-1"></script>
+<script src="./assets/js/signup.js?v=auth-fix-1"></script>
 </body>
 </html>

@@ -546,6 +546,13 @@ body.bb-logo-upload-page .bb-lu-identity-status--failed {
 body.bb-logo-upload-page .bb-lu-identity-status--review {
   color: #c9a227;
 }
+body.bb-logo-upload-page .bb-lu-identity-status--success,
+body.bb-meta-verification-page .bb-mv-meta-status--success {
+  color: #3d9a4a;
+}
+body.bb-meta-verification-page .bb-mv-meta-status--failed {
+  color: #e5484d;
+}
 body.bb-logo-upload-page .bb-lu-verify {
   align-items: center;
   text-align: center;
@@ -1555,6 +1562,14 @@ body.bb-meta-verification-page .bb-mv-instructions {
   font: 500 13.5px/1.5 Roboto, system-ui, sans-serif;
   color: inherit;
   opacity: 0.86;
+}
+
+body.bb-meta-verification-page .bb-mv-brand-id {
+  margin: 0 0 10px 0;
+  font: 600 13px/1.4 Roboto, system-ui, sans-serif;
+  color: #635bff;
+  text-align: left;
+  word-break: break-all;
 }
 
 /* -- Sync button — wide pill, full width of the left card ------- */

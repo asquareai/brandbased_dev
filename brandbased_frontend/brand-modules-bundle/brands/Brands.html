@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="../platforms/platforms.css?v=platforms-46" />
   <link rel="stylesheet" href="../hotspots/hotspots.css?v=hotspots-8" />
   <link rel="stylesheet" href="../_shared/sync-popup.css?v=confirm-6" />
-  <link rel="stylesheet" href="./brands.css?v=brands-29" />
+  <link rel="stylesheet" href="./brands.css?v=brands-30" />
   <!-- bb-embed-mode-init: when this page is rendered inside an
        iframe (e.g. the Brand Console dashboard), drop its own page
        background + animated shards so it sits flush on the host
@@ -157,128 +157,13 @@
     <div class="bb-bts-layout bb-hotspots-dash-layout" role="main" aria-label="Brands">
       <section class="bb-hotspots-center bb-plat-dash-col" aria-label="Your brands">
         <div class="bb-brands-panel">
-          <ul class="bb-brands-grid" id="bbBrandsGrid">
-            <!-- Brand 1: Nike -->
-            <li class="bb-brands-card">
-              <div class="bb-brands-circle-wrap">
-                <div class="bb-brands-circle">
-                  <img
-                    class="bb-brands-logo"
-                    src="./nike.svg"
-                    alt=""
-                    decoding="async"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
-                  />
-                  <span class="bb-brands-fallback" aria-hidden="true" style="display: none;">N</span>
-                </div>
-                <!-- Dev-only Plan-tier preview pill (hidden by default; revealed
-                     when localStorage["bbDevShowPlanTier"] === "1" via the
-                     `bb-brands-show-plan` body class). Star is inlined SVG
-                     with explicit white fill so it always reads white,
-                     regardless of CSS-mask quirks across browsers. -->
-                <span class="bb-brands-plan-pill" aria-label="Premium plan">
-                  <svg class="bb-brands-plan-pill__star" viewBox="0 0 122.88 116.864" aria-hidden="true" focusable="false">
-                    <polygon fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd" points="61.44,0 78.351,41.326 122.88,44.638 88.803,73.491 99.412,116.864 61.44,93.371 23.468,116.864 34.078,73.491 0,44.638 44.529,41.326 61.44,0" />
-                  </svg>
-                  <span class="bb-brands-plan-pill__label">Premium</span>
-                </span>
-                <!-- Dev-only "Not Verified" badge — wired to the existing
-                     `bbDevVerifyState` toggle in dev/export-settings.html.
-                     Hidden by default; shown on every brand when the toggle
-                     is set to "fail". -->
-                <img
-                  class="bb-brands-badge bb-brands-badge--unverified"
-                  src="./not-verified.svg"
-                  alt=""
-                  aria-label="Brand not verified"
-                  decoding="async"
-                />
-              </div>
-              <p class="bb-brands-name">Nike</p>
-              <a class="bb-brands-url" href="https://www.nike.com/" target="_blank" rel="noopener">https://www.nike.com/</a>
-              <div class="bb-brands-publish-menu">
-                <button type="button" class="bb-brands-publish-trigger" aria-haspopup="menu" aria-expanded="false" aria-label="Brand actions">
-                  <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
-                    <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
-              </div>
+          <ul class="bb-brands-grid" id="bbBrandsGrid" aria-live="polite">
+            <!-- Verified brands rendered by brands-page.js -->
+            <li class="bb-brands-card bb-brands-card--placeholder" id="bbBrandsLoading" hidden>
+              <p class="bb-brands-name">Loading brands…</p>
             </li>
-
-            <!-- Brand 2: Air Jordan -->
-            <li class="bb-brands-card">
-              <div class="bb-brands-circle-wrap">
-                <div class="bb-brands-circle">
-                  <img
-                    class="bb-brands-logo"
-                    src="./jordan.svg"
-                    alt=""
-                    decoding="async"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
-                  />
-                  <span class="bb-brands-fallback bb-brands-fallback--red" aria-hidden="true" style="display: none;">J</span>
-                </div>
-                <span class="bb-brands-plan-pill" aria-label="Premium plan">
-                  <svg class="bb-brands-plan-pill__star" viewBox="0 0 122.88 116.864" aria-hidden="true" focusable="false">
-                    <polygon fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd" points="61.44,0 78.351,41.326 122.88,44.638 88.803,73.491 99.412,116.864 61.44,93.371 23.468,116.864 34.078,73.491 0,44.638 44.529,41.326 61.44,0" />
-                  </svg>
-                  <span class="bb-brands-plan-pill__label">Premium</span>
-                </span>
-                <img
-                  class="bb-brands-badge bb-brands-badge--unverified"
-                  src="./not-verified.svg"
-                  alt=""
-                  aria-label="Brand not verified"
-                  decoding="async"
-                />
-              </div>
-              <p class="bb-brands-name">Air Jordan</p>
-              <a class="bb-brands-url" href="https://www.nike.com/jordan" target="_blank" rel="noopener">https://www.nike.com/jordan</a>
-              <div class="bb-brands-publish-menu">
-                <button type="button" class="bb-brands-publish-trigger" aria-haspopup="menu" aria-expanded="false" aria-label="Brand actions">
-                  <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
-                    <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
-              </div>
-            </li>
-
-            <!-- Brand 3: Nike SB -->
-            <li class="bb-brands-card">
-              <div class="bb-brands-circle-wrap">
-                <div class="bb-brands-circle">
-                  <img
-                    class="bb-brands-logo"
-                    src="./nike-sb.svg"
-                    alt=""
-                    decoding="async"
-                    onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"
-                  />
-                  <span class="bb-brands-fallback bb-brands-fallback--dark" aria-hidden="true" style="display: none;">SB</span>
-                </div>
-                <span class="bb-brands-plan-pill" aria-label="Premium plan">
-                  <svg class="bb-brands-plan-pill__star" viewBox="0 0 122.88 116.864" aria-hidden="true" focusable="false">
-                    <polygon fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd" points="61.44,0 78.351,41.326 122.88,44.638 88.803,73.491 99.412,116.864 61.44,93.371 23.468,116.864 34.078,73.491 0,44.638 44.529,41.326 61.44,0" />
-                  </svg>
-                  <span class="bb-brands-plan-pill__label">Premium</span>
-                </span>
-                <img
-                  class="bb-brands-badge bb-brands-badge--unverified"
-                  src="./not-verified.svg"
-                  alt=""
-                  aria-label="Brand not verified"
-                  decoding="async"
-                />
-              </div>
-              <p class="bb-brands-name">Nike SB</p>
-              <a class="bb-brands-url" href="https://www.nike.com/sb" target="_blank" rel="noopener">https://www.nike.com/sb</a>
-              <div class="bb-brands-publish-menu">
-                <button type="button" class="bb-brands-publish-trigger" aria-haspopup="menu" aria-expanded="false" aria-label="Brand actions">
-                  <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">
-                    <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                </button>
-              </div>
+            <li class="bb-brands-card bb-brands-card--placeholder" id="bbBrandsEmpty" hidden>
+              <p class="bb-brands-name">No verified brands yet. Tap Add brand to start.</p>
             </li>
 
             <!-- Add brand CTA — same circular footprint, dashed outline. -->
@@ -300,7 +185,9 @@
     </div>
   </div>
 
+  <script src="../../assets/js/app-config.js?v=brandapi-2"></script>
+  <script src="../_shared/brand-verification-api.js?v=brandverify-6"></script>
   <script src="../_shared/sync-popup.js?v=confirm-3"></script>
-  <script src="./brands-page.js?v=brands-8"></script>
+  <script src="./brands-page.js?v=brands-11"></script>
 </body>
 </html>

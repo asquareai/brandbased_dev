@@ -559,6 +559,15 @@ setInterval(triggerDoubleShine, 30000);
     // ── Apply the correct class right now ────────────────────────────────
     function applyTheme(isLight) {
       document.body.classList.toggle(DARK_CLASS, isLight);
+      try {
+        const frame = document.querySelector(".bb-dash-frame");
+        if (frame && frame.contentWindow) {
+          frame.contentWindow.postMessage(
+            { type: "bb-dash-theme", scheme: isLight ? "light" : "dark" },
+            "*"
+          );
+        }
+      } catch (_e) {}
     }
   
     // ── What theme should we use? ────────────────────────────────────────

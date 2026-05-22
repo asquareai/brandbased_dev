@@ -125,6 +125,199 @@
       margin: 0 0 8px 0;
       font: 800 15px/1.2 Roboto, system-ui, sans-serif;
     }
+
+    .bb-bs-brand-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #f2f3f8;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+    }
+    body.dark-mode .bb-bs-brand-bar,
+    body:not(.light-mode) .bb-bs-brand-bar {
+      background: linear-gradient(165deg, rgba(15, 23, 42, 0.94) 0%, rgba(8, 11, 26, 0.96) 100%);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.95);
+    }
+    .bb-bs-brand-bar__identity {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+    .bb-bs-brand-bar__logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: contain;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+    .bb-bs-brand-bar__logo-fallback {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font: 700 20px/1 Roboto, system-ui, sans-serif;
+      background: #1030f5;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .bb-bs-brand-bar__name {
+      margin: 0;
+      font: 800 18px/1.2 Roboto, system-ui, sans-serif;
+    }
+    .bb-bs-brand-bar__url {
+      display: block;
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #1030f5;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .bb-bs-brand-bar__id {
+      margin: 6px 0 0;
+      font-size: 12px;
+      opacity: 0.72;
+    }
+    .bb-bs-brand-bar__badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .bb-bs-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font: 600 11px/1.2 Roboto, system-ui, sans-serif;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .bb-bs-pill--verified {
+      background: rgba(16, 48, 245, 0.12);
+      color: #1030f5;
+    }
+    .bb-bs-pill--live {
+      background: rgba(34, 197, 94, 0.15);
+      color: #15803d;
+    }
+    .bb-bs-pill--draft {
+      background: rgba(100, 116, 139, 0.15);
+      color: #475569;
+    }
+    .bb-bs-brand-bar__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .bb-bs-btn {
+      appearance: none;
+      border: 1px solid rgba(16, 48, 245, 0.35);
+      background: #1030f5;
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font: 600 13px/1 Roboto, system-ui, sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .bb-bs-btn:hover {
+      filter: brightness(1.05);
+    }
+    .bb-bs-btn--ghost {
+      background: transparent;
+      color: inherit;
+      border-color: rgba(0, 0, 0, 0.18);
+    }
+    body.dark-mode .bb-bs-btn--ghost {
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .bb-bs-btn--danger {
+      background: #dc2626;
+      border-color: #dc2626;
+    }
+    .bb-bs-save-status {
+      font: 600 12px/1 Roboto, system-ui, sans-serif;
+      padding: 6px 10px;
+      border-radius: 999px;
+      min-width: 4.5em;
+      text-align: center;
+      opacity: 0.9;
+    }
+    .bb-bs-save-status--saving {
+      background: rgba(16, 48, 245, 0.12);
+      color: #1030f5;
+    }
+    .bb-bs-save-status--saved {
+      background: rgba(34, 197, 94, 0.15);
+      color: #15803d;
+    }
+    .bb-bs-save-status--error {
+      background: rgba(220, 38, 38, 0.12);
+      color: #b91c1c;
+    }
+    #bbBsNoBrand {
+      margin: 24px 0;
+      padding: 28px 20px;
+      text-align: center;
+      border-radius: 14px;
+      background: #f2f3f8;
+      border: 1px dashed rgba(0, 0, 0, 0.15);
+    }
+    #bbBsNoBrand[hidden] {
+      display: none !important;
+    }
+    #bbBsActivityPanel {
+      margin-top: 22px;
+    }
+    #bbBsActivityPanel[hidden] {
+      display: none !important;
+    }
+    .bb-bs-activity-list {
+      list-style: none;
+      margin: 10px 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .bb-bs-activity-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      font-size: 13px;
+    }
+    body.dark-mode .bb-bs-activity-item {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .bb-bs-activity-action {
+      font-weight: 700;
+    }
+    .bb-bs-activity-meta {
+      opacity: 0.78;
+      font-size: 12px;
+    }
     /* Match "Preview Simulated Content" heading to main page title size */
     #bbPreviewCard > h2 {
       font: 800 28px/1.15 Roboto, system-ui, sans-serif;
@@ -1027,13 +1220,26 @@
       /* Sync color-scheme to the parent dashboard (its body has
          `.light-mode` for light, no class for dark). Cross-origin
          reads throw, so fall back to the CSS-set "light dark". */
+      function syncSchemeFromParent() {
+        try {
+          var parentBody = window.parent && window.parent.document && window.parent.document.body;
+          if (parentBody) {
+            var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+            document.documentElement.style.colorScheme = scheme;
+            if (document.body) {
+              document.body.classList.toggle("light-mode", scheme === "light");
+              document.body.classList.toggle("dark-mode", scheme === "dark");
+            }
+            return;
+          }
+        } catch (_e) { /* cross-origin */ }
+      }
+      syncSchemeFromParent();
       try {
-        var parentBody = window.parent && window.parent.document && window.parent.document.body;
-        if (parentBody) {
-          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
-          document.documentElement.style.colorScheme = scheme;
+        if (window.parent && window.parent !== window) {
+          window.setInterval(syncSchemeFromParent, 280);
         }
-      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+      } catch (_e) { /* ignore */ }
 
       document.documentElement.classList.add("bb-embedded");
 
@@ -1098,8 +1304,15 @@
       <a href="payments/Payments.html">Payments</a>
       <a href="Admin-Team-Console-Brand-Settings-AI-Rules.html">Team Console AI</a>
     </p>
-    <h1>Brand Settings</h1>
+    <h1 id="bbBsPageTitle">Brand Settings</h1>
   </header>
+
+  <section class="bb-bs-brand-bar" id="bbBsBrandBar" hidden aria-label="Selected brand"></section>
+
+  <div class="bb-bs-card" id="bbBsNoBrand" hidden>
+    <p style="margin:0 0 14px;font-size:16px">No brand selected. Open a verified brand from the Brands page, or add a new one.</p>
+    <a class="bb-bs-btn" href="./brands/Brands.html">Go to Brands</a>
+  </div>
 
   <div class="bb-bs-layout">
     <div>
@@ -1243,6 +1456,12 @@
           <a class="bb-modal-theme-btn" href="Brand-Theme-Settings-Module.html">Theme Styles</a>
         </div>
       </div>
+
+      <div class="bb-bs-card" id="bbBsActivityPanel" hidden style="margin-top:14px">
+        <h2>Activity history</h2>
+        <p class="bb-bs-help">Publish, unpublish, and verification events for this brand.</p>
+        <ul class="bb-bs-activity-list" id="bbBsActivityList" aria-live="polite"></ul>
+      </div>
     </div>
   </div>
 
@@ -1255,6 +1474,10 @@
     .bb-bs-layout > div:first-child > .bb-bs-card { height: 100%; }
   </style>
 
-  <script src="brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-6"></script>
+  <script src="../assets/js/app-config.js?v=brandapi-2"></script>
+  <script src="_shared/brand-verification-api.js?v=brandverify-8"></script>
+  <script src="_shared/sync-popup.js?v=confirm-3"></script>
+  <script src="brand-settings-page.js?v=brandsettings-3"></script>
+  <script src="brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-14"></script>
 </body>
 </html>

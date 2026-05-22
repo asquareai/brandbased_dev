@@ -1000,13 +1000,26 @@
       /* Sync color-scheme to the parent dashboard (its body has
          `.light-mode` for light, no class for dark). Cross-origin
          reads throw, so fall back to the CSS-set "light dark". */
+      function syncSchemeFromParent() {
+        try {
+          var parentBody = window.parent && window.parent.document && window.parent.document.body;
+          if (parentBody) {
+            var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
+            document.documentElement.style.colorScheme = scheme;
+            if (document.body) {
+              document.body.classList.toggle("light-mode", scheme === "light");
+              document.body.classList.toggle("dark-mode", scheme === "dark");
+            }
+            return;
+          }
+        } catch (_e) { /* cross-origin */ }
+      }
+      syncSchemeFromParent();
       try {
-        var parentBody = window.parent && window.parent.document && window.parent.document.body;
-        if (parentBody) {
-          var scheme = parentBody.classList.contains("light-mode") ? "light" : "dark";
-          document.documentElement.style.colorScheme = scheme;
+        if (window.parent && window.parent !== window) {
+          window.setInterval(syncSchemeFromParent, 280);
         }
-      } catch (_e) { /* cross-origin: leave at "light dark" from CSS */ }
+      } catch (_e) { /* ignore */ }
 
       document.documentElement.classList.add("bb-embedded");
 
@@ -1230,6 +1243,6 @@
     .bb-bs-layout > div:first-child > .bb-bs-card { height: 100%; }
   </style>
 
-  <script src="../brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-3"></script>
+  <script src="../brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-12"></script>
 </body>
 </html>

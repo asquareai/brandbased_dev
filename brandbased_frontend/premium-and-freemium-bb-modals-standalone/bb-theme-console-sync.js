@@ -38,6 +38,29 @@
     return Math.max(0, Math.min(100, n));
   }
 
+  /** Slider 50–150% → inner logo 0.293×–0.479×. */
+  const BRAND_ICON_INNER_MUL_MIN = 0.2925;
+  const BRAND_ICON_INNER_MUL_MAX = 0.708906948;
+
+  function clampBrandIconSizePct(v, fallback) {
+    const n = Number(v);
+    const base = Number.isFinite(n) ? n : fallback;
+    return Math.max(50, Math.min(150, Math.round(base)));
+  }
+
+  function brandIconInnerMulFromPct(pct) {
+    const p = clampBrandIconSizePct(pct, 100);
+    const t = (p - 50) / 100;
+    return (
+      BRAND_ICON_INNER_MUL_MIN +
+      t * (BRAND_ICON_INNER_MUL_MAX - BRAND_ICON_INNER_MUL_MIN)
+    );
+  }
+
+  function brandIconInnerMul(state) {
+    return brandIconInnerMulFromPct(state && state.brandIconSizePct);
+  }
+
   function hexToRgba(hex, opacityPct) {
     const h = normHex6(hex) || DEFAULT_ACCENT;
     const ch = (i) => parseInt(h.slice(i, i + 2), 16);
@@ -61,9 +84,25 @@
     return `${base}:themeSlot:${slot}:v1`;
   }
 
+  /** Latest Theme Styles postMessage (file:// bridge); wins over empty Premium localStorage. */
+  let _liveTheme = null;
+
+  function payloadRaw(payload, base, slot) {
+    if (!payload) return null;
+    const sk = scopedKey(base, slot);
+    if (payload[sk] != null && payload[sk] !== "") return String(payload[sk]);
+    if (payload[base] != null && payload[base] !== "") return String(payload[base]);
+    return null;
+  }
+
   function readRaw(base, slot) {
+    const s = slot != null ? slot : readActiveSlot();
+    if (_liveTheme && _liveTheme.payload) {
+      const fromLive = payloadRaw(_liveTheme.payload, base, s);
+      if (fromLive != null) return fromLive;
+    }
     try {
-      const scoped = localStorage.getItem(scopedKey(base, slot));
+      const scoped = localStorage.getItem(scopedKey(base, s));
       if (scoped != null && scoped !== "") return scoped;
     } catch (_e) {}
     try {
@@ -159,6 +198,7 @@
       brandIconFillHex,
       brandIconBorderHex,
       brandIconFillOpacity: clampPct(o?.brandIconFillOpacity, 100),
+      brandIconSizePct: clampBrandIconSizePct(o?.brandIconSizePct, 100),
       buyButtonBgHex: normHex6(o?.buyButtonBgHex) || legacyAccent || accent.hex,
       buyButtonLabelHex: normHex6(o?.buyButtonLabelHex) || "#ffffff",
       exploreIconHex: normHex6(o?.exploreIconHex) || legacyAccent || accent.hex,
@@ -254,6 +294,10 @@
     target.style.setProperty("--bb-theme-popup-brand-icon-bg", fillRgba);
     target.style.setProperty("--bb-theme-popup-brand-icon-border", borderCss);
     target.style.setProperty("--bb-theme-popup-brand-icon", fillRgba);
+    target.style.setProperty(
+      "--bb-theme-popup-brand-icon-inner-mul",
+      String(brandIconInnerMul(state))
+    );
     target.style.setProperty("--bb-theme-popup-content-color", state.contentColorHex);
     target.style.setProperty("--bb-theme-popup-product-title-color", state.productTitleColorHex);
     target.style.setProperty("--bb-theme-popup-buy-button-bg", state.buyButtonBgHex);
@@ -313,7 +357,17 @@
     return u || fallback;
   }
 
+  function hasLuDualLogosInStorage() {
+    try {
+      return !!(
+        localStorage.getItem("bbLuLightLogoData") || localStorage.getItem("bbLuDarkLogoData")
+      );
+    } catch (_e) {}
+    return false;
+  }
+
   function ensureUploadLogoStyle() {
+    if (hasLuDualLogosInStorage()) return;
     try {
       const svg = localStorage.getItem(KEY_ASSET_SVG) || "";
       const el = document.getElementById("bb-standalone-upload-logo-style");
@@ -479,7 +533,8 @@
       !hasCustomVideo &&
       !videoOn;
 
-    shell.classList.toggle("bb-theme-bg-on", !!state.on);
+    /* Logo blend is independent of Theme background on Theme Styles; keep glass/layers active. */
+    shell.classList.toggle("bb-theme-bg-on", !!state.on || !!state.blend);
     shell.classList.toggle("bb-theme-frosted", !!state.frosted);
     shell.classList.toggle("bb-theme-blend-logo", !!state.blend);
     shell.classList.toggle("bb-theme-tint-on", !!accent.on);
@@ -557,8 +612,17 @@
 
     if (state.blend) {
       applyBlendImageVar();
+      const blendLayer = shell.querySelector(".bb-theme-logo-blend");
+      if (blendLayer) {
+        try {
+          const img = shell.style.getPropertyValue("--bb-theme-blend-bg-image");
+          if (img) blendLayer.style.setProperty("background-image", img);
+        } catch (_e) {}
+      }
     } else {
       shell.style.removeProperty("--bb-theme-blend-bg-image");
+      const blendLayer = shell.querySelector(".bb-theme-logo-blend");
+      if (blendLayer) blendLayer.style.removeProperty("background-image");
     }
 
     if (blurEl) {
@@ -585,12 +649,14 @@
     const icon = shell.querySelector(".title-row .brand-icon");
     if (!icon) return;
     const fillRgba = hexToRgba(state.brandIconFillHex, state.brandIconFillOpacity);
+    const innerMul = String(brandIconInnerMul(state));
     icon.style.setProperty("background-color", fillRgba, "important");
     icon.style.setProperty(
       "border",
       `1px solid ${state.brandIconBorderHex}`,
       "important"
     );
+    icon.style.setProperty("--bb-theme-popup-brand-icon-inner-mul", innerMul);
   }
 
   function applyFreemiumChrome(state, typo, accent, slot) {
@@ -608,6 +674,9 @@
     );
     modal.style.setProperty("--bb-fm-brand-icon-bg", fillRgba);
     modal.style.setProperty("--bb-fm-brand-icon-border", state.brandIconBorderHex);
+    const innerMul = String(brandIconInnerMul(state));
+    modal.style.setProperty("--bb-fm-brand-icon-inner-mul", innerMul);
+    modal.style.setProperty("--bb-theme-popup-brand-icon-inner-mul", innerMul);
     modal.style.setProperty("--bb-fm-button-bg", state.buyButtonBgHex);
     modal.style.setProperty("--bb-fm-button-label", state.buyButtonLabelHex);
     const badge = modal.querySelector(".bb-freemium-badge");
@@ -619,6 +688,8 @@
         "--bb-theme-popup-brand-icon-border",
         state.brandIconBorderHex
       );
+      badge.style.setProperty("--bb-fm-brand-icon-inner-mul", innerMul);
+      badge.style.setProperty("--bb-theme-popup-brand-icon-inner-mul", innerMul);
     }
     const explore = modal.querySelector(".bb-freemium-explore");
     if (explore) {
@@ -639,10 +710,73 @@
     setUiTintVars(popup, state, typo, accent);
     applyBackgroundLayers(popup, state, slot);
     applyBrandIcon(popup, state);
-    const lock = popup.querySelector(".lock-icon-bb-logo");
-    if (lock) lock.style.color = state.lockLogoHex;
+    popup.classList.add("bb-theme-ui-tint-on");
+    applyLockLogo(popup, state.lockLogoHex);
     const buyBtn = popup.querySelector(".buy-now-button");
-    if (buyBtn) buyBtn.textContent = readBuyNowLabel();
+    if (buyBtn) {
+      buyBtn.textContent = readBuyNowLabel();
+      buyBtn.style.setProperty("background-color", state.buyButtonBgHex, "important");
+      buyBtn.style.setProperty("color", state.buyButtonLabelHex, "important");
+      buyBtn.style.setProperty(
+        "-webkit-text-fill-color",
+        state.buyButtonLabelHex,
+        "important"
+      );
+    }
+    const titleEl = popup.querySelector(".product-title");
+    if (titleEl) titleEl.style.color = state.productTitleColorHex;
+    popup.querySelectorAll(".product-description, .product-description p").forEach(function (el) {
+      el.style.color = state.contentColorHex;
+    });
+    const exploreWrap = popup.querySelector(".explore-icon-when-buy-now-is-used");
+    if (exploreWrap) {
+      exploreWrap.style.setProperty("--bb-theme-popup-explore-icon-color", state.exploreIconHex);
+    }
+    try {
+      if (typeof global.bbEnsurePopupUploadBrandSurfaces === "function") {
+        global.bbEnsurePopupUploadBrandSurfaces(popup);
+      }
+    } catch (_e) {}
+  }
+
+  const LOCK_LOGO_PATH_D =
+    "M 14.082157,43.029444 C 11.486276,42.89346 8.7470742,41.989394 6.5481027,40.545644 3.009681,38.221044 0.76669177,34.647238 0.29724018,30.586288 0.22651188,29.980305 0.21739218,28.185467 0.21739218,14.997931 V 0.09673646 H 0.45824335 C 1.0837329,0.09774976 2.2762244,0.20834124 2.7583827,0.30402712 5.5982762,0.87464651 7.7319406,2.6517915 8.2862154,4.9106389 c 0.0762,0.3120656 0.087043,1.2618712 0.1116048,10.3299471 l 0.026751,9.985692 0.3011729,1.467339 c 0.1982217,0.97068 0.2853047,1.49185 0.253558,1.539475 -0.024927,0.03901 -0.8522863,0.602366 -1.8374769,1.25099 -0.9851906,0.648623 -2.5904293,1.704572 -3.5669968,2.347754 -0.9938036,0.653619 -1.7485699,1.183412 -1.7149993,1.201094 0.03354,0.01631 0.1859708,0.04631 0.3401849,0.06404 1.8479138,0.212722 8.518789,1.06138 8.54554,1.087696 0.01956,0.01956 0.629137,1.591164 1.355319,3.4926 1.647888,4.312228 1.541745,4.03965 1.577119,4.037826 0.01773,0 0.910805,-1.601621 1.984426,-3.559751 1.073651,-1.957665 1.972195,-3.570169 1.994872,-3.584233 0.0231,-0.01398 2.058833,-0.04762 4.523613,-0.07448 2.462976,-0.02675 4.488228,-0.05674 4.500479,-0.0689 0.01034,-0.01034 -0.524353,-0.485796 -1.190668,-1.054592 -0.666315,-0.568805 -2.127767,-1.817514 -3.247676,-2.774576 l -2.037492,-1.739957 1.335803,-3.798779 c 0.73526,-2.088755 1.332185,-3.811019 1.327199,-3.828712 -0.01034,-0.02675 -2.002138,0.901726 -7.71278,3.591479 l -0.281667,0.132914 -2.870292,-1.800289 0.01398,-3.800582 c 0.0091,-2.090579 0.02635,-3.812844 0.04266,-3.826908 0.03719,-0.03901 0.944355,-0.173721 1.566227,-0.235856 0.768831,-0.07448 2.237537,-0.06212 3.084382,0.02675 1.942242,0.203663 3.660889,0.713941 5.432593,1.615676 2.257489,1.14666 4.062764,2.735574 5.437578,4.785773 1.188854,1.771704 1.858797,3.508033 2.191726,5.691146 0.117006,0.766997 0.1188,2.680674 0.001,3.446333 -0.361505,2.400375 -1.261426,4.544466 -2.710627,6.450898 -0.462652,0.611425 -1.786224,1.956307 -2.404469,2.445305 -1.973988,1.562609 -4.348058,2.622115 -6.885411,3.073945 -1.077269,0.191413 -2.457525,0.265789 -3.694003,0.20185 z";
+
+  function applyLockLogo(popup, lockHex) {
+    const host = popup?.querySelector?.(".lock-icon-bb-logo");
+    if (!host) return;
+    const hex = normHex6(lockHex) || DEFAULT_ACCENT;
+    host.style.color = hex;
+    host.style.setProperty("--bb-theme-lock-logo-color", hex);
+    let svg = host.querySelector("svg.bb-lock-logo-inline");
+    if (!svg) {
+      try {
+        svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.classList.add("bb-lock-logo-inline");
+        svg.setAttribute("viewBox", "0 0 30 43");
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+        svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+        svg.setAttribute("aria-hidden", "true");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", LOCK_LOGO_PATH_D);
+        path.setAttribute("fill", "currentColor");
+        svg.appendChild(path);
+        host.appendChild(svg);
+      } catch (_e) {}
+    }
+    if (svg) {
+      svg.querySelectorAll("*").forEach(function (n) {
+        try {
+          n.setAttribute("fill", hex);
+        } catch (_e) {}
+        try {
+          n.setAttribute("stroke", hex);
+        } catch (_e) {}
+      });
+    }
+    const img = host.querySelector("img");
+    if (img) img.style.opacity = svg ? "0" : "1";
   }
 
   function syncAll() {
@@ -681,17 +815,81 @@
     }, 60);
   }
 
+  const SESSION_PUSH_PREFIX = "__bbSession:";
+
+  function hydrateStorageFromPayload(payload) {
+    if (!payload || typeof payload !== "object") return;
+    Object.keys(payload).forEach(function (key) {
+      const val = payload[key];
+      try {
+        if (key.indexOf(SESSION_PUSH_PREFIX) === 0) {
+          const sessKey = key.slice(SESSION_PUSH_PREFIX.length);
+          if (val == null) {
+            if (sessionStorage.getItem(sessKey) != null) sessionStorage.removeItem(sessKey);
+          } else if (sessionStorage.getItem(sessKey) !== String(val)) {
+            sessionStorage.setItem(sessKey, String(val));
+          }
+          return;
+        }
+        if (val == null) {
+          if (localStorage.getItem(key) != null) localStorage.removeItem(key);
+        } else if (localStorage.getItem(key) !== String(val)) {
+          localStorage.setItem(key, String(val));
+        }
+      } catch (_e) {}
+    });
+  }
+
+  function installMessageBridge() {
+    window.addEventListener("message", function (e) {
+      const d = e && e.data;
+      if (!d || typeof d !== "object" || d.type !== "bb-theme-live") return;
+      if (d.payload) {
+        _liveTheme = {
+          payload: d.payload,
+          slot: d.slot != null ? d.slot : readActiveSlot(),
+          t: Date.now(),
+        };
+        if (d.slot != null) {
+          try {
+            localStorage.setItem(ACTIVE_SLOT_KEY, String(d.slot));
+          } catch (_e) {}
+        }
+        hydrateStorageFromPayload(d.payload);
+      }
+      scheduleSync();
+    });
+  }
+
+  function requestThemeFromEditor() {
+    const msg = { type: "bb-theme-live-request", t: Date.now() };
+    try {
+      if (window.opener && !window.opener.closed) window.opener.postMessage(msg, "*");
+    } catch (_e) {}
+    try {
+      if (window.parent && window.parent !== window) window.parent.postMessage(msg, "*");
+    } catch (_e) {}
+    try {
+      const bridge = document.getElementById("bbThemeFileBridge");
+      if (bridge && bridge.contentWindow) bridge.contentWindow.postMessage(msg, "*");
+    } catch (_e) {}
+  }
+
   function install() {
     syncAll();
+    installMessageBridge();
+    requestThemeFromEditor();
     window.addEventListener("storage", function (e) {
       if (!e || !e.key) return;
+      const k = String(e.key);
       if (
-        e.key.indexOf("bbTheme:") === 0 ||
-        e.key === ACTIVE_SLOT_KEY ||
-        e.key === KEY_ASSET_SVG ||
-        e.key.indexOf("bbAssetLab:") === 0 ||
-        e.key.indexOf("bbPreview:") === 0 ||
-        e.key.indexOf("bbSmartSize:") === 0
+        k.indexOf("bbTheme:") === 0 ||
+        k.indexOf(":themeSlot:") !== -1 ||
+        k === ACTIVE_SLOT_KEY ||
+        k === KEY_ASSET_SVG ||
+        k.indexOf("bbAssetLab:") === 0 ||
+        k.indexOf("bbPreview:") === 0 ||
+        k.indexOf("bbSmartSize:") === 0
       ) {
         scheduleSync();
       }

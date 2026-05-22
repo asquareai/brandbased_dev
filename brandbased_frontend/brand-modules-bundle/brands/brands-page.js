@@ -39,11 +39,231 @@
   let tierPopover = null;
   let tierTrigger = null;
 
-  function getBrandName(trigger) {
-    const card = trigger.closest(".bb-brands-card");
+  const LS_CURRENT_REQUEST = "bbCurrentBrandVerificationRequest";
+  const LS_SELECTED_BRAND = "bbSelectedBrand";
+  const BRAND_OPEN_TARGET = "../Brand-Settings-Module.html";
+
+  const PLAN_PILL_HTML =
+    '<span class="bb-brands-plan-pill" aria-label="Premium plan">' +
+    '<svg class="bb-brands-plan-pill__star" viewBox="0 0 122.88 116.864" aria-hidden="true" focusable="false">' +
+    '<polygon fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd" points="61.44,0 78.351,41.326 122.88,44.638 88.803,73.491 99.412,116.864 61.44,93.371 23.468,116.864 34.078,73.491 0,44.638 44.529,41.326 61.44,0" />' +
+    "</svg>" +
+    '<span class="bb-brands-plan-pill__label">Premium</span></span>';
+
+  const PUBLISH_TRIGGER_SVG =
+    '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">' +
+    '<path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
+    "</svg>";
+
+  function loginUrl() {
+    if (window.BB_APP && window.BB_APP.routes && window.BB_APP.routes.loginFromModules) {
+      return window.BB_APP.routes.loginFromModules;
+    }
+    return "../../index.html";
+  }
+
+  function getBrandFromTrigger(trigger) {
+    const card = trigger && trigger.closest ? trigger.closest(".bb-brands-card") : null;
+    return card && card.__bbBrand ? card.__bbBrand : null;
+  }
+
+  function getBrandName(triggerOrBrand) {
+    if (triggerOrBrand && triggerOrBrand.brand_name) {
+      return String(triggerOrBrand.brand_name).trim();
+    }
+    const card =
+      triggerOrBrand && triggerOrBrand.closest
+        ? triggerOrBrand.closest(".bb-brands-card")
+        : null;
     if (!card) return "Brand";
+    if (card.__bbBrand && card.__bbBrand.brand_name) {
+      return String(card.__bbBrand.brand_name).trim();
+    }
     const nameEl = card.querySelector(".bb-brands-name");
     return nameEl && nameEl.textContent ? nameEl.textContent.trim() : "Brand";
+  }
+
+  function clearStoredBrandIfDeleted(brand) {
+    if (!brand) return;
+    try {
+      const raw = localStorage.getItem(LS_CURRENT_REQUEST);
+      if (!raw) return;
+      const stored = JSON.parse(raw);
+      const matchesRequest =
+        stored.id && brand.brand_verification_request_id &&
+        stored.id === brand.brand_verification_request_id;
+      const matchesUnique =
+        stored.brand_unique_id && brand.brand_unique_id &&
+        stored.brand_unique_id === brand.brand_unique_id;
+      if (matchesRequest || matchesUnique) {
+        localStorage.removeItem(LS_CURRENT_REQUEST);
+      }
+    } catch (_e) { /* ignore */ }
+  }
+
+  function showActionPopup(opts) {
+    if (typeof window.bbShowSyncPopup !== "function") {
+      return Promise.resolve();
+    }
+    const result = window.bbShowSyncPopup(opts);
+    if (result && typeof result.then === "function") {
+      return result;
+    }
+    return Promise.resolve();
+  }
+
+  function brandInitial(name) {
+    const text = String(name || "").trim();
+    return text ? text.charAt(0).toUpperCase() : "B";
+  }
+
+  function persistBrandContext(brand) {
+    if (!brand) return;
+    const payload = {
+      id: brand.brand_verification_request_id || null,
+      brand_unique_id: brand.brand_unique_id,
+      brand_name: brand.brand_name,
+      website_url: brand.website_url,
+      logo_light_url: brand.logo_light_url,
+      logo_dark_url: brand.logo_dark_url,
+      identity_status: "verified",
+      meta_status: "verified",
+      final_status: "verified",
+    };
+    try {
+      localStorage.setItem(LS_SELECTED_BRAND, JSON.stringify(brand));
+      if (payload.id) {
+        localStorage.setItem(LS_CURRENT_REQUEST, JSON.stringify(payload));
+      }
+      if (brand.brand_name) {
+        localStorage.setItem("bbLuBrandName", brand.brand_name);
+      }
+      if (brand.website_url) {
+        localStorage.setItem("bbLuBrandUrl", brand.website_url);
+      }
+    } catch (_e) { /* ignore */ }
+  }
+
+  function createBrandCard(brand) {
+    const li = document.createElement("li");
+    li.className = "bb-brands-card";
+    const logoUrl = brand.logo_light_url || brand.logo_dark_url || "";
+    const brandName = escapeHtml(brand.brand_name || "Brand");
+    const websiteUrl = brand.website_url || "#";
+    const websiteLabel = escapeHtml(brand.website_url || "");
+    const initial = escapeHtml(brandInitial(brand.brand_name));
+    const safeLogo = escapeAttr(logoUrl);
+
+    li.innerHTML =
+      '<div class="bb-brands-circle-wrap">' +
+      '<div class="bb-brands-circle">' +
+      (logoUrl
+        ? '<img class="bb-brands-logo" src="' +
+          safeLogo +
+          '" alt="" decoding="async" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'inline-flex\';" />'
+        : "") +
+      '<span class="bb-brands-fallback" aria-hidden="true"' +
+      (logoUrl ? ' style="display: none;"' : ' style="display: inline-flex;"') +
+      ">" +
+      initial +
+      "</span>" +
+      "</div>" +
+      PLAN_PILL_HTML +
+      '<img class="bb-brands-badge bb-brands-badge--unverified" src="./not-verified.svg" alt="" aria-label="Brand not verified" decoding="async" />' +
+      "</div>" +
+      '<p class="bb-brands-name">' +
+      brandName +
+      "</p>" +
+      '<a class="bb-brands-url" href="' +
+      escapeAttr(websiteUrl) +
+      '" target="_blank" rel="noopener">' +
+      websiteLabel +
+      "</a>" +
+      '<div class="bb-brands-publish-menu">' +
+      '<button type="button" class="bb-brands-publish-trigger" aria-haspopup="menu" aria-expanded="false" aria-label="Brand actions for ' +
+      brandName +
+      '">' +
+      PUBLISH_TRIGGER_SVG +
+      "</button></div>";
+
+    li.__bbBrand = brand;
+    return li;
+  }
+
+  function clearDynamicBrandCards(grid) {
+    grid.querySelectorAll(
+      ".bb-brands-card:not(.bb-brands-card--add):not(.bb-brands-card--placeholder)"
+    ).forEach(function (node) {
+      node.remove();
+    });
+  }
+
+  function setBrandsStatus(mode, message) {
+    const loadingEl = document.getElementById("bbBrandsLoading");
+    const emptyEl = document.getElementById("bbBrandsEmpty");
+    const showLoading = mode === "loading";
+    const showEmpty = mode === "empty" || mode === "error";
+
+    if (loadingEl) loadingEl.hidden = !showLoading;
+    if (emptyEl) {
+      emptyEl.hidden = !showEmpty;
+      const msg = emptyEl.querySelector(".bb-brands-name");
+      if (msg) {
+        if (message) {
+          msg.textContent = message;
+        } else if (mode === "empty") {
+          msg.textContent =
+            "No verified brands yet. Tap Add brand to start.";
+        }
+      }
+    }
+  }
+
+  async function loadAndRenderBrands() {
+    const grid = document.getElementById("bbBrandsGrid");
+    if (!grid) return;
+
+    const addCard = grid.querySelector(".bb-brands-card--add");
+    const api = window.BBBrandVerification;
+
+    if (!localStorage.getItem("auth_token")) {
+      window.location.href = loginUrl();
+      return;
+    }
+
+    if (!api || !api.fetchBrands) {
+      setBrandsStatus("error", "Unable to load brands. Please refresh.");
+      return;
+    }
+
+    setBrandsStatus("loading");
+
+    try {
+      const brands = await api.fetchBrands();
+      clearDynamicBrandCards(grid);
+
+      brands.forEach(function (brand) {
+        const card = createBrandCard(brand);
+        if (addCard) {
+          grid.insertBefore(card, addCard);
+        } else {
+          grid.appendChild(card);
+        }
+      });
+
+      if (brands.length > 0) {
+        setBrandsStatus("idle");
+      } else {
+        setBrandsStatus(
+          "empty",
+          "No verified brands yet. Tap Add brand to start."
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      clearDynamicBrandCards(grid);
+      setBrandsStatus("error", err.message || "Unable to load brands.");
+    }
   }
 
   function ensurePopover() {
@@ -63,7 +283,7 @@
       const item = e.target.closest(".bb-brands-action-item");
       if (!item || !activeTrigger) return;
       const action = item.getAttribute("data-action");
-      const brand = getBrandName(activeTrigger);
+      const brand = getBrandFromTrigger(activeTrigger);
       closePopover();
       runAction(action, brand);
     });
@@ -164,50 +384,83 @@
     }
   }
 
-  function runAction(action, brand) {
+  async function runAction(action, brand) {
+    const api = window.BBBrandVerification;
+    if (!brand || !brand.id) {
+      alert("Brand not found. Please refresh the page.");
+      return;
+    }
+    if (!api) {
+      alert("Unable to update brand. Please refresh the page.");
+      return;
+    }
+
+    const brandName = brand.brand_name || "Brand";
+
     if (action === "publish") {
-      if (typeof window.bbShowSyncPopup === "function") {
-        window.bbShowSyncPopup({
+      try {
+        const popupPromise = showActionPopup({
           label: "Publishing",
           barColor: "#635bff",
           logoSrc: "../brandbased-logo.svg",
           shineLabel: true,
-          duration: 3000,
+          duration: 2800,
           doneHoldMs: 1200,
         });
+        await api.publishBrand(brand.id);
+        await popupPromise;
+        await loadAndRenderBrands();
+        decorateBrandCardsForA11y();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Unable to publish brand.");
       }
       return;
     }
+
     if (action === "unpublish") {
-      if (typeof window.bbShowSyncPopup === "function") {
-        /* Trailing "..." is stripped by the shared module before deriving
-           the done label, so "Unpublishing..." cleanly becomes "Unpublished". */
-        window.bbShowSyncPopup({
+      try {
+        const popupPromise = showActionPopup({
           label: "Unpublishing...",
           barColor: "#635bff",
           logoSrc: "../brandbased-logo.svg",
           shineLabel: true,
-          duration: 3000,
+          duration: 2800,
           doneHoldMs: 1200,
         });
+        await api.unpublishBrand(brand.id);
+        await popupPromise;
+        await loadAndRenderBrands();
+        decorateBrandCardsForA11y();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Unable to unpublish brand.");
       }
       return;
     }
+
     if (action === "delete") {
-      showDeleteConfirm(brand).then(function (confirmed) {
-        if (!confirmed) return;
-        if (typeof window.bbShowSyncPopup === "function") {
-          window.bbShowSyncPopup({
-            label: "Deleting",
-            barColor: "#e74c3c",
-            logoSrc: "../brandbased-logo.svg",
-            shineLabel: true,
-            duration: 3000,
-            doneHoldMs: 1500,
-          });
-        }
-      });
-      return;
+      const confirmed = await showDeleteConfirm(brandName);
+      if (!confirmed) return;
+
+      try {
+        const popupPromise = showActionPopup({
+          label: "Deleting",
+          barColor: "#e74c3c",
+          logoSrc: "../brandbased-logo.svg",
+          shineLabel: true,
+          duration: 2800,
+          doneHoldMs: 1500,
+        });
+        await api.deleteBrand(brand.id);
+        clearStoredBrandIfDeleted(brand);
+        await popupPromise;
+        await loadAndRenderBrands();
+        decorateBrandCardsForA11y();
+      } catch (err) {
+        console.error(err);
+        alert(err.message || "Unable to delete brand.");
+      }
     }
   }
 
@@ -384,21 +637,72 @@
     });
   }
 
-  function bindTriggers() {
-    const triggers = document.querySelectorAll(".bb-brands-publish-trigger");
-    triggers.forEach(function (trigger) {
-      trigger.addEventListener("click", function (e) {
+  function isInteractiveCardTarget(el) {
+    if (!el || !el.closest) return false;
+    return !!(
+      el.closest(".bb-brands-url") ||
+      el.closest(".bb-brands-publish-menu") ||
+      el.closest(".bb-brands-publish-trigger") ||
+      el.closest(".bb-brands-action-popover") ||
+      el.closest(".bb-brands-confirm-backdrop") ||
+      el.closest(".bb-brands-card--add") ||
+      el.closest(".bb-brands-card--placeholder")
+    );
+  }
+
+  function navigateToBrand(card) {
+    const circle = card.querySelector(".bb-brands-circle");
+    if (circle) {
+      circle.classList.remove("bb-brands-circle--bump");
+      void circle.offsetWidth;
+      circle.classList.add("bb-brands-circle--bump");
+    }
+    if (card.__bbBrand) {
+      persistBrandContext(card.__bbBrand);
+    }
+    window.setTimeout(function () {
+      window.location.href = BRAND_OPEN_TARGET;
+    }, 160);
+  }
+
+  function bindGridInteractions() {
+    const grid = document.getElementById("bbBrandsGrid");
+    if (!grid || grid.__bbGridBound) return;
+    grid.__bbGridBound = true;
+
+    grid.addEventListener("click", function (e) {
+      const publishTrigger = e.target.closest(".bb-brands-publish-trigger");
+      if (publishTrigger && grid.contains(publishTrigger)) {
         e.stopPropagation();
-        const isOpen = trigger.getAttribute("aria-expanded") === "true";
-        if (isOpen) {
-          closePopover();
-        } else {
-          openPopover(trigger);
-        }
-      });
+        const isOpen = publishTrigger.getAttribute("aria-expanded") === "true";
+        if (isOpen) closePopover();
+        else openPopover(publishTrigger);
+        return;
+      }
+
+      const card = e.target.closest(
+        ".bb-brands-card:not(.bb-brands-card--add):not(.bb-brands-card--placeholder)"
+      );
+      if (!card || !grid.contains(card)) return;
+      if (isInteractiveCardTarget(e.target)) return;
+      if (popover && popover.contains(e.target)) return;
+      if (tierPopover && tierPopover.contains(e.target)) return;
+      e.preventDefault();
+      navigateToBrand(card);
     });
 
-    /* Outside click closes whichever floating menu is open. */
+    grid.addEventListener("keydown", function (e) {
+      const card = e.target.closest(
+        ".bb-brands-card:not(.bb-brands-card--add):not(.bb-brands-card--placeholder)"
+      );
+      if (!card || !grid.contains(card)) return;
+      if (isInteractiveCardTarget(e.target)) return;
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        navigateToBrand(card);
+      }
+    });
+
     document.addEventListener("click", function (e) {
       if (tierPopover && tierPopover.classList.contains("bb-brands-action-popover--open")) {
         if (tierPopover.contains(e.target)) return;
@@ -422,7 +726,6 @@
       }
     });
 
-    /* Re-anchor on scroll / resize while open. */
     window.addEventListener("scroll", function () {
       if (activeTrigger) positionPopover(activeTrigger);
       if (tierTrigger && tierPopover) positionFixedPopover(tierPopover, tierTrigger);
@@ -433,63 +736,16 @@
     });
   }
 
-  /* Make every real brand card (not the "Add brand" CTA) act as a link
-     into the Brand Verification (meta-verification) page. Clicks on
-     the inner URL pill, the publish-menu trigger and the popover are
-     left alone so those continue to behave as expected. */
-  function bindCardLinks() {
-    const BRAND_TARGET = "../logo-upload/Meta-Verification.html";
-    const cards = document.querySelectorAll(
-      ".bb-brands-card:not(.bb-brands-card--add)"
-    );
-
-    function isInteractiveTarget(el) {
-      if (!el || !el.closest) return false;
-      return !!(
-        el.closest(".bb-brands-url") ||
-        el.closest(".bb-brands-publish-menu") ||
-        el.closest(".bb-brands-publish-trigger") ||
-        el.closest(".bb-brands-action-popover") ||
-        el.closest(".bb-brands-confirm-backdrop")
-      );
-    }
-
-    function navigate(card) {
-      const circle = card.querySelector(".bb-brands-circle");
-      if (circle) {
-        circle.classList.remove("bb-brands-circle--bump");
-        void circle.offsetWidth;
-        circle.classList.add("bb-brands-circle--bump");
-      }
-      window.setTimeout(function () {
-        window.location.href = BRAND_TARGET;
-      }, 160);
-    }
-
-    cards.forEach(function (card) {
+  function decorateBrandCardsForA11y() {
+    const grid = document.getElementById("bbBrandsGrid");
+    if (!grid) return;
+    grid.querySelectorAll(
+      ".bb-brands-card:not(.bb-brands-card--add):not(.bb-brands-card--placeholder)"
+    ).forEach(function (card) {
       card.setAttribute("role", "link");
       card.setAttribute("tabindex", "0");
-      card.setAttribute("aria-label",
-        (card.querySelector(".bb-brands-name") || {}).textContent
-          ? "Open " + card.querySelector(".bb-brands-name").textContent.trim()
-          : "Open brand"
-      );
-
-      card.addEventListener("click", function (e) {
-        if (isInteractiveTarget(e.target)) return;
-        if (popover && popover.contains(e.target)) return;
-        if (tierPopover && tierPopover.contains(e.target)) return;
-        e.preventDefault();
-        navigate(card);
-      });
-
-      card.addEventListener("keydown", function (e) {
-        if (isInteractiveTarget(e.target)) return;
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          navigate(card);
-        }
-      });
+      const name = getBrandName(card.querySelector(".bb-brands-publish-trigger") || card);
+      card.setAttribute("aria-label", "Open " + name);
     });
   }
 
@@ -544,15 +800,20 @@
     });
   }
 
-  function init() {
+  async function init() {
     try {
       bindDevPreviewFlags();
+      bindGridInteractions();
       const syncBtn = document.getElementById("bbBrandsSyncBtn");
       if (syncBtn) {
-        syncBtn.addEventListener("click", function () {
-          if (typeof window.bbShowSyncPopup === "function") {
-            window.bbShowSyncPopup();
-          }
+        syncBtn.addEventListener("click", async function () {
+          try {
+            if (typeof window.bbShowSyncPopup === "function") {
+              await window.bbShowSyncPopup();
+            }
+            await loadAndRenderBrands();
+            decorateBrandCardsForA11y();
+          } catch (_syncErr) { /* ignore */ }
         });
       }
 
@@ -580,8 +841,8 @@
         });
       }
 
-      bindTriggers();
-      bindCardLinks();
+      await loadAndRenderBrands();
+      decorateBrandCardsForA11y();
     } catch (_e) {
       /* page still renders fine via CSS */
     }

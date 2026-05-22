@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
+use App\Models\BrandActivityLog;
 use App\Models\BrandVerificationRequest;
+use App\Services\BrandActivityLogger;
+use App\Services\WebsiteMetaVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -85,9 +89,33 @@ class BrandVerificationRequestController extends Controller
             ], 500);
         }
     }
-    public function status(string $id)
+    public function status(Request $request, string $id)
     {
-        $brandRequest = \App\Models\BrandVerificationRequest::find($id);
+        $brandRequest = BrandVerificationRequest::find($id);
+
+        if (!$brandRequest) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Brand verification request not found.',
+            ], 404);
+        }
+
+        if ($request->user() && $brandRequest->user_id !== $request->user()->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized.',
+            ], 403);
+        }
+
+        return response()->json([
+            'status' => true,
+            'brand_request' => $this->serializeBrandRequest($brandRequest),
+        ]);
+    }
+
+    public function metaSnippet(Request $request, string $id, WebsiteMetaVerificationService $metaService)
+    {
+        $brandRequest = $this->findOwnedRequest($request, $id);
 
         if (!$brandRequest) {
             return response()->json([
@@ -98,14 +126,143 @@ class BrandVerificationRequestController extends Controller
 
         return response()->json([
             'status' => true,
-            'brand_request' => [
-                'id' => $brandRequest->id,
-                'identity_status' => $brandRequest->identity_status,
-                'identity_progress' => $brandRequest->identity_progress,
-                'identity_verification_notes' => $brandRequest->identity_verification_notes,
-                'final_status' => $brandRequest->final_status,
-                'updated_at' => $brandRequest->updated_at,
-            ]
+            'brand_unique_id' => $brandRequest->brand_unique_id,
+            'snippet' => $metaService->buildSnippet($brandRequest->brand_unique_id),
+            'runtime_script_url' => config('brandbased.cdn_runtime_script'),
         ]);
+    }
+
+    public function verifyMeta(Request $request, string $id, WebsiteMetaVerificationService $metaService, BrandActivityLogger $activityLogger)
+    {
+        $brandRequest = $this->findOwnedRequest($request, $id);
+
+        if (!$brandRequest) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Brand verification request not found.',
+            ], 404);
+        }
+
+        if ($brandRequest->identity_status !== 'verified') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Complete identity verification before verifying your website.',
+            ], 422);
+        }
+
+        if (empty($brandRequest->website_url)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Website URL is missing on this brand request.',
+            ], 422);
+        }
+
+        $brandRequest->update([
+            'meta_status' => 'processing',
+            'meta_progress' => 50,
+            'last_checked_at' => now(),
+        ]);
+
+        $check = $metaService->verify(
+            $brandRequest->website_url,
+            $brandRequest->brand_unique_id
+        );
+
+        $brand = null;
+
+        if ($check['verified']) {
+            $brandRequest->update([
+                'meta_status' => 'verified',
+                'meta_progress' => 100,
+                'meta_verification_notes' => $check['message'],
+                'final_status' => 'verified',
+                'last_checked_at' => now(),
+            ]);
+
+            $brand = Brand::updateOrCreate(
+                ['brand_unique_id' => $brandRequest->brand_unique_id],
+                [
+                    'user_id' => $brandRequest->user_id,
+                    'brand_verification_request_id' => $brandRequest->id,
+                    'brand_name' => $brandRequest->brand_name,
+                    'slug' => $brandRequest->slug,
+                    'website_url' => $brandRequest->website_url,
+                    'logo_light_url' => $brandRequest->logo_light_url,
+                    'logo_dark_url' => $brandRequest->logo_dark_url,
+                    'verified_at' => now(),
+                    'is_published' => false,
+                ]
+            );
+
+            if ($brand->wasRecentlyCreated) {
+                $activityLogger->log($brand, BrandActivityLog::ACTION_CREATED, [
+                    'source' => 'meta_verification',
+                ]);
+            }
+        } else {
+            $brandRequest->update([
+                'meta_status' => 'failed',
+                'meta_progress' => 100,
+                'meta_verification_notes' => $check['message'],
+                'final_status' => 'pending',
+                'last_checked_at' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'verified' => $check['verified'],
+            'meta_found' => $check['meta_found'],
+            'script_found' => $check['script_found'],
+            'message' => $check['message'],
+            'checked_url' => $check['checked_url'] ?? null,
+            'brand_request' => $this->serializeBrandRequest($brandRequest->fresh()),
+            'brand' => $brand ? $this->serializeBrandForApi($brand) : null,
+        ]);
+    }
+
+    protected function serializeBrandForApi(Brand $brand): array
+    {
+        $data = $brand->toArray();
+        $data['settings'] = $brand->resolvedSettings();
+
+        return $data;
+    }
+
+    protected function findOwnedRequest(Request $request, string $id): ?BrandVerificationRequest
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return null;
+        }
+
+        return BrandVerificationRequest::query()
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+    }
+
+    protected function serializeBrandRequest(BrandVerificationRequest $brandRequest): array
+    {
+        return [
+            'id' => $brandRequest->id,
+            'user_id' => $brandRequest->user_id,
+            'brand_unique_id' => $brandRequest->brand_unique_id,
+            'brand_name' => $brandRequest->brand_name,
+            'slug' => $brandRequest->slug,
+            'website_url' => $brandRequest->website_url,
+            'logo_light_url' => $brandRequest->logo_light_url,
+            'logo_dark_url' => $brandRequest->logo_dark_url,
+            'identity_status' => $brandRequest->identity_status,
+            'identity_progress' => $brandRequest->identity_progress,
+            'identity_verification_notes' => $brandRequest->identity_verification_notes,
+            'meta_status' => $brandRequest->meta_status,
+            'meta_progress' => $brandRequest->meta_progress,
+            'meta_verification_notes' => $brandRequest->meta_verification_notes,
+            'final_status' => $brandRequest->final_status,
+            'last_checked_at' => $brandRequest->last_checked_at,
+            'updated_at' => $brandRequest->updated_at,
+        ];
     }
 }

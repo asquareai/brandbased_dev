@@ -1,5 +1,5 @@
 /* Products page CSS (isolated copy of theme-design) */
-@import url("./products.theme-design.css?v=products-69");
+@import url("./products.theme-design.css?v=products-79");
 
 /* Apple iOS-style activity indicator: 12 thin bars rotating, each one tail-fading.
    Drop one inside any positioning context — it sizes itself with `em` so changing the
@@ -1841,8 +1841,8 @@ body.dark-mode.bb-brand-theme-settings .bb-products-upload-caption {
     align-self: start;
   }
 
-  .bb-bts-right.bb-bts-right--preview {
-    transform: scale(0.8);
+  body.bb-brand-theme-settings .bb-bts-right.bb-bts-right--preview {
+    transform: none;
     transform-origin: top center;
   }
 }

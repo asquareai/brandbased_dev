@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BrandActivityLogController;
+use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\BrandVerificationRequestController;
 use App\Http\Controllers\Api\InternalBrandVerificationController;
 use App\Http\Controllers\Api\InternalBrandAiPromptController;
@@ -15,6 +17,9 @@ Route::post('/auth/signup/finish', [AuthController::class, 'finishSignup']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->get('/auth/me', [AuthController::class, 'me']);
 Route::middleware('auth:sanctum')->post('/auth/verify-pin', [AuthController::class, 'verifyPin']);
+Route::post('/auth/reset-password/send-otp', [AuthController::class, 'sendResetPasswordOtp']);
+Route::post('/auth/reset-password/verify-otp', [AuthController::class, 'verifyResetPasswordOtp']);
+Route::post('/auth/reset-password/update', [AuthController::class, 'updateResetPassword']);
 Route::post('/auth/reset-pin/send-otp', [AuthController::class, 'sendResetPinOtp']);
 Route::post('/auth/reset-pin/verify-otp', [AuthController::class, 'verifyResetPinOtp']);
 Route::post('/auth/reset-pin/update', [AuthController::class, 'updateResetPin']);
@@ -23,6 +28,17 @@ Route::post('/auth/reset-pin/update', [AuthController::class, 'updateResetPin'])
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/brand-verification-requests', [BrandVerificationRequestController::class, 'store']);
     Route::get('/brand-verification-requests/{id}/status', [BrandVerificationRequestController::class, 'status']);
+    Route::get('/brand-verification-requests/{id}/meta-snippet', [BrandVerificationRequestController::class, 'metaSnippet']);
+    Route::post('/brand-verification-requests/{id}/verify-meta', [BrandVerificationRequestController::class, 'verifyMeta']);
+
+    Route::get('/brands', [BrandController::class, 'index']);
+    Route::get('/brands/{id}/settings', [BrandController::class, 'showSettings']);
+    Route::put('/brands/{id}/settings', [BrandController::class, 'updateSettings']);
+    Route::post('/brands/{id}/publish', [BrandController::class, 'publish']);
+    Route::post('/brands/{id}/unpublish', [BrandController::class, 'unpublish']);
+    Route::delete('/brands/{id}', [BrandController::class, 'destroy']);
+
+    Route::get('/brand-activity-logs', [BrandActivityLogController::class, 'index']);
 
     Route::get('/brand-ai-prompts/{promptKey}', [BrandAiPromptController::class, 'show']);
     Route::put('/brand-ai-prompts/{promptKey}', [BrandAiPromptController::class, 'upsert']);

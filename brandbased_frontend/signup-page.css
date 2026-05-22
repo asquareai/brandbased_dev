@@ -207,8 +207,10 @@ max-width: 340px;
 margin: 0 auto 30px auto;
 border-radius: 9999px;
 position: relative;
+z-index: 2;
 overflow: hidden;
 cursor: pointer;
+pointer-events: auto;
 border-color: #d5d4d4b2!important;
 
 
@@ -304,6 +306,18 @@ border: 1px solid rgba(196, 193, 193, 0.267);
 box-shadow: none;
 box-shadow: 0 10px 28px rgba(194, 193, 193, 0.034);
 }
+}
+
+@media (prefers-color-scheme: light) {
+    .signup-btn,
+    .mobile-signup-btn {
+        background: #ffffffa1;
+    }
+}
+
+body.light-mode .signup-btn,
+body.light-mode .mobile-signup-btn {
+    background: #ffffffa1;
 }
 
 .signin-link {
@@ -402,38 +416,31 @@ width: 100%;
     background: linear-gradient(to right, rgba(0,0,0,0.15) 30%, rgba(0,0,0,0.6) 70%);
 }
 
-/* Combined keyframes: scale in, then pulse */
-@keyframes scaleInThenPulse {
+/* Center logo: scale in once, then breathe forever */
+@keyframes bb-index-center-logo-in {
 0% {
-transform: scale(0);
+transform: translate(-50%, -50%) scale(0);
 opacity: 0;
 }
-15% {
-transform: scale(1);
+100% {
+transform: translate(-50%, -50%) scale(1);
 opacity: 1;
 }
-30% {
-transform: scale(1);
-opacity: 1;
+}
+
+@keyframes bb-index-center-logo-breathe {
+0%, 100% {
+transform: translate(-50%, -50%) scale(1);
 }
 50% {
-transform: scale(1.1);
-opacity: 1;
-}
-70% {
-transform: scale(1);
-opacity: 1;
-}
-100% {
-transform: scale(1);
-opacity: 1;
+transform: translate(-50%, -50%) scale(1.08);
 }
 }
 
 .center-logo {
 position: absolute;
 top: 50%;
-left: 47%;
+left: 50%;
 transform: translate(-50%, -50%);
 width: 120px;
 height: 120px;
@@ -441,35 +448,37 @@ z-index: 3;
 opacity: 0;
 margin-top: -60px;
 
-/* Combined animation with 1s delay */
-animation: scaleInThenPulse 4s ease-in-out 1s forwards;
+animation:
+  bb-index-center-logo-in 0.85s ease-out 1s forwards,
+  bb-index-center-logo-breathe 3.6s ease-in-out 1.85s infinite;
 }
 
-@media(max-width:1650px){
+@media (max-width: 1650px) {
     .center-logo {
-   margin-top: -80px;
-   left: 45%;
- }
+        margin-top: -80px;
+        left: 50%;
+    }
 }
 
+@media (max-width: 1550px) {
+    .center-logo {
+        margin-top: -80px;
+        left: 50%;
+    }
+}
 
-@media(max-width:1550px){
+@media (max-width: 1250px) {
     .center-logo {
-   margin-top: -80px;
-   left: 42%;
- }
+        margin-top: -80px;
+        left: 50%;
+    }
 }
-@media(max-width:1250px){
+
+@media (max-width: 1100px) {
     .center-logo {
-   margin-top: -80px;
-   left: 39%;
- }
-}
-@media(max-width:1100px){
-    .center-logo {
-   margin-top: -80px;
-   left: 38%;
- }
+        margin-top: -80px;
+        left: 50%;
+    }
 }
 
 
@@ -502,8 +511,8 @@ animation: slideInRight 1.2s ease-out 0.5s forwards, /* start after 0.5s delay *
 
 .mobile-logo {
     position: absolute;
-    top: 30px;
-    left: 30px;
+    top: 15px;
+    left: 10px;
     width: 42px;
     height: 42px;
 }
@@ -532,7 +541,7 @@ animation: slideInRight 1.2s ease-out 0.5s forwards, /* start after 0.5s delay *
 .mobile-footer {
     margin-top: auto;
     padding-top: 40px;
-    font-size: 13px;
+    font-size: 10px;
     color: #888;
 }
 
@@ -559,12 +568,55 @@ animation: slideInRight 1.2s ease-out 0.5s forwards, /* start after 0.5s delay *
 
 /* Show mobile version on small screens */
 @media (max-width: 1024px) {
+    html,
+    body,
+    body.light-mode {
+        overflow: hidden;
+        height: 100%;
+        max-height: 100vh;
+    }
+
     .container {
         display: none;
     }
+
     .mobile-container {
         display: flex;
+        touch-action: manipulation;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        height: 100vh;
+        max-height: 100vh;
     }
+
+    /* Sign-in / forgot: hide Create account breadcrumb on login (active step only) */
+    .mobile-container.mobile-signin-flow .auth-step.active .mobile-auth-switch--signup {
+        display: none !important;
+    }
+
+    /* Signup: hide Create account breadcrumb if present on active step */
+    .mobile-container.mobile-signup-flow .auth-step.active .mobile-auth-switch--signup {
+        display: none !important;
+    }
+}
+
+/* Same one-step visibility model as desktop — only .auth-step.active is shown */
+.mobile-auth-box .auth-step {
+    display: none;
+}
+
+.mobile-auth-box .auth-step.active {
+    display: block;
+}
+
+/* Match desktop: blue ← Back under the heading, left-aligned in the form column */
+.mobile-auth-box .back-btn {
+    width: 100%;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 4px;
 }
 
 @media (max-width: 480px) {
@@ -731,13 +783,12 @@ background: rgb(249, 249, 249);
 height: 150vh;
 overflow: hidden;
 }
-@media (max-width: 1220px)
-{
-.light-shard-ui-base  {
-opacity: 0.2;
-height: 150vh;
-overflow: hidden;
-}
+@media (max-width: 1220px) {
+    .light-shard-ui-base {
+        opacity: 0.3;
+        height: 450vh;
+        overflow: hidden;
+    }
 }
 
 
@@ -797,12 +848,6 @@ color: #ffffff; /* optional: default text white */
 .left-panel {
 background: rgba(13, 13, 13, 0.664);
 }
-@media (max-width: 1220px)
-{
-.light-shard-ui-base  {
-opacity: 0;
-}
-}
 
 }
 
@@ -810,6 +855,15 @@ opacity: 0;
     width: 100%;
     max-width: 360px;
     margin: 0 auto;
+}
+
+/* Match input width (inputs are width:100% of this box) */
+.auth-inline-box .signup-btn,
+.auth-inline-box .mobile-signup-btn {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .auth-step {
@@ -836,21 +890,77 @@ opacity: 0;
     margin-bottom: 22px;
 }
 
-.auth-step input {
+/* Glass pill inputs — same language as signup buttons / brand console */
+.bb-glass-field {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-bottom: 14px;
+    border-radius: 999px;
+    overflow: hidden;
+    isolation: isolate;
+    background: rgba(255, 255, 255, 0.123);
+    backdrop-filter: blur(50px);
+    -webkit-backdrop-filter: blur(50px);
+    border: 1px solid rgba(196, 193, 193, 0.267);
+    box-shadow: 0 0 1rem 0 rgba(0, 0, 0, 0);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.bb-glass-field::before {
+    content: "";
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 140%;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 0;
+    animation: liquid-blur 6s ease-in-out infinite alternate;
+}
+
+.bb-glass-field::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow: inset 0 0 30px rgba(230, 230, 230, 0.39);
+}
+
+.bb-glass-field:focus-within {
+    border-color: rgba(16, 48, 245, 0.55);
+    box-shadow: 0 0 0 4px rgba(16, 48, 245, 0.08);
+}
+
+.auth-step input,
+.bb-glass-field input {
+    position: relative;
+    z-index: 2;
     width: 100%;
     height: 54px;
     border-radius: 999px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
+    border: none;
     padding: 0 20px;
-    margin-bottom: 14px;
+    margin-bottom: 0;
     font-size: 15px;
     outline: none;
-    background: rgba(255, 255, 255, 0.75);
+    background: transparent;
+    color: #111;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-.auth-step input:focus {
-    border-color: #1030f5;
-    box-shadow: 0 0 0 4px rgba(16, 48, 245, 0.08);
+.auth-step input:focus,
+.bb-glass-field input:focus {
+    outline: none;
+}
+
+.auth-step input::placeholder,
+.bb-glass-field input::placeholder {
+    color: rgba(40, 50, 100, 0.55);
 }
 
 .auth-step .signin,
@@ -864,6 +974,11 @@ opacity: 0;
     color: #1030f5;
     font-weight: 600;
     text-decoration: none;
+}
+
+.mobile-auth-switch-label {
+    color: inherit;
+    font-weight: 400;
 }
 
 .secondary-inline-btn {
@@ -907,13 +1022,22 @@ opacity: 0;
         color: #aaa;
     }
 
-    .auth-step input {
-        background: rgba(255, 255, 255, 0.08);
-        color: #fff;
-        border-color: rgba(255, 255, 255, 0.14);
+    .bb-glass-field {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.267);
     }
 
-    .auth-step input::placeholder {
+    .bb-glass-field::after {
+        box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.14);
+    }
+
+    .auth-step input,
+    .bb-glass-field input {
+        color: #fff;
+    }
+
+    .auth-step input::placeholder,
+    .bb-glass-field input::placeholder {
         color: #aaa;
     }
 
@@ -933,13 +1057,18 @@ body.light-mode .auth-step .mobile-signin {
     color: #aaa;
 }
 
-body.light-mode .auth-step input {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
-    border-color: rgba(255, 255, 255, 0.14);
+body.light-mode .bb-glass-field {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.267);
 }
 
-body.light-mode .auth-step input::placeholder {
+body.light-mode .auth-step input,
+body.light-mode .bb-glass-field input {
+    color: #fff;
+}
+
+body.light-mode .auth-step input::placeholder,
+body.light-mode .bb-glass-field input::placeholder {
     color: #aaa;
 }
 

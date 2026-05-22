@@ -344,6 +344,10 @@
   <script src="../../assets/js/app-config.js?v=brandapi-2"></script>
   <script>
     (function () {
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.get("fresh") !== "1" && q.get("bb_fresh") !== "1") return;
+      } catch (_e) { return; }
       [
         "bbLuBrandName", "bbLuBrandUrl", "bbLuLastUploadMode",
         "bbLuLightLogoData", "bbLuDarkLogoData", "bbCurrentBrandVerificationRequest",
@@ -353,9 +357,9 @@
       });
     })();
   </script>
-  <script src="../bb-smart-ui.js?v=smartsize-prod-1"></script>
+  <script src="../bb-smart-ui.js?v=smartsize-prod-4"></script>
   <script src="../_shared/sync-popup.js?v=shared-4"></script>
   <script src="../_shared/brand-verification-api.js?v=brandverify-1"></script>
-  <script src="../logo-upload/logo-upload-page.js?v=logoupload-20"></script>
+  <script src="../logo-upload/logo-upload-page.js?v=logoupload-24"></script>
 </body>
 </html>

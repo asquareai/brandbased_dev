@@ -312,9 +312,15 @@ body.dark-mode #bbPreviewHost #bbSimulatedContent {
   color: #fff !important;
 }
 
-/* Dark mode: make settings cards fully transparent */
+/* Dark mode: frosted panels */
+body.dark-mode .bb-bs-card,
+body.dark-mode .bb-team-console-slab,
+body.dark-mode .bb-premium-wrap {
+  box-shadow: 0 0 1rem 0 rgb(0 0 0 / 0%) !important;
+  background: #00000096 !important;
+}
+
 body.dark-mode .bb-bs-card {
-  background: #00000054 !important;
   color: #fff !important;
 }
 
@@ -347,7 +353,12 @@ body.dark-mode .brandbased-dynamic-logo-slot.bb-enhanced {
 /* If no explicit body.dark-mode class is set, follow OS dark mode */
 @media (prefers-color-scheme: dark) {
   body, body * { color: #fff !important; }
-  .bb-bs-card { background: #00000054 !important; }
+  .bb-bs-card,
+  .bb-team-console-slab,
+  .bb-premium-wrap {
+    box-shadow: 0 0 1rem 0 rgb(0 0 0 / 0%) !important;
+    background: #00000096 !important;
+  }
   /* Keep the Brand Modal Settings button text dark */
   .bb-bs-card.bb-modal-theme .bb-modal-theme-btn { color: #06084e !important; }
 
@@ -1664,13 +1675,18 @@ transition: transform 0.3s ease;
 .popup .title-row .brand-icon::after {
   content: "";
   position: absolute;
-  inset: 1px; /* 1px border only */
+  inset: 0;
   border-radius: 50%;
   background-color: #fff;
-  background-image: var(--bb-logo);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  background-image: none;
+  -webkit-mask-image: var(--bb-logo);
+  mask-image: var(--bb-logo);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: var(--bb-theme-popup-brand-icon-mask-base, 56%);
+  mask-size: var(--bb-theme-popup-brand-icon-mask-base, 56%);
   filter: none;
 }
 

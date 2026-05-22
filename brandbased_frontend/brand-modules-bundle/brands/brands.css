@@ -112,6 +112,24 @@ body.bb-brands-page .bb-brands-grid {
   }
 }
 
+body.bb-brands-page .bb-brands-card--placeholder {
+  grid-column: 1 / -1;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* `.bb-brands-card { display: flex }` overrides the native [hidden] rule — keep status rows off when hidden */
+body.bb-brands-page .bb-brands-card--placeholder[hidden],
+body.bb-brands-page #bbBrandsLoading[hidden],
+body.bb-brands-page #bbBrandsEmpty[hidden] {
+  display: none !important;
+}
+body.bb-brands-page .bb-brands-card--placeholder .bb-brands-name {
+  font-size: 15px;
+  font-weight: 500;
+}
+
 body.bb-brands-page .bb-brands-card {
   display: flex;
   flex-direction: column;

@@ -33,6 +33,8 @@
   global.BB_APP = {
     apiBaseUrl: API_BASE_URL,
     smartSizeOrigin: SMART_SIZE_ORIGIN,
+    brandRuntimeScriptUrl:
+      "https://cdn.brandbased.ai/runtime/v1.js",
     isLocal: isLocal,
     routes: {
       login: "index.html",

@@ -150,6 +150,8 @@
           </button>
         </p>
 
+        <p class="bb-mv-brand-id" id="bbMvBrandId" aria-live="polite"></p>
+
         <div class="bb-mv-code-card" aria-label="BrandBased verification meta tag snippet">
           <div class="bb-mv-code-head">
             <span class="bb-mv-code-tag" aria-hidden="true">
@@ -165,9 +167,33 @@
               </svg>
             </button>
           </div>
-          <pre class="bb-mv-code-body" id="bbMvCodeSnippet" tabindex="0"><!-- BrandBased Official Verification &amp; Runtime Loader -->
-&lt;meta name=&quot;brandbased-official&quot; content=&quot;BB-VERIFIED-123ABC456XYZ|https://d123abcd.cloudfront.net/runtime.js&quot;&gt;
-&lt;script src=&quot;https://cdn.brandbased.ai/bb-runtime.min.js&quot; async&gt;&lt;/script&gt;</pre>
+          <pre class="bb-mv-code-body" id="bbMvCodeSnippet" tabindex="0"></pre>
+          <script>
+          (function () {
+            var RUNTIME = "https://cdn.brandbased.ai/runtime/v1.js";
+            function paintSnippet(brandUniqueId) {
+              var el = document.getElementById("bbMvCodeSnippet");
+              var idEl = document.getElementById("bbMvBrandId");
+              if (!el || !brandUniqueId) return;
+              el.textContent =
+                "<!-- BrandBased Official Verification -->\n" +
+                '<meta name="brandbased-official" content="BB-VERIFIED-' + brandUniqueId + '">\n\n' +
+                "<!-- BrandBased Runtime -->\n" +
+                '<script src="' + RUNTIME + '" data-bb-id="' + brandUniqueId + '" async><\/script>';
+              if (idEl) idEl.textContent = "Brand ID: " + brandUniqueId;
+            }
+            try {
+              var raw = localStorage.getItem("bbCurrentBrandVerificationRequest");
+              if (!raw) {
+                var el = document.getElementById("bbMvCodeSnippet");
+                if (el) el.textContent = "Complete Upload Brand Assets and Sync first, then return here.";
+                return;
+              }
+              var br = JSON.parse(raw);
+              if (br && br.brand_unique_id) paintSnippet(br.brand_unique_id);
+            } catch (_e) { /* main script will load from API */ }
+          })();
+          </script>
           <span class="bb-mv-copy-toast" id="bbMvCopyToast" role="status" aria-live="polite">Copied</span>
         </div>
 
@@ -184,7 +210,7 @@
         <h2 id="bbMvRightTitle" class="bb-lu-card-title">Verified Brand Identity</h2>
 
         <div class="bb-lu-previews">
-          <figure class="bb-lu-preview bb-lu-preview--light" data-verified="true">
+          <figure class="bb-lu-preview bb-lu-preview--light" data-verified="false">
             <div class="bb-lu-preview-stage" aria-hidden="true">
               <img
                 class="bb-lu-preview-img"
@@ -205,7 +231,7 @@
             <p class="bb-lu-failed-pill" aria-hidden="true">Brand Not Verified</p>
           </figure>
 
-          <figure class="bb-lu-preview bb-lu-preview--dark" data-verified="true">
+          <figure class="bb-lu-preview bb-lu-preview--dark" data-verified="false">
             <div class="bb-lu-preview-stage" aria-hidden="true">
               <img
                 class="bb-lu-preview-img"
@@ -243,7 +269,9 @@
     </div>
   </div>
 
+  <script src="../../assets/js/app-config.js?v=brandapi-2"></script>
+  <script src="../_shared/brand-verification-api.js?v=brandverify-5"></script>
   <script src="../_shared/sync-popup.js?v=shared-2"></script>
-  <script src="../logo-upload/meta-verification-page.js?v=metaverif-6"></script>
+  <script src="../logo-upload/meta-verification-page.js?v=metaverif-12"></script>
 </body>
 </html>

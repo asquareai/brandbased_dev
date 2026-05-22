@@ -20,9 +20,33 @@ DANGEROUS_PATTERNS = [
 
 
 def download_svg(svg_url: str) -> str:
-    response = requests.get(svg_url, timeout=30)
-    response.raise_for_status()
-    return response.text
+    try:
+        response = requests.get(svg_url, timeout=30)
+
+        if response.status_code != 200:
+            print("S3 SVG DOWNLOAD FAILED")
+            print("URL:", svg_url)
+            print("STATUS:", response.status_code)
+            print("BODY:", response.text)
+
+        response.raise_for_status()
+
+        content_type = response.headers.get("Content-Type", "")
+        print("SVG DOWNLOAD SUCCESS")
+        print("CONTENT TYPE:", content_type)
+
+        return response.text
+
+    except requests.exceptions.RequestException as e:
+        print("SVG DOWNLOAD ERROR")
+        print("URL:", svg_url)
+        print("ERROR:", str(e))
+
+        if hasattr(e, "response") and e.response is not None:
+            print("STATUS:", e.response.status_code)
+            print("BODY:", e.response.text)
+
+        raise
 
 
 def scan_svg_security(svg_text: str) -> Dict[str, Any]:

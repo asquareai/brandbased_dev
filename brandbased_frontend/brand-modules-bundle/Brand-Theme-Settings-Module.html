@@ -23,10 +23,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
-  <link rel="stylesheet" href="brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+  <link rel="stylesheet" href="brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-77" />
 
-  <link rel="stylesheet" href="brand-pages-isolated/Brand-Theme-Settings-Module.css?v=isolated-20" />
-  <script src="brand-pages-isolated/Brand-Theme-Settings-Module.theme-design.js?v=isolated-1" defer></script>
+  <link rel="stylesheet" href="brand-pages-isolated/Brand-Theme-Settings-Module.css?v=isolated-81" />
+  <script src="brand-pages-isolated/Brand-Theme-Settings-Module.theme-design.js?v=isolated-81" defer></script>
   <!-- bb-embed-mode-init: when this page is rendered inside an
        iframe (e.g. the Brand Console dashboard), drop its own page
        background + animated shards so it sits flush on the host
@@ -411,6 +411,19 @@
                           max="100"
                           value="100"
                           aria-label="Brand icon background opacity"
+                        />
+                      </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--opacity-compact">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeBrandIconSize">Brand Icon Size</label>
+                        <input
+                          id="bbThemeBrandIconSize"
+                          class="bb-theme-brand-opacity__range bb-theme-brand-opacity__range--compact"
+                          type="range"
+                          min="50"
+                          max="150"
+                          value="100"
+                          step="1"
+                          aria-label="Brand icon size"
                         />
                       </div>
                       <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
@@ -817,6 +830,7 @@
       const brandIconFillColourEl = document.getElementById("bbThemeBrandIconFillColour");
       const brandIconOutlineColourEl = document.getElementById("bbThemeBrandIconOutlineColour");
       const brandIconFillOpacityEl = document.getElementById("bbThemeBrandIconFillOpacity");
+      const brandIconSizeEl = document.getElementById("bbThemeBrandIconSize");
       const lockLogoColourEl = document.getElementById("bbThemeLockLogoColour");
       const exploreIconColourEl = document.getElementById("bbThemeExploreIconColour");
       const buyButtonColourEl = document.getElementById("bbThemeBuyButtonColour");
@@ -839,6 +853,22 @@
         let n = Number(v);
         if (!Number.isFinite(n)) n = def;
         return Math.max(0, Math.min(100, Math.round(n)));
+      };
+      /** Slider 50–150% → inner logo 0.293×–0.633× (max +15% again vs 0.550×). */
+      const BRAND_ICON_INNER_MUL_MIN = 0.2925;
+      const BRAND_ICON_INNER_MUL_MAX = 0.708906948;
+      const clampBrandIconSizePct = (v, def) => {
+        let n = Number(v);
+        if (!Number.isFinite(n)) n = def;
+        return Math.max(50, Math.min(150, Math.round(n)));
+      };
+      const brandIconInnerMulFromPct = (pct) => {
+        const p = clampBrandIconSizePct(pct, 100);
+        const t = (p - 50) / 100;
+        return (
+          BRAND_ICON_INNER_MUL_MIN +
+          t * (BRAND_ICON_INNER_MUL_MAX - BRAND_ICON_INNER_MUL_MIN)
+        );
       };
       const hexToRgba = (hex6, opacityPct) => {
         const h = normHex6(hex6) || "#1030f4";
@@ -957,6 +987,7 @@
           brandIconFillHex,
           brandIconBorderHex,
           brandIconFillOpacity: clampPct(o?.brandIconFillOpacity, 100),
+          brandIconSizePct: clampBrandIconSizePct(o?.brandIconSizePct, 100),
           brandIconBorderOpacity: clampPct(o?.brandIconBorderOpacity, 100),
           buyButtonBgHex,
           buyButtonLabelHex,
@@ -983,6 +1014,7 @@
                 normHex6(s.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX
               ),
               brandIconFillOpacity: clampPct(s.brandIconFillOpacity, 100),
+              brandIconSizePct: clampBrandIconSizePct(s.brandIconSizePct, 100),
               brandIconBorderOpacity: 100,
               brandIconHex: String(s.brandIconFillHex || rootAccentHex()),
               buyButtonBgHex: String(s.buyButtonBgHex || rootAccentHex()),
@@ -993,6 +1025,9 @@
           );
         } catch {}
         try { localStorage.setItem(KEY_VIDEO, String(s.video || 0)); } catch {}
+        try {
+          window.dispatchEvent(new CustomEvent("bb-theme-console-sync"));
+        } catch (_e) {}
       };
 
       const KEY_ADMIN_GALLERY = "bbTheme:adminGallery:v1";
@@ -1507,6 +1542,8 @@
             normHex6(state.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX;
         if (brandIconFillOpacityEl)
           brandIconFillOpacityEl.value = String(state.brandIconFillOpacity ?? 100);
+        if (brandIconSizeEl)
+          brandIconSizeEl.value = String(state.brandIconSizePct ?? 100);
         if (lockLogoColourEl) lockLogoColourEl.value = state.lockLogoHex || rootAccentHex();
         if (exploreIconColourEl) exploreIconColourEl.value = state.exploreIconHex || rootAccentHex();
         if (buyButtonColourEl) buyButtonColourEl.value = state.buyButtonBgHex || rootAccentHex();
@@ -1766,8 +1803,13 @@
           popup.style.setProperty("--bb-theme-popup-brand-icon-bg", fillRgba);
           popup.style.setProperty("--bb-theme-popup-brand-icon-border", borderCssVar);
           popup.style.setProperty("--bb-theme-popup-brand-icon", fillRgba);
+          const iconSizeMul = brandIconInnerMulFromPct(
+            brandIconSizeEl?.value ?? state.brandIconSizePct ?? 100
+          );
+          popup.style.setProperty("--bb-theme-popup-brand-icon-inner-mul", String(iconSizeMul));
           const brandIconEl = popup.querySelector(".title-row .brand-icon");
           if (brandIconEl) {
+            brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-inner-mul", String(iconSizeMul));
             brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-bg", fillRgba);
             brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-border", borderCssVar);
             brandIconEl.style.setProperty("--bb-theme-popup-brand-icon", fillRgba);
@@ -1841,6 +1883,8 @@
           normHex6(state.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX;
       if (brandIconFillOpacityEl)
         brandIconFillOpacityEl.value = String(state.brandIconFillOpacity ?? 100);
+      if (brandIconSizeEl)
+        brandIconSizeEl.value = String(state.brandIconSizePct ?? 100);
       if (lockLogoColourEl) lockLogoColourEl.value = state.lockLogoHex || rootAccentHex();
       if (exploreIconColourEl) exploreIconColourEl.value = state.exploreIconHex || rootAccentHex();
       if (buyButtonColourEl) buyButtonColourEl.value = state.buyButtonBgHex || rootAccentHex();
@@ -1871,6 +1915,7 @@
         brandIconBorderHex:
           normHex6(brandIconOutlineColourEl?.value) || DEFAULT_BRAND_ICON_BORDER_HEX,
         brandIconFillOpacity: clampPct(brandIconFillOpacityEl?.value, 100),
+        brandIconSizePct: clampBrandIconSizePct(brandIconSizeEl?.value, 100),
         brandIconBorderOpacity: 100,
         buyButtonBgHex: normHex6(buyButtonColourEl?.value) || rootAccentHex(),
         buyButtonLabelHex: normHex6(buyButtonLabelColourEl?.value) || "#ffffff",
@@ -1938,6 +1983,7 @@
       brandIconFillColourEl?.addEventListener("input", () => apply(readFromUi()));
       brandIconOutlineColourEl?.addEventListener("input", () => apply(readFromUi()));
       brandIconFillOpacityEl?.addEventListener("input", () => apply(readFromUi()));
+      brandIconSizeEl?.addEventListener("input", () => apply(readFromUi()));
       lockLogoColourEl?.addEventListener("input", () => apply(readFromUi()));
       exploreIconColourEl?.addEventListener("input", () => apply(readFromUi()));
       buyButtonColourEl?.addEventListener("input", () => apply(readFromUi()));
@@ -2171,7 +2217,7 @@
     })();
   </script>
 
-  <script src="brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-5"></script>
+  <script src="brand-pages-isolated/vendor-bb-smart-ui.js?v=isolated-77"></script>
 
   <script>
     /*

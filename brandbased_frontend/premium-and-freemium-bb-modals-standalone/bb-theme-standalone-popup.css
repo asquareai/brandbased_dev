@@ -2,14 +2,23 @@
    Vars are set on .popup / .bb-freemium-modal by bb-theme-console-sync.js from localStorage. */
 
 :root {
+  --bb-theme-popup-brand-icon-inner-mul-min: 0.2925;
+  --bb-theme-popup-brand-icon-inner-mul-max: 0.708906948;
   --bb-explore-compass-mask: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20122.88%20122.88%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M61.44%2C0A61.46%2C61.46%2C0%2C1%2C1%2C18%2C18%2C61.23%2C61.23%2C0%2C0%2C1%2C61.44%2C0Zm5.25%2C73.85-3.64-3.69-.15%2C0a8.38%2C8.38%2C0%2C0%2C1-.88%2C0%2C8.86%2C8.86%2C0%2C0%2C1-8.88-8.87%2C9.2%2C9.2%2C0%2C0%2C1%2C0-.94l0-.2-4-4L37.88%2C85.29%2C66.69%2C73.85Zm-2.22-6L70%2C73.4l1.43%2C1.43L33.17%2C90%2C48.28%2C51.41l7.82%2C7.92L56%2C60a5.67%2C5.67%2C0%2C0%2C0-.11.66c0%2C.24%2C0%2C.46%2C0%2C.66A6.23%2C6.23%2C0%2C0%2C0%2C62%2C67.56l.62%2C0a5.77%2C5.77%2C0%2C0%2C0%2C.62-.09l.7-.14.51.51ZM58.52%2C55.18l-6.3-6.39.42-.85.7-.64L89.71%2C32.85%2C74.61%2C71.47l-7.07-7.16.3-.79a5.85%2C5.85%2C0%2C0%2C0%2C.29-1.07%2C7.14%2C7.14%2C0%2C0%2C0%2C.1-1.1A6.23%2C6.23%2C0%2C0%2C0%2C62%2C55.14a6.56%2C6.56%2C0%2C0%2C0-1.08.09%2C5.45%2C5.45%2C0%2C0%2C0-1%2C.27l-.8.29-.6-.61ZM96.58%2C26.3a49.71%2C49.71%2C0%2C1%2C0%2C14.55%2C35.14A49.57%2C49.57%2C0%2C0%2C0%2C96.58%2C26.3Z%22%2F%3E%3C%2Fsvg%3E");
-  /* Freemium modal — same tokens as Freemium-Theme-Styles .bb-fm-preview-popup */
-  --bb-fm-modal-width: 238px;
-  --bb-fm-modal-height: 197px;
-  --bb-fm-modal-radius: 17px;
-  --bb-fm-modal-pad-top: 15px;
-  --bb-fm-modal-pad-x: 19px;
-  --bb-fm-modal-pad-bottom: 20px;
+  /* Freemium standalone modal (~10% smaller than 238×197 reference). */
+  --bb-fm-modal-width: 214px;
+  --bb-fm-modal-height: 177px;
+  --bb-fm-modal-radius: 15px;
+  --bb-fm-modal-pad-top: 14px;
+  --bb-fm-modal-pad-x: 17px;
+  --bb-fm-modal-pad-bottom: 18px;
+  --bb-fm-badge-size: 79px;
+  --bb-fm-badge-margin-top: 8px;
+  --bb-fm-close-inset: 8px;
+  --bb-fm-close-size: 23px;
+  --bb-fm-close-icon-size: 10px;
+  --bb-fm-explore-min-height: 34px;
+  --bb-fm-explore-font-size: 15px;
 }
 
 /* Standalone Premium/Freemium pages: in-text marks use the same line
@@ -27,6 +36,12 @@
 }
 
 /* —— Premium popup: brand mark —— */
+.popup .title-row .brand-icon {
+  overflow: hidden;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .popup .title-row .brand-icon.bb-upload {
   background-color: var(
     --bb-theme-popup-brand-icon-bg,
@@ -34,17 +49,28 @@
   ) !important;
   background-image: none !important;
   border: 1px solid var(--bb-theme-popup-brand-icon-border, #000) !important;
+  border-radius: 50%;
+  box-shadow: none !important;
   box-sizing: border-box !important;
   padding: 0 !important;
 }
 
 .popup .title-row .brand-icon.bb-upload::after {
-  inset: var(--bb-theme-popup-brand-icon-logo-inset, 3px) !important;
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: 50%;
   background-color: transparent !important;
   background-image: var(--bb-logo) !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
-  background-size: contain !important;
+  background-size: calc(
+    100% * min(
+      var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948),
+      var(--bb-theme-popup-brand-icon-inner-mul, 1)
+    )
+  ) auto !important;
+  transform: none !important;
   filter: none !important;
   -webkit-mask: none !important;
   mask: none !important;
@@ -59,7 +85,26 @@
 }
 
 .popup .title-row .brand-icon:not(.bb-upload)::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: 50%;
   background-color: #fff !important;
+  background-image: none !important;
+  -webkit-mask-image: var(--bb-logo) !important;
+  mask-image: var(--bb-logo) !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  -webkit-mask-size: calc(
+    100% * var(--bb-theme-popup-brand-icon-inner-mul, 1) /
+      var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948)
+  ) !important;
+  mask-size: calc(
+    100% * var(--bb-theme-popup-brand-icon-inner-mul, 1) /
+      var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948)
+  ) !important;
 }
 
 /* —— Premium popup: typography + colours —— */
@@ -431,13 +476,13 @@
   top: 0;
   left: 0;
   box-sizing: border-box;
-  width: var(--bb-fm-modal-width, 238px);
-  max-width: min(var(--bb-fm-modal-width, 238px), calc(100vw - 24px));
-  height: var(--bb-fm-modal-height, 197px);
-  min-height: var(--bb-fm-modal-height, 197px);
-  padding: var(--bb-fm-modal-pad-top, 15px) var(--bb-fm-modal-pad-x, 19px)
-    var(--bb-fm-modal-pad-bottom, 20px);
-  border-radius: var(--bb-fm-modal-radius, 17px);
+  width: var(--bb-fm-modal-width, 214px);
+  max-width: min(var(--bb-fm-modal-width, 214px), calc(100vw - 24px));
+  height: var(--bb-fm-modal-height, 177px);
+  min-height: var(--bb-fm-modal-height, 177px);
+  padding: var(--bb-fm-modal-pad-top, 14px) var(--bb-fm-modal-pad-x, 17px)
+    var(--bb-fm-modal-pad-bottom, 18px);
+  border-radius: var(--bb-fm-modal-radius, 15px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -478,10 +523,10 @@
 
 .bb-freemium-close {
   position: absolute;
-  top: 9px;
-  right: 9px;
-  width: 26px;
-  height: 26px;
+  top: var(--bb-fm-close-inset, 8px);
+  right: var(--bb-fm-close-inset, 8px);
+  width: var(--bb-fm-close-size, 23px);
+  height: var(--bb-fm-close-size, 23px);
   border: 0;
   border-radius: 50%;
   padding: 0;
@@ -500,18 +545,20 @@
 .bb-freemium-close__icon {
   display: block;
   flex: 0 0 auto;
-  width: 11px;
-  height: 11px;
+  width: var(--bb-fm-close-icon-size, 10px);
+  height: var(--bb-fm-close-icon-size, 10px);
   color: inherit;
 }
 
 button.bb-freemium-badge {
   position: relative;
-  width: 88px;
-  height: 88px;
-  margin-top: 9px;
-  padding: 17px;
+  width: var(--bb-fm-badge-size, 79px);
+  height: var(--bb-fm-badge-size, 79px);
+  margin-top: var(--bb-fm-badge-margin-top, 8px);
+  padding: 0;
   border-radius: 50%;
+  overflow: hidden;
+  box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -537,16 +584,23 @@ button.bb-freemium-badge {
 button.bb-freemium-badge::after {
   content: "";
   position: absolute;
-  inset: 17px;
+  inset: 0;
+  border-radius: 50%;
   background-color: transparent;
   background-image: var(--bb-logo, url("./brandbased-logo.svg"));
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain;
+  background-size: calc(
+    100% * min(
+      var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948),
+      var(--bb-fm-brand-icon-inner-mul, var(--bb-theme-popup-brand-icon-inner-mul, 1))
+    )
+  ) auto;
   filter: none;
   -webkit-mask: none;
   mask: none;
   pointer-events: none;
+  transform: none;
 }
 
 .bb-freemium-badge-glyph {
@@ -556,7 +610,7 @@ button.bb-freemium-badge::after {
 .bb-freemium-explore {
   position: relative;
   width: 100%;
-  min-height: 38px;
+  min-height: var(--bb-fm-explore-min-height, 34px);
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -570,7 +624,7 @@ button.bb-freemium-badge::after {
     --bb-theme-popup-buy-button-label,
     var(--bb-fm-button-label, #fff)
   );
-  font: 800 17px/1 Roboto, system-ui, sans-serif;
+  font: 800 var(--bb-fm-explore-font-size, 15px) / 1 Roboto, system-ui, sans-serif;
   letter-spacing: -0.005em;
   text-decoration: none;
   box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);

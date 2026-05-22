@@ -244,3 +244,36 @@ document.addEventListener('DOMContentLoaded', () => {
     closeMobileNav.classList.add('minus');
   });
 });
+
+/* Landing #slogan — crossfade + drift (same flow feel as index moving-subtitle). */
+function setupLandingSloganRotation() {
+  const slogan = document.getElementById('slogan');
+  if (!slogan || !slogan.classList.contains('landing-slogan-rotator')) return;
+
+  const slides = slogan.querySelectorAll('.landing-slogan-slide');
+  if (slides.length < 2) return;
+
+  const HOLD_MS = 5800;
+  const FADE_MS = 1000;
+  let current = 0;
+  let timer = 0;
+
+  function showSlide(index) {
+    slides.forEach(function (slide, i) {
+      slide.classList.toggle('active', i === index);
+    });
+    current = index;
+  }
+
+  function scheduleNext() {
+    timer = window.setTimeout(function () {
+      showSlide((current + 1) % slides.length);
+      scheduleNext();
+    }, HOLD_MS + FADE_MS);
+  }
+
+  showSlide(0);
+  scheduleNext();
+}
+
+document.addEventListener('DOMContentLoaded', setupLandingSloganRotation);

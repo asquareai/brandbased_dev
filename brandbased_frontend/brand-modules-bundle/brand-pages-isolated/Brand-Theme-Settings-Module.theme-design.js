@@ -1213,6 +1213,11 @@
   };
 
   document.addEventListener("DOMContentLoaded", () => {
+    /* Create pager + pill as soon as the preview stage exists so the
+       CSS intro (3s delay) lines up with page load — not a second wait
+       after INTRO_MS (which only seeds slots / hydrates theme). */
+    syncUi();
+
     const mountBuyPrice = document.getElementById("bbThemePopupMount");
     if (mountBuyPrice && !mountBuyPrice.__bbThemeBuyPriceDelegated) {
       mountBuyPrice.__bbThemeBuyPriceDelegated = true;

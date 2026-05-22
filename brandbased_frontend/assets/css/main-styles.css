@@ -1494,6 +1494,50 @@ input:focus::placeholder {
     animation-iteration-count: 1;   
 }
 
+/* Landing hero — rotating slogan (readable copy, no blue underline) */
+#slogan.landing-slogan-rotator {
+    position: relative;
+    min-height: 3.2em;
+    line-height: 1.35;
+}
+
+#slogan.landing-slogan-rotator::after {
+    content: none;
+    display: none;
+}
+
+#slogan.landing-slogan-rotator .landing-slogan-slide {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+    pointer-events: none;
+    z-index: 0;
+    color: rgba(232, 232, 232, 0.92);
+    -webkit-text-fill-color: rgba(232, 232, 232, 0.92);
+    background: none;
+    animation: none;
+    font-weight: 900;
+    line-height: 1.35;
+}
+
+#slogan.landing-slogan-rotator .landing-slogan-slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    z-index: 1;
+}
+
+#slogan.landing-slogan-rotator .landing-slogan-em {
+    font-style: italic;
+    font-weight: 900;
+}
+
 
 @media (max-width: 1600px) {
     .text {
@@ -1509,6 +1553,12 @@ input:focus::placeholder {
    margin-bottom: 400px;
    font-size: 20px;
  }
+}
+
+@media (max-width: 740px) {
+  #slogan.landing-slogan-rotator {
+    transform: translateY(50px);
+  }
 }
  
 .text::after {
@@ -2666,6 +2716,8 @@ button {
   .login-button,
   .join-button {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     text-align: center;
   }
   .join-button {

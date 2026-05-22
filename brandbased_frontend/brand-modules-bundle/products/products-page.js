@@ -424,13 +424,31 @@
     first.textContent = label;
   };
 
+  /** Short / empty copy sits high beside the gallery; desktop gets extra top margin via CSS. */
+  const DESC_COMPACT_MAX_CHARS = 120;
+
+  const isCompactProductDescription = (rawText) => {
+    const trimmed = String(rawText || "").trim();
+    return !trimmed || trimmed.length <= DESC_COMPACT_MAX_CHARS;
+  };
+
+  const syncProductDescriptionCompactClass = (host, rawText) => {
+    if (!host) return;
+    host.classList.toggle(
+      "bb-products-desc-compact",
+      isCompactProductDescription(rawText)
+    );
+  };
+
   const renderDescriptionToPopup = (popup, rawText) => {
     const host = popup?.querySelector?.(".product-description");
     if (!host) return;
     const v = String(rawText || "");
     const trimmed = v.trim();
     if (!trimmed) {
-      host.textContent = "Every product has a story… (add a description on the left to preview it here)";
+      host.textContent =
+        "Every product has a story… (add a description on the left to preview it here)";
+      syncProductDescriptionCompactClass(host, rawText);
       return;
     }
     const paras = v
@@ -439,6 +457,7 @@
       .filter(Boolean);
     if (paras.length <= 1) {
       host.textContent = trimmed;
+      syncProductDescriptionCompactClass(host, rawText);
       return;
     }
     host.innerHTML = "";
@@ -447,6 +466,7 @@
       p.textContent = t;
       host.appendChild(p);
     });
+    syncProductDescriptionCompactClass(host, rawText);
   };
 
   const MAX_PREVIEW_QTY = 99;

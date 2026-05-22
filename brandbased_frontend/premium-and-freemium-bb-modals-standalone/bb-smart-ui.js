@@ -11,6 +11,72 @@
     return `bb-${slug}`;
   }
 
+  /** In-text marks need `.bb-upload` (not `.bb-brandbased`) to read injected --bb-logo. */
+  function bbEnsureUploadMarkBrandToken(el) {
+    if (!el || el.getAttribute("data-brand") !== "upload") return;
+    const want = bbBrandClass("upload");
+    if (!want) return;
+    try {
+      for (const c of Array.from(el.classList)) {
+        if (
+          typeof c === "string" &&
+          c.startsWith("bb-") &&
+          c !== "bb-enhanced" &&
+          c !== "bb-swap-pulse" &&
+          c !== "BB-AI-Size" &&
+          c !== want
+        ) {
+          el.classList.remove(c);
+        }
+      }
+    } catch (_e) {}
+    if (!el.classList.contains(want)) el.classList.add(want);
+  }
+
+  function bbApplyEmbeddedThemeScheme(scheme) {
+    if (scheme !== "light" && scheme !== "dark") return;
+    try {
+      document.documentElement.style.colorScheme = scheme;
+      document.documentElement.setAttribute("data-bb-scheme", scheme);
+    } catch (_e) {}
+    try {
+      if (document.body) {
+        document.body.classList.toggle("light-mode", scheme === "light");
+        document.body.classList.toggle("dark-mode", scheme === "dark");
+      }
+    } catch (_e) {}
+  }
+
+  function bbIsStandaloneDemoPage() {
+    try {
+      return !!document.querySelector(".bb-premium-wrap, .bb-freemium-wrap");
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  function bbStandaloneMarksRevealed() {
+    return !!globalThis.__bbStandaloneMarksRevealed;
+  }
+
+  function bbSetStandaloneMarksRevealed() {
+    globalThis.__bbStandaloneMarksRevealed = true;
+  }
+
+  function bbPulseInTextUploadMarks() {
+    if (bbIsStandaloneDemoPage() && !bbStandaloneMarksRevealed()) return;
+    requestAnimationFrame(() => {
+      const marks2 = Array.from(document.querySelectorAll(".brandbased-dynamic-logo-slot")).filter(
+        (el) => !el.closest(".popup") && el.getAttribute("data-brand") === "upload"
+      );
+      marks2.forEach((el) => el.classList.remove("bb-swap-pulse"));
+      requestAnimationFrame(() => {
+        marks2.forEach((el) => el.classList.add("bb-swap-pulse"));
+        setTimeout(() => marks2.forEach((el) => el.classList.remove("bb-swap-pulse")), 650);
+      });
+    });
+  }
+
 document.addEventListener("DOMContentLoaded", () => {
   (() => {
 
@@ -427,15 +493,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // =============================
   const BB_ASSET_LAB_STORAGE_KEY = "bbAssetLab:svg:v1";
   const BB_ASSET_LAB_STYLE_ID = "bb-asset-lab-style";
+  const BB_LU_DUAL_STYLE_ID = "bb-lu-dual-logo-style";
   const BB_ASSET_LAB_FILENAME_KEY = "bbAssetLab:filename:v1";
   /** Set when “Save” has succeeded for the current upload (enables Apply). */
   const BB_ASSET_LAB_CROP_SAVED_KEY = "bbAssetLab:cropSaved:v1";
+  /** Logo upload page: separate marks for light / dark UI (data URLs). */
+  const BB_LU_LIGHT_LOGO_KEY = "bbLuLightLogoData";
+  const BB_LU_DARK_LOGO_KEY = "bbLuDarkLogoData";
+  const BB_LU_LAST_UPLOAD_MODE_KEY = "bbLuLastUploadMode";
+
+  function bbPersistLuLogoSlotFromSvg(svgText) {
+    const s = String(svgText || "").trim();
+    if (!s || !/<\s*svg\b/i.test(s)) return;
+    let mode = "light";
+    try {
+      mode = localStorage.getItem(BB_LU_LAST_UPLOAD_MODE_KEY) || "light";
+    } catch (_e) {}
+    const key = mode === "dark" ? BB_LU_DARK_LOGO_KEY : BB_LU_LIGHT_LOGO_KEY;
+    const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(s)}`;
+    try {
+      localStorage.setItem(key, dataUrl);
+      window.dispatchEvent(new CustomEvent("bb-lu-logo-updated"));
+    } catch (_e) {}
+  }
   /** Saved Custom Size & Placement slider values (upload marks only). */
   const BB_PLACEMENT_KEY = "bbPlacement:panel:v1";
   const BB_SAVE_CROPPED_API = "http://localhost:8001/api/bb/save-cropped";
   let bbAssetLabBlobUrl = "";
   let bbAssetLabSvgText = "";
   let bbAssetLabTrimViewBox = "";
+  let bbLuLightBlobUrl = "";
+  let bbLuDarkBlobUrl = "";
+  let bbLuLightRatio = 1;
+  let bbLuDarkRatio = 1;
+  let bbLuDualLogoSig = "";
 
   function bbParseSvgLengthAttr(v) {
     if (v == null) return null;
@@ -665,6 +756,492 @@ document.addEventListener("DOMContentLoaded", () => {
       document.head.appendChild(el);
     }
     return el;
+  }
+
+  function bbGetLuDualStyleEl() {
+    let el = document.getElementById(BB_LU_DUAL_STYLE_ID);
+    if (!el) {
+      el = document.createElement("style");
+      el.id = BB_LU_DUAL_STYLE_ID;
+      document.head.appendChild(el);
+    }
+    return el;
+  }
+
+  function bbGetUploadMarkEls() {
+    return Array.from(document.querySelectorAll(".brandbased-dynamic-logo-slot")).filter(
+      (el) => !el.closest(".popup") && el.getAttribute("data-bb-fixed") !== "1"
+    );
+  }
+
+  function bbHasAppearanceAwareLogos() {
+    try {
+      const light = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      const dark = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+      if (light || dark) return true;
+      const svg = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
+      return !!(svg && /<\s*svg/i.test(svg));
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  function bbGetPopupUploadLogoTargets(popup) {
+    const root = popup || document;
+    return Array.from(
+      root.querySelectorAll(
+        ".popup .title-row .brand-icon, .popup .lock-icon-bb-logo, .bb-freemium-badge, button.bb-freemium-badge"
+      )
+    );
+  }
+
+  /** Popup brand/lock marks: set --bb-logo for light/dark uploads (logo blend reads this). */
+  function bbEnsurePopupUploadBrandSurfaces(popup) {
+    const root = popup || document.querySelector(".popup");
+    if (!root) return;
+    const scheme = bbResolveAppearanceScheme();
+    let lightRaw = "";
+    let darkRaw = "";
+    try {
+      lightRaw = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      darkRaw = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+    } catch (_e) {}
+    if (lightRaw && darkRaw) {
+      const sig = `${lightRaw.length}|${darkRaw.length}|${lightRaw.slice(0, 48)}|${darkRaw.slice(0, 48)}`;
+      if (sig !== bbLuDualLogoSig) bbApplyDualLuLogosToCss(lightRaw, darkRaw);
+    }
+    let url = scheme === "dark" ? bbLuDarkBlobUrl : bbLuLightBlobUrl;
+    let ratio = scheme === "dark" ? bbLuDarkRatio : bbLuLightRatio;
+    if (!url) {
+      const raw = scheme === "dark" ? darkRaw || lightRaw : lightRaw || darkRaw;
+      const entry = bbLogoCssEntryFromStored(raw);
+      if (!entry) return;
+      url = entry.url;
+      ratio = entry.ratio;
+    }
+    const safe = bbCssEscapeUrl(url);
+    const paint = (el) => {
+      if (!el) return;
+      el.style.setProperty("--bb-logo", `url("${safe}")`);
+      el.style.setProperty("--bb-ratio", String(ratio || 1));
+    };
+    bbGetPopupUploadLogoTargets(root).forEach((el) => {
+      const token = bbBrandClass(el.dataset?.brand || "upload");
+      if (token) el.classList.add(token);
+      if (el.classList.contains("bb-upload") || el.dataset.brand === "upload") {
+        paint(el);
+      }
+    });
+  }
+
+  function bbPaintUploadMarksForScheme(scheme) {
+    const s = scheme === "dark" ? "dark" : "light";
+    let lightRaw = "";
+    let darkRaw = "";
+    try {
+      lightRaw = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      darkRaw = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+    } catch (_e) {}
+
+    if (lightRaw && darkRaw) {
+      const sig = `${lightRaw.length}|${darkRaw.length}|${lightRaw.slice(0, 48)}|${darkRaw.slice(0, 48)}`;
+      if (sig !== bbLuDualLogoSig) bbApplyDualLuLogosToCss(lightRaw, darkRaw);
+    }
+
+    let url = s === "dark" ? bbLuDarkBlobUrl : bbLuLightBlobUrl;
+    let ratio = s === "dark" ? bbLuDarkRatio : bbLuLightRatio;
+    if (!url) {
+      const raw = s === "dark" ? darkRaw || lightRaw : lightRaw || darkRaw;
+      const entry = bbLogoCssEntryFromStored(raw);
+      if (!entry) return false;
+      url = entry.url;
+      ratio = entry.ratio;
+    }
+
+    const safe = bbCssEscapeUrl(url);
+    const paintLogo = (el) => {
+      if (!el) return;
+      el.style.setProperty("--bb-logo", `url("${safe}")`);
+      el.style.setProperty("--bb-ratio", String(ratio || 1));
+    };
+    bbGetUploadMarkEls().forEach((el) => {
+      el.dataset.brand = "upload";
+      bbEnsureUploadMarkBrandToken(el);
+      paintLogo(el);
+    });
+    bbSyncLuLogoChipForScheme(s);
+    return true;
+  }
+
+  function bbApplyUploadedSvgToCss(svgText, preparedAlready) {
+    // Default: run bbSvgForKonvaRaster() so preview + --bb-logo match what the cropper shows.
+    // Pass preparedAlready === true when svgText is already raster-ready (e.g. after Save).
+    const s0 = String(svgText || "");
+    const prepared =
+      preparedAlready === true
+        ? s0
+        : s0 && /<\s*svg\b/i.test(s0)
+          ? bbSvgForKonvaRaster(s0) || s0
+          : s0;
+    const ratio = bbParseViewBoxRatio(prepared) || 1;
+    try {
+      if (bbAssetLabBlobUrl) URL.revokeObjectURL(bbAssetLabBlobUrl);
+    } catch {}
+    const blob = new Blob([prepared], { type: "image/svg+xml;charset=utf-8" });
+    bbAssetLabBlobUrl = URL.createObjectURL(blob);
+
+    if (bbLuDualLogoSig) {
+      bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+      return { ratio };
+    }
+
+    const styleEl = bbGetAssetLabStyleEl();
+    styleEl.textContent = `.bb-upload{--bb-logo:url("${bbAssetLabBlobUrl}");--bb-ratio:${ratio};}`;
+
+    try {
+      const chip = document.querySelector(".bb-threshold-chip");
+      if (chip && bbAssetLabBlobUrl) {
+        chip.style.setProperty("--bb-chip-logo", `url("${bbAssetLabBlobUrl}")`);
+      }
+    } catch {}
+    return { ratio };
+  }
+
+  function bbDataUrlToSvgString(dataUrl) {
+    const raw = String(dataUrl || "").trim();
+    if (!raw) return "";
+    if (raw.startsWith("<svg") || raw.startsWith("<?xml")) return raw;
+    if (!raw.startsWith("data:")) return "";
+    const comma = raw.indexOf(",");
+    if (comma < 0) return "";
+    const meta = raw.slice(0, comma);
+    const payload = raw.slice(comma + 1);
+    if (/;base64/i.test(meta)) {
+      try {
+        return atob(payload);
+      } catch (_e) {
+        return "";
+      }
+    }
+    try {
+      return decodeURIComponent(payload);
+    } catch (_e2) {
+      return payload;
+    }
+  }
+
+  function bbCssEscapeUrl(dataUrl) {
+    return String(dataUrl || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  }
+
+  function bbLogoCssEntryFromStored(raw) {
+    const s = String(raw || "").trim();
+    if (!s) return null;
+    const svgText =
+      s.startsWith("<svg") || s.startsWith("<?xml") ? s : bbDataUrlToSvgString(s);
+    if (svgText && /<\s*svg\b/i.test(svgText)) {
+      const prepared = bbSvgForKonvaRaster(svgText) || svgText;
+      const ratio = bbParseViewBoxRatio(prepared) || 1;
+      const blob = new Blob([prepared], { type: "image/svg+xml;charset=utf-8" });
+      return { url: URL.createObjectURL(blob), ratio, svgText: prepared };
+    }
+    if (/^data:image\//i.test(s)) {
+      return { url: s, ratio: 1, svgText: "" };
+    }
+    return null;
+  }
+
+  function bbRevokeLuDualBlobUrls() {
+    try {
+      if (bbLuLightBlobUrl && bbLuLightBlobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(bbLuLightBlobUrl);
+      }
+      if (bbLuDarkBlobUrl && bbLuDarkBlobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(bbLuDarkBlobUrl);
+      }
+    } catch (_e) {}
+    bbLuLightBlobUrl = "";
+    bbLuDarkBlobUrl = "";
+    bbLuLightRatio = 1;
+    bbLuDarkRatio = 1;
+    bbLuDualLogoSig = "";
+  }
+
+  function bbApplyDualLuLogosToCss(lightRaw, darkRaw) {
+    const lightE = bbLogoCssEntryFromStored(lightRaw);
+    const darkE = bbLogoCssEntryFromStored(darkRaw);
+    if (!lightE && !darkE) return false;
+
+    const L = lightE || darkE;
+    const D = darkE || lightE;
+    bbRevokeLuDualBlobUrls();
+    bbLuLightBlobUrl = L.url;
+    bbLuDarkBlobUrl = D.url;
+    bbLuLightRatio = L.ratio;
+    bbLuDarkRatio = D.ratio;
+    bbLuDualLogoSig = `${String(lightRaw || "").length}|${String(darkRaw || "").length}|${String(lightRaw || "").slice(0, 48)}|${String(darkRaw || "").slice(0, 48)}`;
+
+    if (L.svgText) bbAssetLabSvgText = L.svgText;
+
+    const lUrl = bbCssEscapeUrl(L.url);
+    const dUrl = bbCssEscapeUrl(D.url);
+    const styleEl = bbGetLuDualStyleEl();
+    styleEl.textContent =
+      `.bb-upload{` +
+      `--bb-logo-light:url("${lUrl}");--bb-logo-dark:url("${dUrl}");` +
+      `--bb-ratio-light:${L.ratio};--bb-ratio-dark:${D.ratio};` +
+      `}` +
+      `body.light-mode .bb-upload,html[data-bb-scheme="light"] .bb-upload{` +
+      `--bb-logo:var(--bb-logo-light);--bb-ratio:var(--bb-ratio-light);` +
+      `}` +
+      `body.dark-mode .bb-upload,html[data-bb-scheme="dark"] .bb-upload{` +
+      `--bb-logo:var(--bb-logo-dark);--bb-ratio:var(--bb-ratio-dark);` +
+      `}` +
+      `@media (prefers-color-scheme:light){` +
+      `body:not(.light-mode):not(.dark-mode) .bb-upload{` +
+      `--bb-logo:var(--bb-logo-light);--bb-ratio:var(--bb-ratio-light);` +
+      `}}` +
+      `@media (prefers-color-scheme:dark){` +
+      `body:not(.light-mode):not(.dark-mode) .bb-upload{` +
+      `--bb-logo:var(--bb-logo-dark);--bb-ratio:var(--bb-ratio-dark);` +
+      `}}`;
+
+    bbApplyEmbeddedThemeScheme(bbResolveAppearanceScheme());
+    bbSyncLuLogoChipForScheme(bbResolveAppearanceScheme());
+    return true;
+  }
+
+  function bbSyncLuLogoChipForScheme(scheme) {
+    try {
+      const chip = document.querySelector(".bb-threshold-chip");
+      const url = scheme === "dark" ? bbLuDarkBlobUrl || bbLuLightBlobUrl : bbLuLightBlobUrl || bbLuDarkBlobUrl;
+      if (chip && url) {
+        chip.style.setProperty("--bb-chip-logo", `url("${bbCssEscapeUrl(url)}")`);
+      }
+    } catch (_e) {}
+  }
+
+  /** Brand console dashboard: body.light-mode = light UI (see brand-console-dashboard.html). */
+  function bbParentDashboardScheme() {
+    try {
+      const pw = window.parent;
+      if (!pw || pw === window) return null;
+      const pb = pw.document && pw.document.body;
+      if (pb) {
+        return pb.classList.contains("light-mode") ? "light" : "dark";
+      }
+    } catch (_e) {}
+    try {
+      const pw = window.parent;
+      if (!pw || pw === window) return null;
+      const saved = pw.localStorage && pw.localStorage.getItem("theme");
+      if (saved === "light") return "light";
+      if (saved === "dark") return "dark";
+      if (pw.matchMedia && pw.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
+      return "light";
+    } catch (_e) {}
+    return null;
+  }
+
+  function bbSyncEmbeddedColorSchemeFromParent() {
+    const scheme = bbParentDashboardScheme();
+    if (!scheme) return;
+    bbApplyEmbeddedThemeScheme(scheme);
+  }
+
+  /** Dashboard iframe parent wins over stale :root color-scheme set once at embed load. */
+  function bbResolveAppearanceScheme() {
+    const fromParent = bbParentDashboardScheme();
+    if (fromParent) {
+      bbSyncEmbeddedColorSchemeFromParent();
+      return fromParent;
+    }
+    try {
+      if (document.body.classList.contains("light-mode")) return "light";
+      if (document.body.classList.contains("dark-mode")) return "dark";
+    } catch (_e) {}
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
+    } catch (_e) {}
+    return "light";
+  }
+
+  function bbApplyLogoDataUrl(dataUrl, opts) {
+    const o = opts || {};
+    const raw = String(dataUrl || "").trim();
+    if (!raw) return false;
+
+    const svgText = raw.startsWith("<svg") || raw.startsWith("<?xml")
+      ? raw
+      : bbDataUrlToSvgString(raw);
+    if (svgText && /<\s*svg\b/i.test(svgText)) {
+      const { ratio } = bbApplyUploadedSvgToCss(svgText);
+      bbAssetLabSvgText = svgText;
+      if (o.persistAssetLab !== false) {
+        try {
+          localStorage.setItem(BB_ASSET_LAB_STORAGE_KEY, svgText);
+          localStorage.setItem(BB_ASSET_LAB_CROP_SAVED_KEY, "1");
+        } catch (_e) {}
+      }
+      try {
+        const img = document.querySelector(".bb-place-logo");
+        if (img && bbAssetLabBlobUrl) img.src = bbAssetLabBlobUrl;
+      } catch (_e) {}
+      return true;
+    }
+
+    if (!/^data:image\//i.test(raw)) return false;
+    const styleEl = bbGetAssetLabStyleEl();
+    const safe = bbCssEscapeUrl(raw);
+    styleEl.textContent = `.bb-upload{--bb-logo:url("${safe}");--bb-ratio:1;}`;
+    try {
+      const chip = document.querySelector(".bb-threshold-chip");
+      if (chip) chip.style.setProperty("--bb-chip-logo", `url("${safe}")`);
+    } catch (_e) {}
+    try {
+      const img = document.querySelector(".bb-place-logo");
+      if (img) img.src = raw;
+    } catch (_e) {}
+    return true;
+  }
+
+  function bbSyncAppearanceAwareUploadLogo(opts) {
+    const o = opts || {};
+    let light = "";
+    let dark = "";
+    try {
+      light = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      dark = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+    } catch (_e) {}
+    if (!light && !dark) return false;
+
+    const scheme = bbResolveAppearanceScheme();
+
+    if (light && dark) {
+      const sig = `${light.length}|${dark.length}|${light.slice(0, 48)}|${dark.slice(0, 48)}`;
+      if (sig !== bbLuDualLogoSig) {
+        if (!bbApplyDualLuLogosToCss(light, dark)) return false;
+      } else {
+        bbApplyEmbeddedThemeScheme(scheme);
+        bbSyncLuLogoChipForScheme(scheme);
+      }
+    } else {
+      bbRevokeLuDualBlobUrls();
+      const pick = scheme === "dark" ? dark || light : light || dark;
+      if (!pick || !bbApplyLogoDataUrl(pick, { persistAssetLab: false })) return false;
+    }
+
+    try {
+      bbApplyUploadedAssetToMarks({
+        silent: true,
+        closeAssetPanel: true,
+        preserveSmartSizeCache: o.preserveSmartSizeCache !== false,
+      });
+    } catch (_e) {}
+    try {
+      document
+        .querySelectorAll(".brandbased-dynamic-logo-slot[data-brand='upload']")
+        .forEach((el) => bbEnsureUploadMarkBrandToken(el));
+    } catch (_e) {}
+    bbPaintUploadMarksForScheme(scheme);
+    bbPulseInTextUploadMarks();
+    return true;
+  }
+
+  let _bbAppearanceLogoScheme = "";
+  let _bbAppearanceLogoPick = "";
+  let _bbAppearanceParentPollId = 0;
+  function bbInitAppearanceAwareUploadLogo() {
+    const run = (force) => {
+      const scheme = bbResolveAppearanceScheme();
+      let light = "";
+      let dark = "";
+      try {
+        light = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+        dark = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+      } catch (_e) {}
+      const pick = scheme === "dark" ? dark || light : light || dark;
+      const pickSig = pick ? `${pick.length}:${pick.slice(0, 72)}` : "";
+      if (!force && scheme === _bbAppearanceLogoScheme && pickSig === _bbAppearanceLogoPick) return;
+      _bbAppearanceLogoScheme = scheme;
+      _bbAppearanceLogoPick = pickSig;
+      try {
+        if (light && dark) {
+          const sig = `${light.length}|${dark.length}|${light.slice(0, 48)}|${dark.slice(0, 48)}`;
+          if (sig !== bbLuDualLogoSig) {
+            bbSyncAppearanceAwareUploadLogo({ preserveSmartSizeCache: true });
+          } else {
+            bbApplyEmbeddedThemeScheme(scheme);
+            bbPaintUploadMarksForScheme(scheme);
+            bbPulseInTextUploadMarks();
+          }
+        } else {
+          bbSyncAppearanceAwareUploadLogo({ preserveSmartSizeCache: true });
+        }
+      } catch (_e) {}
+    };
+    run(true);
+    try {
+      if (window.parent && window.parent !== window) {
+        _bbAppearanceParentPollId = window.setInterval(() => run(false), 280);
+        const pb = window.parent.document && window.parent.document.body;
+        if (pb) {
+          const parentObs = new MutationObserver(() => run(true));
+          parentObs.observe(pb, { attributes: true, attributeFilter: ["class"] });
+        }
+      }
+    } catch (_e) {}
+    try {
+      window.addEventListener("message", (e) => {
+        const d = e && e.data;
+        if (!d || d.type !== "bb-dash-theme") return;
+        const scheme = d.scheme === "dark" ? "dark" : d.scheme === "light" ? "light" : "";
+        if (!scheme) return;
+        bbApplyEmbeddedThemeScheme(scheme);
+        _bbAppearanceLogoScheme = "";
+        _bbAppearanceLogoPick = "";
+        run(true);
+      });
+    } catch (_e) {}
+    try {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      if (mq.addEventListener) mq.addEventListener("change", () => run(true));
+      else if (mq.addListener) mq.addListener(() => run(true));
+    } catch (_e) {}
+    try {
+      const obs = new MutationObserver(() => run(true));
+      obs.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["style", "class"],
+      });
+      if (document.body) {
+        obs.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+      }
+    } catch (_e) {}
+    try {
+      window.addEventListener("storage", (e) => {
+        if (
+          e &&
+          (e.key === BB_LU_LIGHT_LOGO_KEY ||
+            e.key === BB_LU_DARK_LOGO_KEY ||
+            e.key === BB_ASSET_LAB_STORAGE_KEY ||
+            e.key === "theme")
+        ) {
+          _bbAppearanceLogoScheme = "";
+          run(true);
+        }
+      });
+    } catch (_e) {}
+    try {
+      window.addEventListener("bb-lu-logo-updated", () => {
+        _bbAppearanceLogoScheme = "";
+        run(true);
+      });
+    } catch (_e) {}
   }
 
   function bbApplyUploadedSvgToCss(svgText, preparedAlready) {
@@ -1175,6 +1752,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem(BB_ASSET_LAB_STORAGE_KEY, finalSvg);
         localStorage.setItem(BB_ASSET_LAB_CROP_SAVED_KEY, "1");
       } catch {}
+      bbPersistLuLogoSlotFromSvg(finalSvg);
       updateApplyButtonVisibility();
       setPreview({ name: (localStorage.getItem(BB_ASSET_LAB_FILENAME_KEY) || "upload.svg"), ratio, url: bbAssetLabBlobUrl, viewBox: vb });
       const appliedToMarks = bbApplyUploadedAssetToMarks({ silent: true, closeAssetPanel: true });
@@ -1317,6 +1895,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Restore last uploaded SVG (if any) — runs on all pages (including Brand-Settings-Module.html).
     try {
+      let lightLu = "";
+      let darkLu = "";
+      try {
+        lightLu = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+        darkLu = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+      } catch (_e) {}
+      if (lightLu || darkLu) {
+        bbSyncAppearanceAwareUploadLogo({ preserveSmartSizeCache: true });
+        updateApplyButtonVisibility();
+        return;
+      }
+
       const cached = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
       if (cached && /<\s*svg\b/i.test(cached)) {
         const { ratio } = bbApplyUploadedSvgToCss(cached);
@@ -1345,6 +1935,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   bbInitAssetLabUi();
+  bbInitStandaloneAppearanceToggle();
+  bbInitAppearanceAwareUploadLogo();
   bbInitPlacementPanelUi();
   bbInitBrandSettingsUi();
   /* Standalone Team Console page (no placement panel): wire OpenAI key UI */
@@ -2058,6 +2650,11 @@ document.addEventListener("DOMContentLoaded", () => {
     popup.classList.add("popup-visible");
     popup.style.opacity = "1";
     popup.style.pointerEvents = "auto";
+    try {
+      if (window.BBThemeConsoleSync && typeof window.BBThemeConsoleSync.sync === "function") {
+        window.BBThemeConsoleSync.sync();
+      }
+    } catch (_e) {}
 
     // Restore original behavior: close “X” appears after ~2s.
     try {
@@ -2166,22 +2763,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /** Match Theme Styles simulated in-text mark (upload + short label "brand"). */
   function bbSyncStandaloneMarksToThemeSim() {
-    let hasUpload = false;
+    let lightLu = "";
+    let darkLu = "";
     try {
-      const cached = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
-      hasUpload = /<\s*svg\b/i.test(cached);
-    } catch {}
-    if (!hasUpload) return;
-    bbGetStandaloneInTextMarks().forEach((el) => {
-      if (el.getAttribute("data-bb-fixed") === "1") return;
-      const saved = (el.getAttribute("data-bb-standalone-label") || "").trim();
-      if (!saved) {
-        const t = (el.textContent || "").trim();
-        if (t) el.setAttribute("data-bb-standalone-label", t);
-      }
-      el.dataset.brand = "upload";
-      if ((el.textContent || "").trim() !== "brand") el.textContent = "brand";
-    });
+      lightLu = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      darkLu = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+    } catch (_e) {}
+    if (!lightLu && !darkLu) return;
+    bbPrepareStandaloneLogoCssOnly();
+    if (!bbStandaloneMarksRevealed()) return;
+    const scheme = bbResolveAppearanceScheme();
+    bbPaintUploadMarksForScheme(scheme);
   }
 
   function bbRefreshInTextMarksSmartSizing(selector) {
@@ -2222,7 +2814,9 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     globalThis.bbSyncStandaloneMarksToThemeSim = bbSyncStandaloneMarksToThemeSim;
     globalThis.bbRefreshStandaloneInTextSmartSizing = bbRefreshStandaloneInTextSmartSizing;
-    globalThis.bbRefreshThemeSimSmartSizing = bbRefreshThemeSimSmartSizing;
+    globalThis.bbPaintUploadMarksForScheme = bbPaintUploadMarksForScheme;
+    globalThis.bbResolveAppearanceScheme = bbResolveAppearanceScheme;
+    globalThis.bbEnsurePopupUploadBrandSurfaces = bbEnsurePopupUploadBrandSurfaces;
   } catch {}
 
   function bbGetGuidancePadTargetMarks() {
@@ -2673,10 +3267,102 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /** Resolver: brand class + bb-enhanced (paths from CSS .bb-* tokens); click → modal. */
-  function enhanceBrandMarks() {
+  function bbInitStandaloneAppearanceToggle() {
+    const lightBtn = document.getElementById("bbStandaloneLight");
+    const darkBtn = document.getElementById("bbStandaloneDark");
+    if (!lightBtn && !darkBtn) return;
+    const apply = (scheme) => {
+      const s = scheme === "dark" ? "dark" : "light";
+      try {
+        document.documentElement.setAttribute("data-bb-scheme", s);
+        document.body.classList.toggle("light-mode", s === "light");
+        document.body.classList.toggle("dark-mode", s === "dark");
+        sessionStorage.setItem(BB_STANDALONE_APPEARANCE_KEY, s);
+      } catch (_e) {}
+      lightBtn?.setAttribute("aria-pressed", s === "light" ? "true" : "false");
+      darkBtn?.setAttribute("aria-pressed", s === "dark" ? "true" : "false");
+      try {
+        bbPrepareStandaloneLogoCssOnly();
+        if (bbStandaloneMarksRevealed()) {
+          bbPaintUploadMarksForScheme(s);
+        }
+        try {
+          if (window.BBThemeConsoleSync && typeof window.BBThemeConsoleSync.sync === "function") {
+            window.BBThemeConsoleSync.sync();
+          }
+        } catch (_e) {}
+      } catch (_e) {}
+    };
+    let saved = "light";
     try {
-      bbSyncStandaloneMarksToThemeSim();
-    } catch {}
+      saved = sessionStorage.getItem(BB_STANDALONE_APPEARANCE_KEY) || "light";
+    } catch (_e) {}
+    apply(saved);
+    lightBtn?.addEventListener("click", () => apply("light"));
+    darkBtn?.addEventListener("click", () => apply("dark"));
+  }
+
+  function bbPrepareStandaloneLogoCssOnly() {
+    let light = "";
+    let dark = "";
+    try {
+      light = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      dark = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+    } catch (_e) {}
+    const scheme = bbResolveAppearanceScheme();
+    bbApplyEmbeddedThemeScheme(scheme);
+    if (light && dark) {
+      const sig = `${light.length}|${dark.length}|${light.slice(0, 48)}|${dark.slice(0, 48)}`;
+      if (sig !== bbLuDualLogoSig) bbApplyDualLuLogosToCss(light, dark);
+    } else if (light || dark) {
+      const pick = scheme === "dark" ? dark || light : light || dark;
+      if (pick) bbApplyLogoDataUrl(pick, { persistAssetLab: false });
+    } else {
+      try {
+        const cached = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
+        if (cached && /<\s*svg\b/i.test(cached)) bbApplyUploadedSvgToCss(cached);
+      } catch (_e) {}
+    }
+  }
+
+  function bbBootstrapStandaloneInTextMarks() {
+    const standaloneSel =
+      ".bb-premium-wrap .brandbased-dynamic-logo-slot, .bb-freemium-wrap .brandbased-dynamic-logo-slot";
+    bbPrepareStandaloneLogoCssOnly();
+    if (bbHasAppearanceAwareLogos()) {
+      document.querySelectorAll(standaloneSel).forEach((el) => {
+        if (el.closest(".popup")) return;
+        el.dataset.brand = "upload";
+        bbEnsureUploadMarkBrandToken(el);
+      });
+    }
+    enhanceBrandMarks();
+    try {
+      bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+    } catch (_e) {}
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll(standaloneSel).forEach((el) => {
+          if (el.closest(".popup")) return;
+          if (!el.classList.contains("bb-enhanced")) return;
+          el.classList.add("slide-up");
+          attachBrandClick(el);
+        });
+        bbSetStandaloneMarksRevealed();
+        try {
+          bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+        } catch (_e) {}
+      });
+    });
+    document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((host) => {
+      if (host.closest(".popup")) return;
+      if (bbIsBrandSettingsPage()) return;
+      createPopup(host);
+    });
+  }
+
+  function enhanceBrandMarks() {
+    const isStandalone = bbIsStandaloneDemoPage();
     const threshold = bbGetReplaceThreshold();
     let replaced = 0;
     document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((el) => {
@@ -2695,13 +3381,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       el.classList.add(token, "bb-enhanced");
       bbApplySmartSizing(el);
-      attachBrandClick(el);
       replaced += 1;
-      requestAnimationFrame(() => {
+      if (!isStandalone) {
+        attachBrandClick(el);
         requestAnimationFrame(() => {
-          el.classList.add("slide-up");
+          requestAnimationFrame(() => {
+            el.classList.add("slide-up");
+          });
         });
-      });
+      }
     });
     bbUpdatePlaceButtonVisibility();
     if (!bbIsBrandAiSmartOn()) {
@@ -2711,7 +3399,22 @@ document.addEventListener("DOMContentLoaded", () => {
         if (bbPlacementSlidersPresent()) bbSetPlacementSlidersFromStorage();
         bbApplyPlacementSlidersToUploadMarks();
       }
+    } else {
+      try {
+        bbApplyGuidanceLrPadFromText();
+      } catch {}
     }
+    try {
+      let lightLu = "";
+      let darkLu = "";
+      try {
+        lightLu = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+        darkLu = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+      } catch (_e) {}
+      if ((lightLu || darkLu) && !isStandalone) {
+        bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+      }
+    } catch (_e) {}
   }
 
   function stripBrandEnhancements() {
@@ -3085,9 +3788,46 @@ document.addEventListener("DOMContentLoaded", () => {
   const bbOnCloseUpLayoutChange = () => {
     if (!sliderCloseUp || window.getComputedStyle(sliderCloseUp).display !== "flex") return;
     bbSyncCloseUpPin();
-    bbPositionCloseUpX();
     try {
       sliderCloseUpSwiper.update();
+    } catch {}
+    bbPositionCloseUpX();
+  };
+
+  const bbCloseUpSwiperEl = () =>
+    sliderCloseUp?.querySelector(".swiper.slider-close-up-swiper") ||
+    sliderCloseUp?.querySelector(".swiper") ||
+    null;
+
+  const bbCloseUpSwiperHasLayout = () => {
+    const el = bbCloseUpSwiperEl();
+    if (!el) return true;
+    const wr = el.getBoundingClientRect();
+    return wr.width > 1 && wr.height > 1;
+  };
+
+  /* First open: Swiper often has 0×0 (or stale) size for a few frames on wide
+     viewports — retry until layout matches what resize already sees. */
+  const bbPositionCloseUpXWhenReady = (triesLeft = 16) => {
+    if (!sliderCloseUp || window.getComputedStyle(sliderCloseUp).display !== "flex") return;
+    if (!bbCloseUpSwiperHasLayout()) {
+      if (triesLeft > 0) {
+        try {
+          requestAnimationFrame(() => bbPositionCloseUpXWhenReady(triesLeft - 1));
+        } catch {}
+      }
+      return;
+    }
+    bbOnCloseUpLayoutChange();
+  };
+
+  const bbPositionCloseUpXAfterLayout = () => {
+    bbPositionCloseUpXWhenReady();
+    try {
+      sliderCloseUpSwiper.once("resize", () => bbOnCloseUpLayoutChange());
+    } catch {}
+    try {
+      window.setTimeout(() => bbPositionCloseUpXWhenReady(4), 0);
     } catch {}
   };
   try {
@@ -3289,9 +4029,6 @@ document.addEventListener("DOMContentLoaded", () => {
     bbSyncCloseUpPin();
     sliderCloseUp.style.display = "flex";
     try {
-      requestAnimationFrame(() => requestAnimationFrame(bbPositionCloseUpX));
-    } catch {}
-    try {
       sliderCloseUpSwiper.update();
     } catch {}
     sliderCloseUpSwiper.slideTo(index, 0);
@@ -3304,6 +4041,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const activeVideo = sliderCloseUpSwiper.slides[index]?.querySelector("video");
     if (activeVideo) activeVideo.play();
+    bbPositionCloseUpXAfterLayout();
   };
 
   let _bbThumbSuppressClickUntil = 0;
@@ -3495,16 +4233,28 @@ const positionPopup = () => {
   }
 
  // Delay before brand layers + popups
+const _bbInitDelayMs = bbIsStandaloneDemoPage() ? 1000 : 2000;
 setTimeout(() => {
   if (!brandbasedEnhancementEnabled) return;
+  if (bbIsStandaloneDemoPage()) {
+    bbBootstrapStandaloneInTextMarks();
+    try {
+      if (bbIsBrandAiSmartOn()) bbApplyGuidanceLrPadFromText();
+    } catch {}
+    return;
+  }
   enhanceBrandMarks();
+  try {
+    if (bbIsBrandAiSmartOn()) bbApplyGuidanceLrPadFromText();
+  } catch {}
 
   document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((host) => {
     if (host.closest(".popup")) return;
+    if (bbIsBrandSettingsPage()) return;
     createPopup(host);
   });
 
-}, 2000); // delay before additive BB layers + popups
+}, _bbInitDelayMs); // delay before additive BB layers + popups
 
 // Safety net: ensure Brand Settings marks always open a popup even if enhancements haven’t run yet.
 document.addEventListener(
@@ -3514,6 +4264,8 @@ document.addEventListener(
     if (!(t instanceof Element)) return;
     const el = t.closest(".brandbased-dynamic-logo-slot");
     if (!el || el.closest(".popup")) return;
+    if (!el.classList.contains("bb-enhanced")) return;
+    if (bbIsStandaloneDemoPage() && !el.classList.contains("slide-up")) return;
     openModalForBrandMark(el);
   },
   true
@@ -3527,6 +4279,7 @@ document.addEventListener(
       enhanceBrandMarks();
       document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((host) => {
         if (host.closest(".popup")) return;
+        if (bbIsBrandSettingsPage()) return;
         createPopup(host);
       });
     }

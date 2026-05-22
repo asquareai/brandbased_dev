@@ -1,0 +1,41 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('brands', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('user_id');
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('accounts')
+                ->onDelete('cascade');
+
+            $table->uuid('brand_verification_request_id')->nullable()->unique();
+            $table->foreign('brand_verification_request_id')
+                ->references('id')
+                ->on('brand_verification_requests')
+                ->nullOnDelete();
+
+            $table->string('brand_unique_id', 120)->unique();
+            $table->string('brand_name');
+            $table->string('slug')->unique();
+            $table->text('website_url');
+            $table->text('logo_light_url')->nullable();
+            $table->text('logo_dark_url')->nullable();
+            $table->timestamp('verified_at')->nullable();
+            $table->boolean('is_published')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('brands');
+    }
+};

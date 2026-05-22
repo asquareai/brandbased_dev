@@ -16,9 +16,9 @@
        and the `.bb-upload{--bb-logo:...}` consumption surface. Inline
        <style> below intentionally comes AFTER this and overrides body/
        link/etc. defaults that bb-shared-ui.css ships with. -->
-  <link rel="stylesheet" href="bb-shared-ui.css?v=premium-standalone-44" />
-  <link rel="stylesheet" href="bb-theme-standalone-popup.css?v=premium-standalone-44" />
-  <link rel="stylesheet" href="bb-legit-panel.css?v=premium-standalone-44" />
+  <link rel="stylesheet" href="bb-shared-ui.css?v=premium-standalone-61" />
+  <link rel="stylesheet" href="bb-theme-standalone-popup.css?v=premium-standalone-61" />
+  <link rel="stylesheet" href="bb-legit-panel.css?v=premium-standalone-61" />
 
   <style>
     :root {
@@ -52,6 +52,49 @@
       line-height: 1.6;
       color: #11131a;
       overflow-x: hidden;
+    }
+
+    .bb-standalone-appearance {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 10050;
+      display: flex;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(6, 8, 78, 0.18);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      font-size: 13px;
+    }
+    .bb-standalone-appearance button {
+      font: inherit;
+      font-weight: 700;
+      border: 1px solid rgba(6, 8, 78, 0.2);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      background: #fff;
+      color: #0f0f12;
+    }
+    .bb-standalone-appearance button[aria-pressed="true"] {
+      background: #1030f5;
+      border-color: #1030f5;
+      color: #fff;
+    }
+    body.dark-mode .bb-standalone-appearance {
+      background: rgba(18, 18, 24, 0.94);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+    body.dark-mode .bb-standalone-appearance button {
+      background: #1e1e28;
+      color: #f2f2f6;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    body.dark-mode .bb-standalone-appearance button[aria-pressed="true"] {
+      background: #1030f5;
+      color: #fff;
     }
 
     .bb-module-nav {
@@ -183,6 +226,14 @@
       outline-offset: 3px;
     }
 
+    body.dark-mode .bb-bs-card,
+    body.dark-mode .bb-team-console-slab,
+    body.dark-mode .bb-premium-wrap,
+    body.dark-mode .bb-freemium-wrap {
+      box-shadow: 0 0 1rem 0 rgb(0 0 0 / 0%) !important;
+      background: #00000096 !important;
+    }
+
     @media (prefers-color-scheme: dark) {
       body {
         color: #f4f5fa;
@@ -195,10 +246,12 @@
         color: rgba(255, 255, 255, 0.84);
       }
 
+      .bb-bs-card,
+      .bb-team-console-slab,
+      .bb-premium-wrap,
       .bb-freemium-wrap {
-        background: linear-gradient(165deg, rgba(15, 23, 42, 0.94), rgba(8, 11, 26, 0.96));
-        border-color: rgba(255, 255, 255, 0.14);
-        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 0 1rem 0 rgb(0 0 0 / 0%) !important;
+        background: #00000096 !important;
       }
     }
 
@@ -213,6 +266,11 @@
   </style>
 </head>
 <body>
+  <div class="bb-standalone-appearance" role="group" aria-label="Preview appearance">
+    <button type="button" id="bbStandaloneLight" data-scheme="light" aria-pressed="true">Light</button>
+    <button type="button" id="bbStandaloneDark" data-scheme="dark" aria-pressed="false">Dark</button>
+  </div>
+
   <p class="bb-standalone-note" role="note">
     <strong>Standalone Freemium bundle.</strong> This page is independent from
     <code>Premium-BB-Modal.html</code>. Clicking the BrandBased logo opens the
@@ -389,8 +447,8 @@ python3 -m http.server 8090
         const r = trigger.getBoundingClientRect();
         const vw = document.documentElement.clientWidth;
         const vh = document.documentElement.clientHeight;
-        const mw = modal.offsetWidth  || 238;
-        const mh = modal.offsetHeight || 197;
+        const mw = modal.offsetWidth  || 214;
+        const mh = modal.offsetHeight || 177;
 
         let left = r.left;
         let top  = r.top;
@@ -524,8 +582,8 @@ python3 -m http.server 8090
        style. Also enhances .brandbased-dynamic-logo-slot elements with
        em-based + AI-driven sizing. Loaded AFTER the Freemium intercept
        above so our handler fires first. -->
-  <script src="bb-theme-console-sync.js?v=premium-standalone-44"></script>
-  <script src="bb-smart-ui.js?v=premium-standalone-44"></script>
+  <script src="bb-theme-console-sync.js?v=premium-standalone-67"></script>
+  <script src="bb-smart-ui.js?v=premium-standalone-67"></script>
   <script>
     if (window.BBThemeConsoleSync && typeof window.BBThemeConsoleSync.install === "function") {
       window.BBThemeConsoleSync.install();

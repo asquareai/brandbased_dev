@@ -25,6 +25,14 @@
   --bb-theme-popup-font-stack: "Roboto", Roboto, system-ui, sans-serif;
   --bb-theme-popup-font-weight: 400;
   --bb-theme-popup-font-style: normal;
+  --bb-theme-popup-brand-icon-inner-mul-min: 0.2925;
+  --bb-theme-popup-brand-icon-inner-mul-max: 0.708906948;
+  --bb-theme-popup-brand-icon-logo-inset: 0;
+}
+/* Theme Styles preview: full 500px dock width (no transform — stays sharp). */
+body.bb-brand-theme-settings {
+  --bb-theme-preview-width: 500px;
+  --bb-theme-preview-scale: 1;
 }
 @supports (height: 100dvh) {
   :root {
@@ -567,13 +575,19 @@ body.dark-mode.bb-brand-theme-settings .bb-bts-cta-btn { color: rgba(6, 8, 78, 0
 */
 @media (min-width: 841px) and (max-width: 1350px) {
   body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount {
-    max-width: min(500px, 100%);
+    max-width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    );
     width: 100%;
     margin-left: auto;
     margin-right: auto;
   }
   body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
-    max-width: min(500px, 100%) !important;
+    max-width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    ) !important;
   }
 }
 
@@ -1375,7 +1389,7 @@ body.dark-mode.bb-brand-theme-settings .bb-backdrop-tint-inline__range {
   gap: 10px 18px;
   width: 100%;
 }
-/* Align row 2 under row 1 (Explore icon ↔ Button label text start at col 3). */
+/* Row 2: BrandBased · Button colour · Button label · button label text (cols 4–7). */
 .bb-theme-select-tint__quick-strip--col-align {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, max-content));
@@ -1389,29 +1403,53 @@ body.dark-mode.bb-brand-theme-settings .bb-backdrop-tint-inline__range {
   display: contents;
 }
 .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--text {
-  grid-column: 3 / span 4;
+  grid-column: 4 / span 4;
   min-width: 0;
   width: 100%;
-  max-width: min(280px, 100%);
+  max-width: none;
 }
-@media (max-width: 720px) {
-  .bb-theme-select-tint__quick-strip--col-align {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+/* Mobile (≤840px): 7 cols — row1 tint sliders/swatches; row2 BrandBased + buttons + label text. */
+@media (max-width: 840px) {
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    column-gap: 10px;
+    row-gap: 14px;
+    width: 100%;
+    align-items: end;
+    justify-content: stretch;
   }
-  .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-swatches,
-  .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-bottom {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 10px 18px;
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-swatches,
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-bottom {
+    display: contents;
+  }
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--text {
+    grid-column: 4 / span 4;
+    grid-row: 2;
+    justify-self: stretch;
+    align-self: end;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--opacity-compact {
+    max-width: none;
     width: 100%;
   }
-  .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--text {
-    grid-column: unset;
-    flex: 1 1 120px;
-    max-width: min(280px, 100%);
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range,
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range--compact {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot__label {
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.2;
+  }
+  body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-buy-label--tint-strip {
+    width: 100%;
+    max-width: 100%;
   }
 }
 .bb-theme-tint-slot {
@@ -1758,8 +1796,25 @@ body.dark-mode.bb-brand-theme-settings .bb-theme-select-tint__aux-slot {
 }
 @media (min-width: 841px) {
   body.bb-brand-theme-settings .bb-preview-stage {
-    width: 500px;
+    width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    );
     max-width: 100%;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body.bb-brand-theme-settings .bb-preview-modal-stack,
+  body.bb-brand-theme-settings .bb-products-preview-controls.bb-products-preview-controls--theme,
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount {
+    max-width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    );
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     box-sizing: border-box;
   }
 }
@@ -2023,6 +2078,110 @@ body.bb-brand-theme-settings.bb-theme-hide-sim .bb-bts-right--preview .bb-bts-si
   display: none !important;
 }
 
+/* ≤840px: preview chrome + Custom Theme Styles toolbar (Overlay / slider / Logo blend). */
+@media (max-width: 840px) {
+  body.bb-brand-theme-settings .bb-theme-shell,
+  body.bb-brand-theme-settings .bb-bts-left,
+  body.bb-brand-theme-settings .bb-bts-panel {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  /* Custom Theme Styles: stop single-row nowrap overflow — stack toggles + overlay + logo blend. */
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px 12px;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
+    flex-wrap: wrap;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > *:not(:first-child) {
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > :nth-child(3) {
+    border-left: 0;
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > .bb-switch {
+    justify-self: start;
+    max-width: 100%;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > .bb-backdrop-tint-inline {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > .bb-backdrop-tint-inline .bb-backdrop-tint-inline__controls {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > .bb-backdrop-tint-inline .bb-backdrop-tint-inline__range {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense .bb-toggle-pair > .bb-switch:last-child {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  body.bb-brand-theme-settings .bb-bts-panel--dense > .bb-panel-topline {
+    gap: 10px;
+  }
+
+  body.bb-brand-theme-settings .bb-theme-colour-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  body.bb-brand-theme-settings .bb-colour-field {
+    flex: 1 1 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-bts-right--preview .bb-preview-title,
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-products-preview-controls,
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-products-preview-controls.bb-products-preview-controls--intro,
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-products-preview-controls.bb-products-preview-controls--theme {
+    display: none !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-bts-left .bb-bts-card,
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-bts-left .bb-bts-cta {
+    visibility: hidden !important;
+  }
+}
+
 .bb-bts-sim-pill {
   position: absolute;
   top: -14px;
@@ -2272,15 +2431,18 @@ body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
   align-self: center;
   box-sizing: border-box;
   margin-top: 14px;
+  position: relative;
+  z-index: 15;
+  flex-shrink: 0;
 }
 
-/* Hidden for 2s, then whole block (dots + pill) slides up — matches Products page */
+/* Hidden for 3s, then whole block (dots + pill) slides up — Theme Styles page load */
 .bb-products-preview-controls--intro {
   opacity: 0;
   transform: translateY(28px);
   pointer-events: none;
   animation: bb-products-preview-controls-slide-up 0.66s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 2s;
+  animation-delay: 3s;
 }
 
 @keyframes bb-products-preview-controls-slide-up {
@@ -2292,6 +2454,24 @@ body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-products-preview-controls--intro {
+    animation: none;
+    animation-delay: 0s;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .bb-products-preview-pill {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .bb-products-preview-pill.bb-products-preview-pill--tick {
+    animation: none !important;
   }
 }
 
@@ -2583,15 +2763,36 @@ body.bb-brand-theme-settings.bb-theme-dock-enabled .slider-close-up-swiper > .cl
     border-radius: 16px 16px 0 0 !important;
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
-    background: rgb(199 197 197 / 85%) !important;
-    backdrop-filter: blur(90px) !important;
-    -webkit-backdrop-filter: blur(90px) !important;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15) !important;
     z-index: 2147483646 !important;
     transition: transform 0.3s ease, opacity 0.3s ease !important;
+    overflow-x: hidden !important;
     overflow-y: auto !important;
     overscroll-behavior: contain;
     overscroll-behavior-y: contain;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .blur-bg,
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .bb-theme-video-bg {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    margin-left: 0;
+    margin-top: 0;
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload) {
+    background: rgb(199 197 197 / 85%) !important;
+    -webkit-backdrop-filter: blur(90px) !important;
+    backdrop-filter: blur(90px) !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload) .blur-bg {
+    opacity: 0 !important;
+    visibility: hidden !important;
   }
 
   body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup.bb-theme-bg-on:not(.bb-theme-custom-upload) {
@@ -2601,12 +2802,29 @@ body.bb-brand-theme-settings.bb-theme-dock-enabled .slider-close-up-swiper > .cl
   }
 
   @media (prefers-color-scheme: dark) {
-    body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
-      background: rgb(199 197 197 / 0%) !important;
+    body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload) {
+      background: color-mix(
+          in srgb,
+          var(--bb-theme-accent-hex, #1030f4) 16%,
+          rgba(120, 122, 132, 0.55)
+        ) !important;
+      -webkit-backdrop-filter: blur(90px) saturate(1.24) !important;
+      backdrop-filter: blur(90px) saturate(1.24) !important;
+      box-shadow: 0 0 2rem 0 rgba(34, 34, 34, 0.4) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
   }
-  body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
-    background: rgb(199 197 197 / 0%) !important;
+
+  body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.bb-theme-bg-on):not(.bb-theme-custom-upload) {
+    background: color-mix(
+        in srgb,
+        var(--bb-theme-accent-hex, #1030f4) 16%,
+        rgba(120, 122, 132, 0.55)
+      ) !important;
+    -webkit-backdrop-filter: blur(90px) saturate(1.24) !important;
+    backdrop-filter: blur(90px) saturate(1.24) !important;
+    box-shadow: 0 0 2rem 0 rgba(34, 34, 34, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
 
   body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.popup-visible) {
@@ -2871,6 +3089,13 @@ body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount 
   opacity: 1 !important;
 }
 
+/* Premium popup preview: clip inner mark to circle (same as standalone modals). */
+body.bb-brand-theme-settings .popup .title-row .brand-icon {
+  overflow: hidden !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
 /* Upload mark in title: true-color logo on Brand-coloured circle (same var as non-upload ring). */
 body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
   background-color: var(
@@ -2882,20 +3107,27 @@ body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
   border: 1px solid var(--bb-theme-popup-brand-icon-border, #000000) !important;
   border-radius: 50%;
   box-shadow: none !important;
-  /* Gap is on ::after inset; keep shell padding at 0 so the ring stays crisp. */
   padding: 0 !important;
   box-sizing: border-box !important;
 }
 body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload::after {
-  /* Inset gap: brand fill shows between logo and ring (matches non-upload mark). */
-  inset: var(--bb-theme-popup-brand-icon-logo-inset, 3px) !important;
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: 50%;
   -webkit-mask: none !important;
   mask: none !important;
   background-color: transparent !important;
   background-image: var(--bb-logo) !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
-  background-size: contain !important;
+  background-size: calc(
+    100% * min(
+      var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948),
+      var(--bb-theme-popup-brand-icon-inner-mul, 1)
+    )
+  ) auto !important;
+  transform: none !important;
   filter: none !important;
 }
 
@@ -2923,7 +3155,7 @@ body.bb-brand-theme-settings .popup .title-row .brand-icon:not(.bb-upload) {
 /* Preview popup uploaded-brand mark: ~31% larger than shared-ui 24px
    (24 × 1.08 × 1.10 × 1.10 ≈ 31.46px). Scoped to the Theme/Products preview only
    and limited to `.brand-icon.bb-upload` so the non-upload mark keeps
-   its original size. */
+   its original size. Circle stays fixed; inner logo scales via --bb-theme-popup-brand-icon-inner-mul. */
 body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
   width: 31.46px !important;
   height: 31.46px !important;
@@ -2935,7 +3167,26 @@ body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
 }
 /* Mask fill stays light so the glyph reads on the circle (circle + ring use Brand above). */
 body.bb-brand-theme-settings .popup .title-row .brand-icon:not(.bb-upload)::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: 50%;
   background-color: #fff !important;
+  background-image: none !important;
+  -webkit-mask-image: var(--bb-logo) !important;
+  mask-image: var(--bb-logo) !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  -webkit-mask-size: calc(
+    100% * var(--bb-theme-popup-brand-icon-inner-mul, 1) /
+      var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948)
+  ) !important;
+  mask-size: calc(
+    100% * var(--bb-theme-popup-brand-icon-inner-mul, 1) /
+      var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948)
+  ) !important;
   /* Pseudo doesn’t use these; `initial` clears inherited inspector noise (ring is on .brand-icon + .popup). */
   --bb-theme-popup-brand-icon-border: initial;
   --bb-theme-popup-brand-icon-bg: initial;
@@ -3040,9 +3291,11 @@ body.bb-brand-theme-settings .popup.bb-theme-accent-fill-on .bb-theme-video-bg {
   visibility: visible;
 }
 
-body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .blur-bg,
-body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .bb-theme-video-bg {
-  border-radius: 16px;
+@media (min-width: 841px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .blur-bg,
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .bb-theme-video-bg {
+    border-radius: 16px;
+  }
 }
 
 /* Theme on: sharp bg layer unless Frosted (or Logo blend, which sets its own blur) */
@@ -3193,6 +3446,16 @@ body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .explore-link {
 
 body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .product-description {
   min-width: 100% !important;
+}
+
+/* Products preview (Theme pager): short / placeholder copy — align with gallery top on desktop. */
+@media (min-width: 841px) {
+  body.bb-brand-theme-settings
+    #bbThemePopupMount
+    .popup
+    .product-description.bb-products-desc-compact {
+    margin-top: 20px;
+  }
 }
 
 body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .close-x-icon svg line,
@@ -3494,8 +3757,11 @@ body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors-row--em
   display: none !important;
 }
 
-.bb-bts-right.bb-bts-right--preview {
-  transform: scale(0.9);
+body.bb-brand-theme-settings .bb-bts-right.bb-bts-right--preview {
+  transform: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ------------------------------------------------------------------
@@ -3582,9 +3848,17 @@ body.bb-brand-theme-settings .bb-bts-card {
     align-self: start;
   }
 
-  body.bb-brand-theme-settings .bb-bts-right.bb-bts-right--preview {
-    transform: scale(0.8);
-    transform-origin: top center;
+  body.bb-brand-theme-settings .bb-bts-right--preview {
+    overflow-y: auto;
+    max-height: 100%;
+    min-height: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  body.bb-brand-theme-settings .bb-bts-right--preview::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
   }
 }
 
@@ -3600,9 +3874,6 @@ body.bb-brand-theme-settings .bb-bts-card {
   body.bb-brand-theme-settings .bb-bts-layout {
     grid-template-columns: 1fr !important;
     column-gap: 0;
-  }
-  body.bb-brand-theme-settings .bb-bts-right.bb-bts-right--preview {
-    transform: none;
   }
 }
 
@@ -3623,7 +3894,18 @@ body.bb-brand-theme-settings .bb-bts-card {
     height: 100% !important;
     min-height: 100% !important;
     max-height: 100% !important;
-    border-radius: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .blur-bg,
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .bb-theme-video-bg,
+  body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup .blur-bg,
+  body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup .bb-theme-video-bg {
+    border-radius: 16px 16px 0 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
   }
 }
 

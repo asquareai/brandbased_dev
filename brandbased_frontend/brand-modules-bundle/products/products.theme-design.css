@@ -26,6 +26,11 @@
   --bb-theme-popup-font-weight: 400;
   --bb-theme-popup-font-style: normal;
 }
+/* Preview modals: native 500px width (no CSS transform scale — stays sharp). */
+body.bb-brand-theme-settings {
+  --bb-theme-preview-width: 500px;
+  --bb-theme-preview-scale: 1;
+}
 @supports (height: 100dvh) {
   :root {
     --bb-theme-mobile-sheet-max-h: calc(
@@ -668,6 +673,28 @@ body.dark-mode.bb-brand-theme-settings .bb-bts-cta-btn { color: rgba(6, 8, 78, 0
   #bbThemePopupMount video {
     max-width: 100%;
     height: 100%;
+  }
+}
+
+/*
+  Single-column layout (≤1350px): cap docked popup to 500px (centered). Wide desktop (≥1351px)
+  keeps --bb-theme-preview-modal-max; ≤840px uses full-width bottom sheet (handled later).
+*/
+@media (min-width: 841px) and (max-width: 1350px) {
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount {
+    max-width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    );
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+    max-width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    ) !important;
   }
 }
 
@@ -1905,8 +1932,24 @@ body.dark-mode.bb-brand-theme-settings .bb-theme-select-tint__aux-slot {
 }
 @media (min-width: 841px) {
   body.bb-brand-theme-settings .bb-preview-stage {
-    width: 500px;
+    width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    );
     max-width: 100%;
+    box-sizing: border-box;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body.bb-brand-theme-settings .bb-preview-modal-stack,
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount {
+    max-width: min(
+      calc(var(--bb-theme-preview-width, 500px) * var(--bb-theme-preview-scale, 1)),
+      100%
+    );
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     box-sizing: border-box;
   }
 }
@@ -2168,6 +2211,17 @@ body.bb-brand-theme-settings.bb-theme-sim-active #bbThemePopupMount .popup {
 
 body.bb-brand-theme-settings.bb-theme-hide-sim .bb-bts-right--preview .bb-bts-simulated {
   display: none !important;
+}
+
+/* ≤840px while the docked preview modal is open: hide heading + slot pager/pill (Products + Theme Styles).
+   When the sheet closes (`bb-theme-hide-sim` off), they show again (controls use 2s intro in products.css). */
+@media (max-width: 840px) {
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-bts-right--preview .bb-preview-title,
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-products-preview-controls,
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-products-preview-controls.bb-products-preview-controls--intro,
+  body.bb-brand-theme-settings.bb-theme-hide-sim .bb-products-preview-controls.bb-products-preview-controls--theme {
+    display: none !important;
+  }
 }
 
 .bb-bts-sim-pill {
@@ -2460,10 +2514,7 @@ body.bb-brand-theme-settings.bb-theme-dock-enabled .slider-close-up-swiper > .cl
     border-radius: 16px 16px 0 0 !important;
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
-    background: rgb(199 197 197 / 85%) !important;
-    backdrop-filter: blur(90px) !important;
-    -webkit-backdrop-filter: blur(90px) !important;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15) !important;
+    /* Shell + .blur-bg paint: same rules as desktop (below), not a separate mobile glass. */
     z-index: 2147483646 !important;
     transition: transform 0.3s ease, opacity 0.3s ease !important;
     overflow-y: auto !important;
@@ -2477,13 +2528,14 @@ body.bb-brand-theme-settings.bb-theme-dock-enabled .slider-close-up-swiper > .cl
     -webkit-backdrop-filter: none !important;
   }
 
-  @media (prefers-color-scheme: dark) {
-    body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
-      background: rgb(199 197 197 / 0%) !important;
-    }
+  /* Fixed bottom sheet: z-index -1 on .blur-bg falls behind the viewport; match desktop layer stack. */
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
+    isolation: isolate;
   }
-  body.dark-mode.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup {
-    background: rgb(199 197 197 / 0%) !important;
+
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .blur-bg,
+  body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .bb-theme-video-bg {
+    z-index: 0;
   }
 
   body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup:not(.popup-visible) {
@@ -2765,7 +2817,7 @@ body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload {
 }
 body.bb-brand-theme-settings .popup .title-row .brand-icon.bb-upload::after {
   /* Inset gap: brand fill shows between logo and ring (matches non-upload mark). */
-  inset: var(--bb-theme-popup-brand-icon-logo-inset, 3px) !important;
+  inset: var(--bb-theme-popup-brand-icon-logo-inset, 0) !important;
   -webkit-mask: none !important;
   mask: none !important;
   background-color: transparent !important;
@@ -3072,6 +3124,16 @@ body.bb-brand-theme-settings.bb-theme-dock-enabled #bbThemePopupMount .popup .pr
   min-width: 100% !important;
 }
 
+/* Products preview: short / placeholder description sits high beside the gallery — nudge down on desktop. */
+@media (min-width: 841px) {
+  body.bb-brand-theme-settings
+    #bbThemePopupMount
+    .popup
+    .product-description.bb-products-desc-compact {
+    margin-top: 20px;
+  }
+}
+
 body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .close-x-icon svg line,
 body.bb-brand-theme-settings .popup.bb-theme-ui-tint-on .popup-sheet-close svg line {
   stroke: var(--bb-theme-popup-content-color, #14141a) !important;
@@ -3371,8 +3433,11 @@ body.bb-brand-theme-settings .popup .selectors-row.bb-products-selectors-row--em
   display: none !important;
 }
 
-.bb-bts-right.bb-bts-right--preview {
-  transform: scale(0.9);
+body.bb-brand-theme-settings .bb-bts-right.bb-bts-right--preview {
+  transform: none;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* ------------------------------------------------------------------

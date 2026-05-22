@@ -11,23 +11,62 @@
     return `bb-${slug}`;
   }
 
+  /** In-text marks need `.bb-upload` (not `.bb-brandbased`) to read injected --bb-logo. */
+  function bbEnsureUploadMarkBrandToken(el) {
+    if (!el || el.getAttribute("data-brand") !== "upload") return;
+    const want = bbBrandClass("upload");
+    if (!want) return;
+    try {
+      for (const c of Array.from(el.classList)) {
+        if (
+          typeof c === "string" &&
+          c.startsWith("bb-") &&
+          c !== "bb-enhanced" &&
+          c !== "bb-swap-pulse" &&
+          c !== "BB-AI-Size" &&
+          c !== want
+        ) {
+          el.classList.remove(c);
+        }
+      }
+    } catch (_e) {}
+    if (!el.classList.contains(want)) el.classList.add(want);
+  }
+
+  function bbApplyEmbeddedThemeScheme(scheme) {
+    if (scheme !== "light" && scheme !== "dark") return;
+    try {
+      document.documentElement.style.colorScheme = scheme;
+      document.documentElement.setAttribute("data-bb-scheme", scheme);
+    } catch (_e) {}
+    try {
+      if (document.body) {
+        document.body.classList.toggle("light-mode", scheme === "light");
+        document.body.classList.toggle("dark-mode", scheme === "dark");
+      }
+    } catch (_e) {}
+  }
+
+  function bbPulseInTextUploadMarks() {
+    requestAnimationFrame(() => {
+      const marks2 = Array.from(document.querySelectorAll(".brandbased-dynamic-logo-slot")).filter(
+        (el) => !el.closest(".popup") && el.getAttribute("data-brand") === "upload"
+      );
+      marks2.forEach((el) => el.classList.remove("bb-swap-pulse"));
+      requestAnimationFrame(() => {
+        marks2.forEach((el) => el.classList.add("bb-swap-pulse"));
+        setTimeout(() => marks2.forEach((el) => el.classList.remove("bb-swap-pulse")), 650);
+      });
+    });
+  }
+
 document.addEventListener("DOMContentLoaded", () => {
   (() => {
 
   // =============================
   // BrandBased Smart Logo Sizing Engine (prototype)
   // =============================
-  function bbSmartSizeOrigin() {
-    const g = typeof window !== "undefined" ? window : globalThis;
-    if (g.BB_APP && g.BB_APP.smartSizeOrigin) {
-      return String(g.BB_APP.smartSizeOrigin).replace(/\/$/, "");
-    }
-    const host = (typeof location !== "undefined" && location.hostname) || "";
-    const isLocal =
-      !host || host === "localhost" || host === "127.0.0.1" || host.endsWith(".local");
-    return isLocal ? "http://127.0.0.1:8001" : "https://api.brandbased.ai/smart";
-  }
-  const BB_SMART_SIZE_API = bbSmartSizeOrigin() + "/api/bb/smart-size";
+  const BB_SMART_SIZE_API = "http://localhost:8001/api/bb/smart-size";
   // Bump version to invalidate any cached defaults
   const BB_SMART_SIZE_CACHE_PREFIX = "bbSmartSize:v32:";
   const BB_AI_SIZE_CLASS = "BB-AI-Size";
@@ -126,9 +165,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (lh && a != null && a !== "") lh.value = String(a);
       if (hp && b != null && b !== "") hp.value = String(b);
     } catch {}
-    // Brand Settings page: default threshold is always “Auto” (do not persist last value)
-    // so the demo opens in the expected state every time.
-    if (thr) {
+    // Brand Settings: threshold is loaded per brand from the API in brand-settings-page.js.
+    if (thr && !document.body.classList.contains("bb-brand-settings-page")) {
       try {
         thr.value = "8";
         localStorage.setItem(BB_REPLACE_THRESHOLD_KEY, "8");
@@ -433,15 +471,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // =============================
   const BB_ASSET_LAB_STORAGE_KEY = "bbAssetLab:svg:v1";
   const BB_ASSET_LAB_STYLE_ID = "bb-asset-lab-style";
+  const BB_LU_DUAL_STYLE_ID = "bb-lu-dual-logo-style";
   const BB_ASSET_LAB_FILENAME_KEY = "bbAssetLab:filename:v1";
   /** Set when “Save” has succeeded for the current upload (enables Apply). */
   const BB_ASSET_LAB_CROP_SAVED_KEY = "bbAssetLab:cropSaved:v1";
+  /** Logo upload page: separate marks for light / dark UI (data URLs). */
+  const BB_LU_LIGHT_LOGO_KEY = "bbLuLightLogoData";
+  const BB_LU_DARK_LOGO_KEY = "bbLuDarkLogoData";
+  const BB_LU_LAST_UPLOAD_MODE_KEY = "bbLuLastUploadMode";
+
+  function bbPersistLuLogoSlotFromSvg(svgText) {
+    const s = String(svgText || "").trim();
+    if (!s || !/<\s*svg\b/i.test(s)) return;
+    let mode = "light";
+    try {
+      mode = localStorage.getItem(BB_LU_LAST_UPLOAD_MODE_KEY) || "light";
+    } catch (_e) {}
+    const key = mode === "dark" ? BB_LU_DARK_LOGO_KEY : BB_LU_LIGHT_LOGO_KEY;
+    const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(s)}`;
+    try {
+      localStorage.setItem(key, dataUrl);
+      window.dispatchEvent(new CustomEvent("bb-lu-logo-updated"));
+    } catch (_e) {}
+  }
   /** Saved Custom Size & Placement slider values (upload marks only). */
   const BB_PLACEMENT_KEY = "bbPlacement:panel:v1";
-  const BB_SAVE_CROPPED_API = bbSmartSizeOrigin() + "/api/bb/save-cropped";
+  const BB_SAVE_CROPPED_API = "http://localhost:8001/api/bb/save-cropped";
   let bbAssetLabBlobUrl = "";
   let bbAssetLabSvgText = "";
   let bbAssetLabTrimViewBox = "";
+  let bbLuLightBlobUrl = "";
+  let bbLuDarkBlobUrl = "";
+  let bbLuLightRatio = 1;
+  let bbLuDarkRatio = 1;
+  let bbLuDualLogoSig = "";
 
   function bbParseSvgLengthAttr(v) {
     if (v == null) return null;
@@ -673,6 +736,58 @@ document.addEventListener("DOMContentLoaded", () => {
     return el;
   }
 
+  function bbGetLuDualStyleEl() {
+    let el = document.getElementById(BB_LU_DUAL_STYLE_ID);
+    if (!el) {
+      el = document.createElement("style");
+      el.id = BB_LU_DUAL_STYLE_ID;
+      document.head.appendChild(el);
+    }
+    return el;
+  }
+
+  function bbGetUploadMarkEls() {
+    return Array.from(document.querySelectorAll(".brandbased-dynamic-logo-slot")).filter(
+      (el) => !el.closest(".popup") && el.getAttribute("data-bb-fixed") !== "1"
+    );
+  }
+
+  /** Force the active Brand Identity logo onto in-text marks (bypasses cascade fights). */
+  function bbPaintUploadMarksForScheme(scheme) {
+    const s = scheme === "dark" ? "dark" : "light";
+    let lightRaw = "";
+    let darkRaw = "";
+    try {
+      lightRaw = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      darkRaw = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+    } catch (_e) {}
+
+    if (lightRaw && darkRaw) {
+      const sig = `${lightRaw.length}|${darkRaw.length}|${lightRaw.slice(0, 48)}|${darkRaw.slice(0, 48)}`;
+      if (sig !== bbLuDualLogoSig) bbApplyDualLuLogosToCss(lightRaw, darkRaw);
+    }
+
+    let url = s === "dark" ? bbLuDarkBlobUrl : bbLuLightBlobUrl;
+    let ratio = s === "dark" ? bbLuDarkRatio : bbLuLightRatio;
+    if (!url) {
+      const raw = s === "dark" ? darkRaw || lightRaw : lightRaw || darkRaw;
+      const entry = bbLogoCssEntryFromStored(raw);
+      if (!entry) return false;
+      url = entry.url;
+      ratio = entry.ratio;
+    }
+
+    const safe = bbCssEscapeUrl(url);
+    bbGetUploadMarkEls().forEach((el) => {
+      el.dataset.brand = "upload";
+      bbEnsureUploadMarkBrandToken(el);
+      el.style.setProperty("--bb-logo", `url("${safe}")`);
+      el.style.setProperty("--bb-ratio", String(ratio || 1));
+    });
+    bbSyncLuLogoChipForScheme(s);
+    return true;
+  }
+
   function bbApplyUploadedSvgToCss(svgText, preparedAlready) {
     // Default: run bbSvgForKonvaRaster() so preview + --bb-logo match what the cropper shows.
     // Pass preparedAlready === true when svgText is already raster-ready (e.g. after Save).
@@ -690,10 +805,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const blob = new Blob([prepared], { type: "image/svg+xml;charset=utf-8" });
     bbAssetLabBlobUrl = URL.createObjectURL(blob);
 
+    if (bbLuDualLogoSig) {
+      bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+      return { ratio };
+    }
+
     const styleEl = bbGetAssetLabStyleEl();
     styleEl.textContent = `.bb-upload{--bb-logo:url("${bbAssetLabBlobUrl}");--bb-ratio:${ratio};}`;
 
-    // Brand Settings: keep the threshold “logo chip” in sync with the active uploaded blob URL.
     try {
       const chip = document.querySelector(".bb-threshold-chip");
       if (chip && bbAssetLabBlobUrl) {
@@ -701,6 +820,365 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch {}
     return { ratio };
+  }
+
+  function bbDataUrlToSvgString(dataUrl) {
+    const raw = String(dataUrl || "").trim();
+    if (!raw) return "";
+    if (raw.startsWith("<svg") || raw.startsWith("<?xml")) return raw;
+    if (!raw.startsWith("data:")) return "";
+    const comma = raw.indexOf(",");
+    if (comma < 0) return "";
+    const meta = raw.slice(0, comma);
+    const payload = raw.slice(comma + 1);
+    if (/;base64/i.test(meta)) {
+      try {
+        return atob(payload);
+      } catch (_e) {
+        return "";
+      }
+    }
+    try {
+      return decodeURIComponent(payload);
+    } catch (_e2) {
+      return payload;
+    }
+  }
+
+  function bbCssEscapeUrl(dataUrl) {
+    return String(dataUrl || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  }
+
+  function bbLogoCssEntryFromStored(raw) {
+    const s = String(raw || "").trim();
+    if (!s) return null;
+    const svgText =
+      s.startsWith("<svg") || s.startsWith("<?xml") ? s : bbDataUrlToSvgString(s);
+    if (svgText && /<\s*svg\b/i.test(svgText)) {
+      const prepared = bbSvgForKonvaRaster(svgText) || svgText;
+      const ratio = bbParseViewBoxRatio(prepared) || 1;
+      const blob = new Blob([prepared], { type: "image/svg+xml;charset=utf-8" });
+      return { url: URL.createObjectURL(blob), ratio, svgText: prepared };
+    }
+    if (/^data:image\//i.test(s)) {
+      return { url: s, ratio: 1, svgText: "" };
+    }
+    if (/^https?:\/\//i.test(s)) {
+      return { url: s, ratio: 1, svgText: "" };
+    }
+    return null;
+  }
+
+  function bbRevokeLuDualBlobUrls() {
+    try {
+      if (bbLuLightBlobUrl && bbLuLightBlobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(bbLuLightBlobUrl);
+      }
+      if (bbLuDarkBlobUrl && bbLuDarkBlobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(bbLuDarkBlobUrl);
+      }
+    } catch (_e) {}
+    bbLuLightBlobUrl = "";
+    bbLuDarkBlobUrl = "";
+    bbLuLightRatio = 1;
+    bbLuDarkRatio = 1;
+    bbLuDualLogoSig = "";
+  }
+
+  /** Brand Identity light + dark slots → CSS vars; theme class picks active logo. */
+  function bbApplyDualLuLogosToCss(lightRaw, darkRaw) {
+    const lightE = bbLogoCssEntryFromStored(lightRaw);
+    const darkE = bbLogoCssEntryFromStored(darkRaw);
+    if (!lightE && !darkE) return false;
+
+    const L = lightE || darkE;
+    const D = darkE || lightE;
+    bbRevokeLuDualBlobUrls();
+    bbLuLightBlobUrl = L.url;
+    bbLuDarkBlobUrl = D.url;
+    bbLuLightRatio = L.ratio;
+    bbLuDarkRatio = D.ratio;
+    bbLuDualLogoSig = `${String(lightRaw || "").length}|${String(darkRaw || "").length}|${String(lightRaw || "").slice(0, 48)}|${String(darkRaw || "").slice(0, 48)}`;
+
+    if (L.svgText) bbAssetLabSvgText = L.svgText;
+
+    const lUrl = bbCssEscapeUrl(L.url);
+    const dUrl = bbCssEscapeUrl(D.url);
+    const styleEl = bbGetLuDualStyleEl();
+    styleEl.textContent =
+      `.bb-upload{` +
+      `--bb-logo-light:url("${lUrl}");--bb-logo-dark:url("${dUrl}");` +
+      `--bb-ratio-light:${L.ratio};--bb-ratio-dark:${D.ratio};` +
+      `}` +
+      `body.light-mode .bb-upload,html[data-bb-scheme="light"] .bb-upload{` +
+      `--bb-logo:var(--bb-logo-light);--bb-ratio:var(--bb-ratio-light);` +
+      `}` +
+      `body.dark-mode .bb-upload,html[data-bb-scheme="dark"] .bb-upload{` +
+      `--bb-logo:var(--bb-logo-dark);--bb-ratio:var(--bb-ratio-dark);` +
+      `}` +
+      `@media (prefers-color-scheme:light){` +
+      `body:not(.light-mode):not(.dark-mode) .bb-upload{` +
+      `--bb-logo:var(--bb-logo-light);--bb-ratio:var(--bb-ratio-light);` +
+      `}}` +
+      `@media (prefers-color-scheme:dark){` +
+      `body:not(.light-mode):not(.dark-mode) .bb-upload{` +
+      `--bb-logo:var(--bb-logo-dark);--bb-ratio:var(--bb-ratio-dark);` +
+      `}}`;
+
+    bbApplyEmbeddedThemeScheme(bbResolveAppearanceScheme());
+    bbSyncLuLogoChipForScheme(bbResolveAppearanceScheme());
+    return true;
+  }
+
+  function bbSyncLuLogoChipForScheme(scheme) {
+    try {
+      const chip = document.querySelector(".bb-threshold-chip");
+      const url = scheme === "dark" ? bbLuDarkBlobUrl || bbLuLightBlobUrl : bbLuLightBlobUrl || bbLuDarkBlobUrl;
+      if (chip && url) {
+        chip.style.setProperty("--bb-chip-logo", `url("${bbCssEscapeUrl(url)}")`);
+      }
+    } catch (_e) {}
+  }
+
+  /** Brand console dashboard: body.light-mode = light UI (see brand-console-dashboard.html). */
+  function bbParentDashboardScheme() {
+    try {
+      const pw = window.parent;
+      if (!pw || pw === window) return null;
+      const pb = pw.document && pw.document.body;
+      if (pb) {
+        return pb.classList.contains("light-mode") ? "light" : "dark";
+      }
+    } catch (_e) {}
+    try {
+      const pw = window.parent;
+      if (!pw || pw === window) return null;
+      const saved = pw.localStorage && pw.localStorage.getItem("theme");
+      if (saved === "light") return "light";
+      if (saved === "dark") return "dark";
+      if (pw.matchMedia && pw.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
+      return "light";
+    } catch (_e) {}
+    return null;
+  }
+
+  function bbSyncEmbeddedColorSchemeFromParent() {
+    const scheme = bbParentDashboardScheme();
+    if (!scheme) return;
+    bbApplyEmbeddedThemeScheme(scheme);
+  }
+
+  /** Dashboard iframe parent wins over stale :root color-scheme set once at embed load. */
+  function bbResolveAppearanceScheme() {
+    const fromParent = bbParentDashboardScheme();
+    if (fromParent) {
+      bbSyncEmbeddedColorSchemeFromParent();
+      return fromParent;
+    }
+    try {
+      if (document.body.classList.contains("light-mode")) return "light";
+      if (document.body.classList.contains("dark-mode")) return "dark";
+    } catch (_e) {}
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        return "dark";
+      }
+    } catch (_e) {}
+    return "light";
+  }
+
+  function bbApplyLogoDataUrl(dataUrl, opts) {
+    const o = opts || {};
+    const raw = String(dataUrl || "").trim();
+    if (!raw) return false;
+
+    const svgText = raw.startsWith("<svg") || raw.startsWith("<?xml")
+      ? raw
+      : bbDataUrlToSvgString(raw);
+    if (svgText && /<\s*svg\b/i.test(svgText)) {
+      const { ratio } = bbApplyUploadedSvgToCss(svgText);
+      bbAssetLabSvgText = svgText;
+      if (o.persistAssetLab !== false) {
+        try {
+          localStorage.setItem(BB_ASSET_LAB_STORAGE_KEY, svgText);
+          localStorage.setItem(BB_ASSET_LAB_CROP_SAVED_KEY, "1");
+        } catch (_e) {}
+      }
+      try {
+        const img = document.querySelector(".bb-place-logo");
+        if (img && bbAssetLabBlobUrl) img.src = bbAssetLabBlobUrl;
+      } catch (_e) {}
+      return true;
+    }
+
+    if (/^https?:\/\//i.test(raw)) {
+      const styleEl = bbGetAssetLabStyleEl();
+      const safe = bbCssEscapeUrl(raw);
+      styleEl.textContent = `.bb-upload{--bb-logo:url("${safe}");--bb-ratio:1;}`;
+      try {
+        const chip = document.querySelector(".bb-threshold-chip");
+        if (chip) chip.style.setProperty("--bb-chip-logo", `url("${safe}")`);
+      } catch (_e) {}
+      try {
+        const img = document.querySelector(".bb-place-logo");
+        if (img) img.src = raw;
+      } catch (_e2) {}
+      try {
+        bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+      } catch (_e3) {}
+      return true;
+    }
+
+    if (!/^data:image\//i.test(raw)) return false;
+    const styleEl = bbGetAssetLabStyleEl();
+    const safe = bbCssEscapeUrl(raw);
+    styleEl.textContent = `.bb-upload{--bb-logo:url("${safe}");--bb-ratio:1;}`;
+    try {
+      const chip = document.querySelector(".bb-threshold-chip");
+      if (chip) chip.style.setProperty("--bb-chip-logo", `url("${safe}")`);
+    } catch (_e) {}
+    try {
+      const img = document.querySelector(".bb-place-logo");
+      if (img) img.src = raw;
+    } catch (_e4) {}
+    return true;
+  }
+
+  function bbSyncAppearanceAwareUploadLogo(opts) {
+    const o = opts || {};
+    let light = "";
+    let dark = "";
+    try {
+      light = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+      dark = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+    } catch (_e) {}
+    if (!light && !dark) return false;
+
+    const scheme = bbResolveAppearanceScheme();
+
+    if (light && dark) {
+      const sig = `${light.length}|${dark.length}|${light.slice(0, 48)}|${dark.slice(0, 48)}`;
+      if (sig !== bbLuDualLogoSig) {
+        if (!bbApplyDualLuLogosToCss(light, dark)) return false;
+      } else {
+        bbApplyEmbeddedThemeScheme(scheme);
+        bbSyncLuLogoChipForScheme(scheme);
+      }
+    } else {
+      bbRevokeLuDualBlobUrls();
+      const pick = scheme === "dark" ? dark || light : light || dark;
+      if (!pick || !bbApplyLogoDataUrl(pick, { persistAssetLab: false })) return false;
+    }
+
+    try {
+      bbApplyUploadedAssetToMarks({
+        silent: true,
+        closeAssetPanel: true,
+        preserveSmartSizeCache: o.preserveSmartSizeCache !== false,
+      });
+    } catch (_e) {}
+    try {
+      document
+        .querySelectorAll(".brandbased-dynamic-logo-slot[data-brand='upload']")
+        .forEach((el) => bbEnsureUploadMarkBrandToken(el));
+    } catch (_e) {}
+    bbPaintUploadMarksForScheme(scheme);
+    bbPulseInTextUploadMarks();
+    return true;
+  }
+
+  let _bbAppearanceLogoScheme = "";
+  let _bbAppearanceLogoPick = "";
+  let _bbAppearanceParentPollId = 0;
+  function bbInitAppearanceAwareUploadLogo() {
+    const run = (force) => {
+      const scheme = bbResolveAppearanceScheme();
+      let light = "";
+      let dark = "";
+      try {
+        light = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+        dark = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+      } catch (_e) {}
+      const pick = scheme === "dark" ? dark || light : light || dark;
+      const pickSig = pick ? `${pick.length}:${pick.slice(0, 72)}` : "";
+      if (!force && scheme === _bbAppearanceLogoScheme && pickSig === _bbAppearanceLogoPick) return;
+      _bbAppearanceLogoScheme = scheme;
+      _bbAppearanceLogoPick = pickSig;
+      try {
+        if (light && dark) {
+          const sig = `${light.length}|${dark.length}|${light.slice(0, 48)}|${dark.slice(0, 48)}`;
+          if (sig !== bbLuDualLogoSig) {
+            bbSyncAppearanceAwareUploadLogo({ preserveSmartSizeCache: true });
+          } else {
+            bbApplyEmbeddedThemeScheme(scheme);
+            bbPaintUploadMarksForScheme(scheme);
+            bbPulseInTextUploadMarks();
+          }
+        } else {
+          bbSyncAppearanceAwareUploadLogo({ preserveSmartSizeCache: true });
+        }
+      } catch (_e) {}
+    };
+    run(true);
+    try {
+      if (window.parent && window.parent !== window) {
+        _bbAppearanceParentPollId = window.setInterval(() => run(false), 280);
+        const pb = window.parent.document && window.parent.document.body;
+        if (pb) {
+          const parentObs = new MutationObserver(() => run(true));
+          parentObs.observe(pb, { attributes: true, attributeFilter: ["class"] });
+        }
+      }
+    } catch (_e) {}
+    try {
+      window.addEventListener("message", (e) => {
+        const d = e && e.data;
+        if (!d || d.type !== "bb-dash-theme") return;
+        const scheme = d.scheme === "dark" ? "dark" : d.scheme === "light" ? "light" : "";
+        if (!scheme) return;
+        bbApplyEmbeddedThemeScheme(scheme);
+        _bbAppearanceLogoScheme = "";
+        _bbAppearanceLogoPick = "";
+        run(true);
+      });
+    } catch (_e) {}
+    try {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      if (mq.addEventListener) mq.addEventListener("change", () => run(true));
+      else if (mq.addListener) mq.addListener(() => run(true));
+    } catch (_e) {}
+    try {
+      const obs = new MutationObserver(() => run(true));
+      obs.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["style", "class"],
+      });
+      if (document.body) {
+        obs.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+      }
+    } catch (_e) {}
+    try {
+      window.addEventListener("storage", (e) => {
+        if (
+          e &&
+          (e.key === BB_LU_LIGHT_LOGO_KEY ||
+            e.key === BB_LU_DARK_LOGO_KEY ||
+            e.key === BB_ASSET_LAB_STORAGE_KEY ||
+            e.key === "theme")
+        ) {
+          _bbAppearanceLogoScheme = "";
+          run(true);
+        }
+      });
+    } catch (_e) {}
+    try {
+      window.addEventListener("bb-lu-logo-updated", () => {
+        _bbAppearanceLogoScheme = "";
+        run(true);
+      });
+    } catch (_e) {}
   }
 
   function bbInitAssetLabUi() {
@@ -1181,6 +1659,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem(BB_ASSET_LAB_STORAGE_KEY, finalSvg);
         localStorage.setItem(BB_ASSET_LAB_CROP_SAVED_KEY, "1");
       } catch {}
+      bbPersistLuLogoSlotFromSvg(finalSvg);
       updateApplyButtonVisibility();
       setPreview({ name: (localStorage.getItem(BB_ASSET_LAB_FILENAME_KEY) || "upload.svg"), ratio, url: bbAssetLabBlobUrl, viewBox: vb });
       const appliedToMarks = bbApplyUploadedAssetToMarks({ silent: true, closeAssetPanel: true });
@@ -1227,6 +1706,18 @@ document.addEventListener("DOMContentLoaded", () => {
           `Crop saved locally (viewBox updated), but server save failed (API unreachable).${marksNote} Open DevTools Console → paste any error here.`
         );
       }
+      let luMode = "light";
+      try {
+        luMode = localStorage.getItem(BB_LU_LAST_UPLOAD_MODE_KEY) || "light";
+      } catch (_e) {}
+      try {
+        document.dispatchEvent(
+          new CustomEvent("bb-asset-lab-crop-saved", {
+            bubbles: true,
+            detail: { svgText: finalSvg, mode: luMode === "dark" ? "dark" : "light" },
+          })
+        );
+      } catch (_e) {}
       bbCloseCropper();
     }
 
@@ -1278,6 +1769,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       marks.forEach((el) => {
         el.dataset.brand = "upload";
+        bbEnsureUploadMarkBrandToken(el);
       });
       bbSyncUploadMarksChip();
 
@@ -1315,6 +1807,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Restore last uploaded SVG (if any) — runs on all pages (including Brand-Settings-Module.html).
     try {
+      let lightLu = "";
+      let darkLu = "";
+      try {
+        lightLu = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+        darkLu = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+      } catch (_e) {}
+      if (lightLu || darkLu) {
+        bbSyncAppearanceAwareUploadLogo({ preserveSmartSizeCache: true });
+        updateApplyButtonVisibility();
+        return;
+      }
+
       const cached = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
       if (cached && /<\s*svg\b/i.test(cached)) {
         const { ratio } = bbApplyUploadedSvgToCss(cached);
@@ -1343,8 +1847,38 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   bbInitAssetLabUi();
+  bbInitAppearanceAwareUploadLogo();
   bbInitPlacementPanelUi();
   bbInitBrandSettingsUi();
+  try {
+    window.addEventListener("bb-brand-context-updated", () => {
+      try {
+        bbSyncAppearanceAwareUploadLogo({ preserveSmartSizeCache: true });
+      } catch (_e1) {}
+      try {
+        stripBrandEnhancements();
+        enhanceBrandMarks();
+        bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+      } catch (_e2) {}
+      try {
+        const previewUrl = window.__bbPreviewLogoUrl;
+        if (previewUrl && document.body.classList.contains("bb-brand-settings-page")) {
+          const safe = bbCssEscapeUrl(previewUrl);
+          document
+            .querySelectorAll(
+              "#bbPreviewHost .brandbased-dynamic-logo-slot, #bbSimulatedContent .brandbased-dynamic-logo-slot"
+            )
+            .forEach((el) => {
+              el.dataset.brand = "upload";
+              bbEnsureUploadMarkBrandToken(el);
+              el.classList.add("bb-enhanced", "slide-up");
+              el.style.setProperty("--bb-logo", `url("${safe}")`);
+              el.style.setProperty("--bb-ratio", "1");
+            });
+        }
+      } catch (_e3) {}
+    });
+  } catch (_e) {}
   /* Standalone Team Console page (no placement panel): wire OpenAI key UI */
   if (document.getElementById("bbTeamConsoleRoot")) {
     bbInitDevOpenaiKeyUi();
@@ -2641,6 +3175,17 @@ document.addEventListener("DOMContentLoaded", () => {
         bbApplyPlacementSlidersToUploadMarks();
       }
     }
+    try {
+      let lightLu = "";
+      let darkLu = "";
+      try {
+        lightLu = localStorage.getItem(BB_LU_LIGHT_LOGO_KEY) || "";
+        darkLu = localStorage.getItem(BB_LU_DARK_LOGO_KEY) || "";
+      } catch (_e) {}
+      if (lightLu || darkLu) {
+        bbPaintUploadMarksForScheme(bbResolveAppearanceScheme());
+      }
+    } catch (_e) {}
   }
 
   function stripBrandEnhancements() {

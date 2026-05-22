@@ -23,10 +23,10 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
-  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
+  <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-2" />
 
-  <link rel="stylesheet" href="../brand-pages-isolated/Brand-Theme-Settings-Module.css?v=isolated-18" />
-  <script src="../brand-pages-isolated/Brand-Theme-Settings-Module.theme-design.js?v=isolated-1" defer></script>
+  <link rel="stylesheet" href="../brand-pages-isolated/Brand-Theme-Settings-Module.css?v=isolated-73" />
+  <script src="../brand-pages-isolated/Brand-Theme-Settings-Module.theme-design.js?v=isolated-2" defer></script>
 
   <!-- ===========================================================
        Freemium overrides — only on this Freemium copy of Theme
@@ -161,22 +161,45 @@
       display: none !important;
     }
 
-    /* Freemium: keep the Button Label Text group to the right of
-       the Button label swatch with its input stacked underneath
-       the caption. We deliberately do NOT set align-self here so
-       the slot inherits the grid container's `align-items: end`
-       (input sits roughly at the swatch baseline). A small negative
-       margin-top then nudges the whole group up by 16px to match
-       the requested visual position. */
+    /* Freemium bottom row (screenshot): one line —
+       Brand outline · Brand fill · Brand Icon Size · Button colour ·
+       Button label · button label text. */
+    body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align {
+      grid-template-columns: repeat(6, minmax(0, max-content));
+      column-gap: 18px;
+      row-gap: 0;
+    }
+    body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBrandIconOutlineColour) {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBrandIconFillColour) {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBrandIconSize) {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBuyButtonColour) {
+      grid-column: 4;
+      grid-row: 1;
+    }
+    body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBuyButtonLabelColour) {
+      grid-column: 5;
+      grid-row: 1;
+    }
     body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--text {
+      grid-column: 6;
+      grid-row: 1;
+      justify-self: start;
+      align-self: end;
+      margin-top: 0 !important;
+      width: auto !important;
+      max-width: none !important;
       flex-direction: column !important;
       align-items: flex-start !important;
       gap: 6px !important;
-      grid-column: 5 / span 3 !important;
-      justify-self: start !important;
-      margin-top: -16px !important;
-      width: auto !important;
-      max-width: none !important;
     }
     body.bb-brand-theme-settings .bb-theme-tint-slot--text > #bbThemeBuyNowLabelCaption {
       margin: 0 !important;
@@ -184,13 +207,61 @@
       flex: 0 0 auto !important;
     }
     body.bb-brand-theme-settings .bb-theme-tint-slot--text > .bb-theme-buy-label {
-      /* In flex column, `flex` controls height — set width via
-         the plain width properties instead and let height stay
-         intrinsic (28–36px from the buy-label base styles). */
       flex: 0 0 auto !important;
-      width: 214px !important;
+      width: 193px !important;
       min-width: 0 !important;
-      max-width: 214px !important;
+      max-width: 193px !important;
+    }
+    /* Mobile: 3×2 grid (matches Freemium customise modal screenshot). */
+    @media (max-width: 720px) {
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        column-gap: 14px;
+        row-gap: 16px;
+        width: 100%;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-swatches,
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-select-tint__quick-strip-bottom {
+        display: contents !important;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBrandIconOutlineColour) {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBrandIconFillColour) {
+        grid-column: 2;
+        grid-row: 1;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBrandIconSize) {
+        grid-column: 3;
+        grid-row: 1;
+        max-width: none;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBuyButtonColour) {
+        grid-column: 1;
+        grid-row: 2;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot:has(#bbThemeBuyButtonLabelColour) {
+        grid-column: 2;
+        grid-row: 2;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--text {
+        grid-column: 3;
+        grid-row: 2;
+        justify-self: stretch;
+        align-self: end;
+        width: 100% !important;
+        max-width: none !important;
+      }
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range,
+      body.bb-brand-theme-settings .bb-theme-select-tint__quick-strip--col-align .bb-theme-tint-slot--opacity-compact .bb-theme-brand-opacity__range--compact {
+        max-width: 100%;
+      }
+      body.bb-brand-theme-settings .bb-theme-tint-slot--text > .bb-theme-buy-label {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
     }
 
     /* Freemium popup itself — same recipe as the Free modal in
@@ -248,13 +319,10 @@
        toggle). When that toggle is OFF, the video layer fades out
        and the Freemium popup falls back to plain smoky glass.
 
-       The Theme Tint Colour accent overlay is NOT gated by the
-       toggle: --bb-fm-accent itself is rgba(r,g,b,0) (transparent)
-       whenever Premium's "Use" switch is off, so the overlay
-       naturally disappears. When "Use" is on, the overlay paints
-       on top of any theme video too, matching the picker's own
-       label: "Applies your selected colour with a soft frosted
-       glass effect." */
+       The Theme Tint Colour accent overlay is gated by
+       body.bb-theme-accent-on (the "Use" switch). --bb-fm-accent
+       is mirrored from :root each sync so turning "Use" off cannot
+       leave a stale tint on the Freemium popup. */
     .bb-fm-preview-bgwrap {
       position: absolute;
       inset: 0;
@@ -299,6 +367,7 @@
     .bb-fm-preview-popup.bb-theme-blend-logo .bb-fm-preview-bg {
       opacity: 0 !important;
       visibility: hidden !important;
+      display: none !important;
     }
     .bb-fm-preview-popup.bb-theme-blend-logo:not(.bb-fm-theme-bg-on):not(.bb-theme-custom-upload) {
       background: color-mix(
@@ -336,7 +405,7 @@
        caption). Layer-level `opacity` multiplies with the rgba
        alpha that already lives in --bb-fm-accent, so the cap
        scales linearly: picker 0% -> 0, 50% -> 0.125, 100% -> 0.25. */
-    .bb-fm-preview-popup::before {
+    body.bb-theme-accent-on .bb-fm-preview-popup::before {
       content: "";
       position: absolute;
       inset: 0;
@@ -345,7 +414,19 @@
       opacity: 0.25;
       pointer-events: none;
       z-index: 1;
-      transition: background-color 240ms ease;
+      transition: background-color 240ms ease, opacity 240ms ease;
+    }
+    body.bb-brand-theme-settings:not(.bb-theme-accent-on) .bb-fm-preview-popup::before {
+      content: none;
+    }
+    body.bb-brand-theme-settings:not(.bb-theme-accent-on)
+      .bb-fm-preview-popup.bb-theme-blend-logo
+      .bb-fm-preview-blend {
+      background-color: transparent !important;
+    }
+    body.bb-brand-theme-settings:not(.bb-theme-accent-on)
+      .bb-fm-preview-popup.bb-theme-blend-logo:not(.bb-fm-theme-bg-on):not(.bb-theme-custom-upload) {
+      background: rgba(130, 132, 140, 0.34) !important;
     }
 
     /* Backdrop tint overlay — mirrors `--bb-theme-backdrop-layer`
@@ -411,8 +492,10 @@
       width: 88px;
       height: 88px;
       margin-top: 9px;
-      padding: 17px;
+      padding: 0;
       border-radius: 50%;
+      overflow: hidden;
+      box-sizing: border-box;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -433,14 +516,25 @@
     .bb-fm-preview-badge::after {
       content: "";
       position: absolute;
-      inset: 17px;
+      inset: 0;
+      border-radius: 50%;
+      overflow: hidden;
       /* Render the uploaded logo in its real colours instead of
          masking it to a solid white silhouette. --bb-logo is mirrored
          from the upload system / Premium popup by the script below. */
       background-image: var(--bb-logo, url("../brandbased-logo.svg"));
       background-repeat: no-repeat;
       background-position: center;
-      background-size: contain;
+      background-size: calc(
+        100% * min(
+          var(--bb-theme-popup-brand-icon-inner-mul-max, 0.708906948),
+          calc(
+            var(--bb-fm-brand-icon-inner-mul, var(--bb-theme-popup-brand-icon-inner-mul, 1)) *
+              var(--bb-fm-preview-badge-inner-scale, 0.89773)
+          )
+        )
+      ) auto;
+      transform: none;
     }
     .bb-fm-preview-badge img {
       display: none;
@@ -882,6 +976,19 @@
                           aria-label="Brand icon background opacity"
                         />
                       </div>
+                      <div class="bb-theme-tint-slot bb-theme-tint-slot--opacity-compact">
+                        <label class="bb-theme-tint-slot__label" for="bbThemeBrandIconSize">Brand Icon Size</label>
+                        <input
+                          id="bbThemeBrandIconSize"
+                          class="bb-theme-brand-opacity__range bb-theme-brand-opacity__range--compact"
+                          type="range"
+                          min="50"
+                          max="150"
+                          value="100"
+                          step="1"
+                          aria-label="Brand icon size"
+                        />
+                      </div>
                       <div class="bb-theme-tint-slot bb-theme-tint-slot--swatch">
                         <label class="bb-theme-tint-slot__label" for="bbThemeLockLogoColour">BrandBased icon</label>
                         <div class="bb-theme-colour-picker-wrap bb-theme-colour-picker-wrap--tint-inline">
@@ -1232,6 +1339,11 @@
             new CustomEvent("bb-theme-accent-updated", { detail: { hex: h, cssHex, on, alpha: alphaPct } })
           );
         } catch {}
+        try {
+          if (typeof window.__bbFmSyncFreemiumTheme === "function") {
+            window.__bbFmSyncFreemiumTheme();
+          }
+        } catch {}
       };
 
       const applyColour = (hex6, { pushRecent } = {}) => {
@@ -1357,6 +1469,7 @@
       const brandIconFillColourEl = document.getElementById("bbThemeBrandIconFillColour");
       const brandIconOutlineColourEl = document.getElementById("bbThemeBrandIconOutlineColour");
       const brandIconFillOpacityEl = document.getElementById("bbThemeBrandIconFillOpacity");
+      const brandIconSizeEl = document.getElementById("bbThemeBrandIconSize");
       const lockLogoColourEl = document.getElementById("bbThemeLockLogoColour");
       const exploreIconColourEl = document.getElementById("bbThemeExploreIconColour");
       const buyButtonColourEl = document.getElementById("bbThemeBuyButtonColour");
@@ -1379,6 +1492,21 @@
         let n = Number(v);
         if (!Number.isFinite(n)) n = def;
         return Math.max(0, Math.min(100, Math.round(n)));
+      };
+      const BRAND_ICON_INNER_MUL_MIN = 0.2925;
+      const BRAND_ICON_INNER_MUL_MAX = 0.708906948;
+      const clampBrandIconSizePct = (v, def) => {
+        let n = Number(v);
+        if (!Number.isFinite(n)) n = def;
+        return Math.max(50, Math.min(150, Math.round(n)));
+      };
+      const brandIconInnerMulFromPct = (pct) => {
+        const p = clampBrandIconSizePct(pct, 100);
+        const t = (p - 50) / 100;
+        return (
+          BRAND_ICON_INNER_MUL_MIN +
+          t * (BRAND_ICON_INNER_MUL_MAX - BRAND_ICON_INNER_MUL_MIN)
+        );
       };
       const hexToRgba = (hex6, opacityPct) => {
         const h = normHex6(hex6) || "#1030f4";
@@ -1497,6 +1625,7 @@
           brandIconFillHex,
           brandIconBorderHex,
           brandIconFillOpacity: clampPct(o?.brandIconFillOpacity, 100),
+          brandIconSizePct: clampBrandIconSizePct(o?.brandIconSizePct, 100),
           brandIconBorderOpacity: clampPct(o?.brandIconBorderOpacity, 100),
           buyButtonBgHex,
           buyButtonLabelHex,
@@ -1523,6 +1652,7 @@
                 normHex6(s.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX
               ),
               brandIconFillOpacity: clampPct(s.brandIconFillOpacity, 100),
+              brandIconSizePct: clampBrandIconSizePct(s.brandIconSizePct, 100),
               brandIconBorderOpacity: 100,
               brandIconHex: String(s.brandIconFillHex || rootAccentHex()),
               buyButtonBgHex: String(s.buyButtonBgHex || rootAccentHex()),
@@ -1533,6 +1663,9 @@
           );
         } catch {}
         try { localStorage.setItem(KEY_VIDEO, String(s.video || 0)); } catch {}
+        try {
+          window.dispatchEvent(new CustomEvent("bb-theme-console-sync"));
+        } catch (_e) {}
       };
 
       const KEY_ADMIN_GALLERY = "bbTheme:adminGallery:v1";
@@ -2048,6 +2181,8 @@
             normHex6(state.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX;
         if (brandIconFillOpacityEl)
           brandIconFillOpacityEl.value = String(state.brandIconFillOpacity ?? 100);
+        if (brandIconSizeEl)
+          brandIconSizeEl.value = String(state.brandIconSizePct ?? 100);
         if (lockLogoColourEl) lockLogoColourEl.value = state.lockLogoHex || rootAccentHex();
         if (exploreIconColourEl) exploreIconColourEl.value = state.exploreIconHex || rootAccentHex();
         if (buyButtonColourEl) buyButtonColourEl.value = state.buyButtonBgHex || rootAccentHex();
@@ -2200,7 +2335,9 @@
 
         const srcNow = vEl?.getAttribute("src") || "";
         const customVideoActive = !!srcNow && !isBuiltinVideoSrc(srcNow);
+        const accentTintOn = document.body.classList.contains("bb-theme-accent-on");
         const accentFillOn =
+          accentTintOn &&
           !!state.on &&
           !blendOn &&
           !popup.classList.contains("bb-theme-custom-upload") &&
@@ -2307,8 +2444,17 @@
           popup.style.setProperty("--bb-theme-popup-brand-icon-bg", fillRgba);
           popup.style.setProperty("--bb-theme-popup-brand-icon-border", borderCssVar);
           popup.style.setProperty("--bb-theme-popup-brand-icon", fillRgba);
+          const iconSizeMul = brandIconInnerMulFromPct(
+            brandIconSizeEl?.value ?? state.brandIconSizePct ?? 100
+          );
+          popup.style.setProperty("--bb-theme-popup-brand-icon-inner-mul", String(iconSizeMul));
+          const fmPopup = document.querySelector(".bb-fm-preview-popup");
+          if (fmPopup) {
+            fmPopup.style.setProperty("--bb-fm-brand-icon-inner-mul", String(iconSizeMul));
+          }
           const brandIconEl = popup.querySelector(".title-row .brand-icon");
           if (brandIconEl) {
+            brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-inner-mul", String(iconSizeMul));
             brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-bg", fillRgba);
             brandIconEl.style.setProperty("--bb-theme-popup-brand-icon-border", borderCssVar);
             brandIconEl.style.setProperty("--bb-theme-popup-brand-icon", fillRgba);
@@ -2363,6 +2509,11 @@
             }
           } catch {}
         } catch {}
+        try {
+          if (typeof window.__bbFmSyncFreemiumTheme === "function") {
+            window.__bbFmSyncFreemiumTheme();
+          }
+        } catch (_e) {}
       }
 
       const state = read();
@@ -2382,6 +2533,8 @@
           normHex6(state.brandIconBorderHex) || DEFAULT_BRAND_ICON_BORDER_HEX;
       if (brandIconFillOpacityEl)
         brandIconFillOpacityEl.value = String(state.brandIconFillOpacity ?? 100);
+      if (brandIconSizeEl)
+        brandIconSizeEl.value = String(state.brandIconSizePct ?? 100);
       if (lockLogoColourEl) lockLogoColourEl.value = state.lockLogoHex || rootAccentHex();
       if (exploreIconColourEl) exploreIconColourEl.value = state.exploreIconHex || rootAccentHex();
       if (buyButtonColourEl) buyButtonColourEl.value = state.buyButtonBgHex || rootAccentHex();
@@ -2412,6 +2565,7 @@
         brandIconBorderHex:
           normHex6(brandIconOutlineColourEl?.value) || DEFAULT_BRAND_ICON_BORDER_HEX,
         brandIconFillOpacity: clampPct(brandIconFillOpacityEl?.value, 100),
+        brandIconSizePct: clampBrandIconSizePct(brandIconSizeEl?.value, 100),
         brandIconBorderOpacity: 100,
         buyButtonBgHex: normHex6(buyButtonColourEl?.value) || rootAccentHex(),
         buyButtonLabelHex: normHex6(buyButtonLabelColourEl?.value) || "#ffffff",
@@ -2479,6 +2633,7 @@
       brandIconFillColourEl?.addEventListener("input", () => apply(readFromUi()));
       brandIconOutlineColourEl?.addEventListener("input", () => apply(readFromUi()));
       brandIconFillOpacityEl?.addEventListener("input", () => apply(readFromUi()));
+      brandIconSizeEl?.addEventListener("input", () => apply(readFromUi()));
       lockLogoColourEl?.addEventListener("input", () => apply(readFromUi()));
       exploreIconColourEl?.addEventListener("input", () => apply(readFromUi()));
       buyButtonColourEl?.addEventListener("input", () => apply(readFromUi()));
@@ -2820,13 +2975,9 @@
         }
       };
 
-      /* Initial Freemium background theme. Dynamic Themes is
-         visible on this page (Freemium tier exposes the chip
-         strip + Custom upload), so subsequent chip clicks update
-         the Premium popup's .bb-theme-video-bg src — our
-         MutationObserver in syncFreemiumTheme below mirrors that
-         onto this Freemium preview. */
-      setBgSrc("../themes/theme-1.mp4");
+      /* Do not preload theme-1 here — syncFreemiumTheme mirrors the
+         hidden Premium popup only when Theme Styles is on (or
+         clears the video when blend / theme-off). */
 
       /* Mirror CSS vars from the Premium popup onto the Freemium
          popup. We read computed style each time so any source —
@@ -2841,6 +2992,7 @@
       const MIRROR_VARS = [
         ["--bb-theme-popup-brand-icon-bg",     "--bb-fm-brand-icon-bg"],
         ["--bb-theme-popup-brand-icon-border", "--bb-fm-brand-icon-border"],
+        ["--bb-theme-popup-brand-icon-inner-mul", "--bb-fm-brand-icon-inner-mul"],
         ["--bb-theme-popup-buy-button-bg",     "--bb-fm-button-bg"],
         ["--bb-theme-popup-buy-button-label",  "--bb-fm-button-label"],
         ["--bb-theme-backdrop-layer",          "--bb-fm-backdrop-layer"],
@@ -2848,10 +3000,23 @@
         ["--bb-theme-accent-solid",            "--bb-fm-accent-solid"],
       ];
 
+      const readRootAccentVars = () => {
+        try {
+          const rootCs = window.getComputedStyle(document.documentElement);
+          return {
+            accent: rootCs.getPropertyValue("--bb-theme-accent").trim(),
+            solid: rootCs.getPropertyValue("--bb-theme-accent-solid").trim(),
+          };
+        } catch {
+          return { accent: "", solid: "" };
+        }
+      };
+
       const mirrorCssVars = (premiumPopup) => {
         if (!premiumPopup || !popup) return;
         let cs;
         try { cs = window.getComputedStyle(premiumPopup); } catch { cs = null; }
+        const rootAccent = readRootAccentVars();
         /* Snapshot the buy-button-label hex so we can also write it
            inline on the explore button below. The CSS var path is
            the primary feed (covers any future buttons that read the
@@ -2862,12 +3027,21 @@
         let buyBgValue = "";
         for (const [src, dst] of MIRROR_VARS) {
           let v = "";
-          if (cs) v = cs.getPropertyValue(src).trim();
-          if (!v) v = premiumPopup.style.getPropertyValue(src).trim();
+          if (src === "--bb-theme-accent" && rootAccent.accent) v = rootAccent.accent;
+          else if (src === "--bb-theme-accent-solid" && rootAccent.solid) v = rootAccent.solid;
+          else {
+            if (cs) v = cs.getPropertyValue(src).trim();
+            if (!v) v = premiumPopup.style.getPropertyValue(src).trim();
+          }
           if (v) popup.style.setProperty(dst, v);
           else popup.style.removeProperty(dst);
           if (src === "--bb-theme-popup-buy-button-label") buyLabelValue = v;
           else if (src === "--bb-theme-popup-buy-button-bg") buyBgValue = v;
+        }
+        if (!document.body.classList.contains("bb-theme-accent-on")) {
+          try {
+            popup.style.setProperty("--bb-fm-accent", "rgba(0, 0, 0, 0)");
+          } catch {}
         }
 
         /* Direct inline write on the explore button — guarantees
@@ -2947,7 +3121,8 @@
            toggle brings the last-selected video back instantly. */
         const bgOn = premiumPopup.classList.contains("bb-theme-bg-on");
         const blendOn = premiumPopup.classList.contains("bb-theme-blend-logo");
-        popup.classList.toggle("bb-fm-theme-bg-on", bgOn || blendOn);
+        /* Theme video only when Theme Styles is on — blend uses its own layer. */
+        popup.classList.toggle("bb-fm-theme-bg-on", bgOn);
         popup.classList.toggle("bb-theme-blend-logo", blendOn);
 
         let blendImage = "";
@@ -3026,6 +3201,11 @@
         syncFreemiumTheme(premiumPopup);
       };
 
+      window.__bbFmSyncFreemiumTheme = () => {
+        const premiumPopup = mount ? mount.querySelector(".popup") : null;
+        if (premiumPopup) syncFreemiumTheme(premiumPopup);
+      };
+
       /* Wait for the Premium popup to be docked into the mount,
          then attach the theme observers. Picks up an already-
          docked popup immediately. */
@@ -3063,10 +3243,11 @@
         "bbThemeColourPicker",
         "bbThemeAccentOn",
         "bbThemeAccentAlpha",
+        "bbBlendMode",
       ];
       const onAnyInputChange = () => {
         const premiumPopup = mount ? mount.querySelector(".popup") : null;
-        if (premiumPopup) mirrorCssVars(premiumPopup);
+        if (premiumPopup) syncFreemiumTheme(premiumPopup);
       };
       for (const id of THEME_INPUT_IDS) {
         const el = document.getElementById(id);

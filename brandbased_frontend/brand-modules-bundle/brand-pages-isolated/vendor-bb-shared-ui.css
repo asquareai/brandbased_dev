@@ -1658,7 +1658,8 @@ transition: transform 0.3s ease;
 .popup .title-row .brand-icon::after {
   content: "";
   position: absolute;
-  inset: 3px;
+  inset: 0;
+  border-radius: 50%;
   background-color: #fff;
   -webkit-mask-image: var(--bb-logo);
   mask-image: var(--bb-logo);
@@ -1666,8 +1667,12 @@ transition: transform 0.3s ease;
   mask-repeat: no-repeat;
   -webkit-mask-position: center;
   mask-position: center;
-  -webkit-mask-size: 56%;
-  mask-size: 56%;
+  -webkit-mask-size: calc(
+    var(--bb-theme-popup-brand-icon-mask-base, 56%) * var(--bb-theme-popup-brand-icon-inner-mul, 1)
+  );
+  mask-size: calc(
+    var(--bb-theme-popup-brand-icon-mask-base, 56%) * var(--bb-theme-popup-brand-icon-inner-mul, 1)
+  );
 }
 @media (max-width: 840px) {
   .brand-icon img,

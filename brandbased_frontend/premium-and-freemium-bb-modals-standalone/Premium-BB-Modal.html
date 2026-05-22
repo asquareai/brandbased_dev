@@ -18,9 +18,9 @@
 
   <!-- Same pair as ui-demo-CORRECT-BACKUP (valid CSS — not the repo-root file that wrongly starts with &lt;style&gt;) -->
   <!-- ?v= bumps cache for file:// and local http.server -->
-  <link rel="stylesheet" href="bb-shared-ui.css?v=premium-standalone-44" />
-  <link rel="stylesheet" href="bb-theme-standalone-popup.css?v=premium-standalone-44" />
-  <link rel="stylesheet" href="premium-bb-mobile-popup-chrome.css?v=premium-standalone-44" />
+  <link rel="stylesheet" href="bb-shared-ui.css?v=premium-standalone-76" />
+  <link rel="stylesheet" href="bb-theme-standalone-popup.css?v=premium-standalone-76" />
+  <link rel="stylesheet" href="premium-bb-mobile-popup-chrome.css?v=premium-standalone-76" />
 
   <style>
     /* Shell matches ui-demo-CORRECT-BACKUP/Premium-BB-Modal.html (loads after bb-shared-ui.css) */
@@ -51,6 +51,49 @@
       font-size: 12px;
     }
     .bb-standalone-nav-hint { font-size: 12px; color: rgba(15, 15, 18, 0.62); margin: 0 0 8px 0; }
+
+    .bb-standalone-appearance {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 10050;
+      display: flex;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(6, 8, 78, 0.18);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      font-size: 13px;
+    }
+    .bb-standalone-appearance button {
+      font: inherit;
+      font-weight: 700;
+      border: 1px solid rgba(6, 8, 78, 0.2);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      background: #fff;
+      color: #0f0f12;
+    }
+    .bb-standalone-appearance button[aria-pressed="true"] {
+      background: #1030f5;
+      border-color: #1030f5;
+      color: #fff;
+    }
+    body.dark-mode .bb-standalone-appearance {
+      background: rgba(18, 18, 24, 0.94);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+    body.dark-mode .bb-standalone-appearance button {
+      background: #1e1e28;
+      color: #f2f2f6;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    body.dark-mode .bb-standalone-appearance button[aria-pressed="true"] {
+      background: #1030f5;
+      color: #fff;
+    }
 
     /* ==========================================================
        "Is this authentic?" verification system.
@@ -419,6 +462,11 @@
   </style>
 </head>
 <body>
+  <div class="bb-standalone-appearance" role="group" aria-label="Preview appearance">
+    <button type="button" id="bbStandaloneLight" data-scheme="light" aria-pressed="true">Light</button>
+    <button type="button" id="bbStandaloneDark" data-scheme="dark" aria-pressed="false">Dark</button>
+  </div>
+
   <p class="bb-standalone-note" role="note">
     <strong>Standalone bundle.</strong> Uses <code>bb-shared-ui.css</code>, <code>premium-bb-mobile-popup-chrome.css</code>, and <code>bb-smart-ui.js</code> in this folder (not the HTML alone). Mobile popup rules apply below <strong>840px</strong> width — narrow the window or use devtools device mode. Hard-refresh (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd>) if styles/JS look stale on <code>file://</code>.
   </p>
@@ -509,8 +557,17 @@ python3 -m http.server 8090
     </div>
   </aside>
 
-  <script src="bb-theme-console-sync.js?v=premium-standalone-44"></script>
-  <script src="bb-smart-ui.js?v=premium-standalone-44"></script>
+  <iframe
+    id="bbThemeFileBridge"
+    title="Theme Styles sync bridge"
+    src="../brand-modules-bundle/bb-theme-file-bridge.html"
+    hidden
+    style="position:absolute;width:0;height:0;border:0;opacity:0;pointer-events:none"
+    aria-hidden="true"
+  ></iframe>
+
+  <script src="bb-theme-console-sync.js?v=premium-standalone-76"></script>
+  <script src="bb-smart-ui.js?v=premium-standalone-76"></script>
   <script>
     if (window.BBThemeConsoleSync && typeof window.BBThemeConsoleSync.install === "function") {
       window.BBThemeConsoleSync.install();

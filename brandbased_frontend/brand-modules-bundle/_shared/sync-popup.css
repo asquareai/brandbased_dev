@@ -306,6 +306,22 @@ body.light-mode .bb-confirm-popup {
   background: #ffffff78;
 }
 
+body.light-mode .bb-sync-popup {
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 21%),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+}
+
+@media (prefers-color-scheme: light) {
+  .bb-sync-popup {
+    box-shadow:
+      0 24px 60px rgb(0 0 0 / 21%),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+  }
+}
+
 /* Brand B icon at the top of the confirm card. Re-uses the
    .bb-sync-popup__logo white-circle + breathing-pulse styles. The
    B itself is inline SVG, so we control its fill directly — red
