@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="../platforms/platforms.css?v=platforms-46" />
   <link rel="stylesheet" href="../hotspots/hotspots.css?v=hotspots-8" />
   <link rel="stylesheet" href="../_shared/sync-popup.css?v=confirm-6" />
-  <link rel="stylesheet" href="./brands.css?v=brands-30" />
+  <link rel="stylesheet" href="./brands.css?v=brands-33" />
   <!-- bb-embed-mode-init: when this page is rendered inside an
        iframe (e.g. the Brand Console dashboard), drop its own page
        background + animated shards so it sits flush on the host
@@ -126,13 +126,23 @@
   </script>
 </head>
 <body class="bb-platforms-page bb-hotspots-page bb-brands-page bb-brand-theme-settings">
+  <div id="bbBrandsBrandGate" class="bb-brand-gate" hidden aria-modal="true" role="dialog" aria-labelledby="bbBrandsBrandGateMsg">
+    <div class="bb-brand-gate__panel">
+      <span class="bb-brand-gate__logo" aria-hidden="true">
+        <img src="../brandbased-logo.svg" alt="" width="40" height="40" decoding="async" />
+      </span>
+      <p id="bbBrandsBrandGateMsg" class="bb-brand-gate__message"></p>
+      <button type="button" class="bb-brand-gate__btn" id="bbBrandsBrandGateOk">OK</button>
+    </div>
+  </div>
+
   <div class="light-shard-ui-base" aria-hidden="true">
     <div class="light-shard-ui-theme"></div>
     <div class="light-shard-ui-theme" style="--delay: -12s; --size: 0.35; --speed: 45s;"></div>
     <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
   </div>
 
-  <div id="bbBrandsMount" class="bb-theme-shell">
+  <div id="bbBrandsMount" class="bb-theme-shell" hidden>
     <header class="bb-module-head">
       <p class="bb-module-nav">
         <a href="../../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>
@@ -185,9 +195,12 @@
     </div>
   </div>
 
-  <script src="../../assets/js/app-config.js?v=brandapi-2"></script>
-  <script src="../_shared/brand-verification-api.js?v=brandverify-6"></script>
-  <script src="../_shared/sync-popup.js?v=confirm-3"></script>
-  <script src="./brands-page.js?v=brands-11"></script>
+  <script src="../../assets/js/app-config.js?v=brandapi-3"></script>
+  <script src="../_shared/bb-account-plan.js?v=plan-5"></script>
+  <script src="../_shared/bb-stripe-billing.js?v=stripe-8"></script>
+  <script src="../_shared/brand-verification-api.js?v=brandverify-7"></script>
+  <link rel="stylesheet" href="../_shared/bb-brand-gate.css?v=gate-1" />
+  <script src="../_shared/sync-popup.js?v=shared-5"></script>
+  <script src="./brands-page.js?v=brands-16"></script>
 </body>
 </html>

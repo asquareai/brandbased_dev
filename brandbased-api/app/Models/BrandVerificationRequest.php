@@ -33,6 +33,7 @@ class BrandVerificationRequest extends Model
         'meta_progress',
         'meta_verification_notes',
         'final_status',
+        'created_under_plan',
         'last_checked_at',
     ];
 

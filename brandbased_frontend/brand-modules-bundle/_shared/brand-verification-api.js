@@ -78,6 +78,11 @@
         website_url: payload.websiteUrl,
         light_logo_svg: payload.lightLogoSvg,
         dark_logo_svg: payload.darkLogoSvg,
+        created_under_plan:
+          payload.createdUnderPlan ||
+          (global.BBAccountPlan && global.BBAccountPlan.detectBrandTierFromPath
+            ? global.BBAccountPlan.detectBrandTierFromPath()
+            : "freemium"),
       }),
     });
 

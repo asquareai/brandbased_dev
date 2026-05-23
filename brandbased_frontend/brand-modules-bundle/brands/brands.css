@@ -373,6 +373,22 @@ body.bb-brands-page .bb-brands-plan-pill__label {
   display: inline-block;
 }
 
+body.bb-brands-page .bb-brands-plan-pill--freemium {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+body.bb-brands-page .bb-brands-plan-pill__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  flex: 0 0 auto;
+}
+
 @media (max-width: 720px) {
   body.bb-brands-page .bb-brands-plan-pill {
     top: -6px;
@@ -572,6 +588,24 @@ body.bb-brands-page .bb-brands-logo {
   height: 64%;
   object-fit: contain;
   display: block;
+  transition: opacity 0.25s ease;
+}
+
+/* Unpublished brands — logo reads softer until published. */
+body.bb-brands-page .bb-brands-card--unpublished .bb-brands-logo,
+body.bb-brands-page .bb-brands-card--unpublished .bb-brands-fallback {
+  opacity: 0.42;
+}
+
+body.bb-brands-page .bb-brands-card--unpublished:hover .bb-brands-logo,
+body.bb-brands-page .bb-brands-card--unpublished:focus-within .bb-brands-logo,
+body.bb-brands-page .bb-brands-card--unpublished:hover .bb-brands-fallback,
+body.bb-brands-page .bb-brands-card--unpublished:focus-within .bb-brands-fallback {
+  opacity: 0.58;
+}
+
+body.bb-brands-page .bb-brands-card--unpublished .bb-brands-circle {
+  filter: saturate(0.88);
 }
 
 /* Force the imported Nike SVG (which is black) to render white inside the
@@ -822,6 +856,69 @@ body.bb-brands-page .bb-brands-action-divider {
    wider so "Freemium" / "Premium" read comfortably. */
 body.bb-brands-page .bb-brands-tier-popover {
   min-width: 200px;
+}
+
+/* Context-menu style: tick in a left gutter beside the label. */
+body.bb-brands-page .bb-brands-tier-item {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  box-sizing: border-box;
+  width: auto;
+  align-self: stretch;
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 9px 12px 9px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+body.bb-brands-page .bb-brands-tier-item__tick-slot {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+body.bb-brands-page .bb-brands-tier-item__tick {
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+  color: #9dffb8;
+  transition: opacity 160ms ease, transform 160ms ease;
+  transform: scale(0.8);
+}
+
+body.bb-brands-page .bb-brands-tier-item--selected .bb-brands-tier-item__tick {
+  opacity: 1;
+  transform: scale(1);
+}
+
+body.bb-brands-page .bb-brands-tier-item--selected {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.bb-brands-page .bb-brands-tier-item__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+body.bb-brands-page .bb-brands-tier-item:hover,
+body.bb-brands-page .bb-brands-tier-item:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  outline: none;
 }
 
 /* ----------------------------------------------------------------
@@ -1091,6 +1188,19 @@ body.bb-brands-page.light-mode .bb-brands-action-popover {
     0 24px 60px rgba(0, 0, 0, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.65),
     inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+}
+
+body.bb-brands-page.light-mode .bb-brands-tier-item__tick {
+  color: #2d9f5a;
+}
+
+body.bb-brands-page.light-mode .bb-brands-tier-item--selected {
+  background: rgba(99, 91, 255, 0.08);
+}
+
+body.bb-brands-page.light-mode .bb-brands-tier-item:hover,
+body.bb-brands-page.light-mode .bb-brands-tier-item:focus-visible {
+  background: rgba(99, 91, 255, 0.12);
 }
 
 body.bb-brands-page.light-mode .bb-brands-action-item:hover,

@@ -615,7 +615,6 @@ body.bb-logo-upload-page .bb-lu-previews {
 
 body.bb-logo-upload-page .bb-lu-preview {
   --bb-lu-bicon-size: 92px;
-  --bb-lu-bicon-src: url("../../Brandbased-B-Icon.svg");
   margin: 0;
   display: flex;
   flex-direction: column;
@@ -683,6 +682,14 @@ body.bb-logo-upload-page .bb-lu-preview-img {
    `--bb-lu-shine-trough` and `--bb-lu-shine-peak` let each preview
    panel pick its own shimmer colour (white on the light panel,
    silver-grey on the dark panel — see overrides below). */
+body.bb-logo-upload-page .bb-lu-preview--light {
+  --bb-lu-bicon-src: url("../../assets/images/BrandBased-icon-placeholder-light-mode.svg");
+}
+
+body.bb-logo-upload-page .bb-lu-preview--dark {
+  --bb-lu-bicon-src: url("../../assets/images/BrandBased-icon-placeholder-dark-mode.svg");
+}
+
 body.bb-logo-upload-page .bb-lu-preview-stage {
   --bb-lu-shine-trough: rgba(255, 255, 255, 0.55);
   --bb-lu-shine-peak:   rgba(255, 255, 255, 0.95);

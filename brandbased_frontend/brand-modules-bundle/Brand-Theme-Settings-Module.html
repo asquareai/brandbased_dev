@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-77" />
 
   <link rel="stylesheet" href="brand-pages-isolated/Brand-Theme-Settings-Module.css?v=isolated-81" />
+  <link rel="stylesheet" href="_shared/bb-brand-gate.css?v=gate-1" />
   <script src="brand-pages-isolated/Brand-Theme-Settings-Module.theme-design.js?v=isolated-81" defer></script>
   <!-- bb-embed-mode-init: when this page is rendered inside an
        iframe (e.g. the Brand Console dashboard), drop its own page
@@ -129,6 +130,22 @@
   </script>
 </head>
 <body class="bb-brand-theme-settings bb-theme-preview-loading">
+  <div id="bbThemeBrandGate" class="bb-brand-gate" hidden aria-modal="true" role="dialog" aria-labelledby="bbThemeBrandGateMsg">
+    <div class="bb-brand-gate__panel">
+      <span class="bb-brand-gate__logo" aria-hidden="true">
+        <img src="brandbased-logo.svg" alt="" width="40" height="40" decoding="async" />
+      </span>
+      <p id="bbThemeBrandGateMsg" class="bb-brand-gate__message"></p>
+      <button type="button" class="bb-brand-gate__btn" id="bbThemeBrandGateOk">OK</button>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="_shared/sync-popup.css?v=shared-5" />
+  <script src="../assets/js/app-config.js?v=brandapi-2"></script>
+  <script src="_shared/brand-verification-api.js?v=brandverify-8"></script>
+  <script src="_shared/sync-popup.js?v=shared-5"></script>
+  <script src="theme-settings-page.js?v=themesettings-2"></script>
+
   <!------------------------ Base Light More gradient light behind UI ---------------------->
   <div class="light-shard-ui-base" aria-hidden="true">
     <div class="light-shard-ui-theme"></div>
@@ -136,7 +153,7 @@
     <div class="light-shard-ui-theme" style="--delay: -10s; --size: 0.3; --speed: 30s;"></div>
   </div>
 
-  <div class="bb-theme-shell">
+  <div class="bb-theme-shell" hidden>
     <header class="bb-module-head">
       <p class="bb-module-nav">
         <a href="../premium-bb-modal-standalone/Premium-BB-Modal.html">Full demo</a>

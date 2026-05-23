@@ -28,6 +28,7 @@ class Brand extends Model
         'logo_dark_url',
         'verified_at',
         'is_published',
+        'created_under_plan',
         'settings',
     ];
 

@@ -22,6 +22,7 @@ class Account extends Authenticatable
         'pin_code',
         'account_status',
         'plan_type',
+        'stripe_customer_id',
         'email_verified_at',
         'last_login_at'
     ];
@@ -30,6 +31,11 @@ class Account extends Authenticatable
         'password',
         'pin_code',
     ];
+
+    public function subscriptions()
+    {
+        return $this->hasMany(AccountSubscription::class, 'account_id');
+    }
 
     protected static function boot()
     {

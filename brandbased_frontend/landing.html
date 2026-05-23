@@ -36,7 +36,9 @@
     rel="stylesheet">
 
   <!-- JS -->
-  <script src="./assets/js/app-config.js?v=brandapi-1"></script>
+  <script src="./assets/js/app-config.js?v=brandapi-3"></script>
+  <script src="./brand-modules-bundle/_shared/bb-account-plan.js?v=plan-6"></script>
+  <script src="./brand-modules-bundle/_shared/bb-stripe-billing.js?v=stripe-9"></script>
   <script src="./assets/js/jquery-3.7.1.min.js"></script>
   <script src="./assets/js/main-js.js"></script>
 </head>
@@ -218,7 +220,7 @@
       <!-- Buttons -->
       <div class="button-holder animate__animated animate__fadeInUp animate__delay-1s" style="z-index: -1;">
         <div class="login-button" onclick="launchBrandConsole()">Launch Brand Console</div>
-        <div class="join-button">Upgrade to Premium</div>
+        <div class="join-button" id="bbLandingUpgradePremium" data-bb-tier-cta="premium" role="button" tabindex="0">Upgrade to Premium</div>
       </div>
 
       <p class="fade-in-delay" id="footer-tag" style="color: rgba(255, 255, 255, 0.541); font-size: 10px;margin-bottom: 0;"></p>
@@ -353,6 +355,16 @@
         localStorage.clear();
         window.location.href = ROUTES.login;
         return;
+      }
+
+      if (data.subscription) {
+        BBAccountPlan.persistSubscription(data.subscription);
+      } else if (data.account && data.account.plan_type) {
+        BBAccountPlan.persistSubscription({
+          plan_type: data.account.plan_type,
+          is_premium: false,
+          active_premium: null,
+        });
       }
 
       if (data.account.has_pin) {
@@ -586,6 +598,40 @@ async function updateNewPin() {
     showPinError("Server error. Please try again.");
   }
 }
+
+async function syncLandingPremiumCta() {
+  const btn = document.getElementById("bbLandingUpgradePremium");
+  if (!btn || typeof BBAccountPlan === "undefined") return;
+  try {
+    const result = await BBAccountPlan.fetchAccountPlan({
+      fromModules: false,
+      silent: true,
+    });
+    const sub = result && result.subscription;
+    const premium = sub && BBAccountPlan.isPremium(sub);
+    btn.hidden = !!premium;
+    btn.style.display = premium ? "none" : "";
+    if (premium) {
+      btn.setAttribute("aria-hidden", "true");
+      btn.tabIndex = -1;
+    } else {
+      btn.removeAttribute("aria-hidden");
+      btn.tabIndex = 0;
+    }
+  } catch (_e) {
+    btn.hidden = false;
+    btn.style.display = "";
+    btn.removeAttribute("aria-hidden");
+    btn.tabIndex = 0;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  if (typeof BBAccountPlan === "undefined") return;
+  BBAccountPlan.bindTierCtaLinks(document, { fromModules: false });
+  syncLandingPremiumCta();
+  window.addEventListener("bb-account-plan-updated", syncLandingPremiumCta);
+});
 
 </script>
 </body>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountRegistration;
 use App\Models\AccountOtp;
+use App\Services\AccountSubscriptionService;
 use App\Services\OtpDeliveryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -206,7 +207,11 @@ class AuthController extends Controller
             'email_verified_at' => now(),
         ]);
 
+        app(AccountSubscriptionService::class)->ensureFreemiumBaseline($account);
+
         $registration->delete();
+
+        $plan = app(AccountSubscriptionService::class)->serializeAccountPlan($account);
 
         return response()->json([
             'status' => true,
@@ -214,9 +219,10 @@ class AuthController extends Controller
             'account' => [
                 'id' => $account->id,
                 'email' => $account->email,
-                'plan_type' => $account->plan_type,
+                'plan_type' => $plan['plan_type'],
                 'account_status' => $account->account_status,
-            ]
+            ],
+            'subscription' => $plan,
         ]);
     }
     public function login(Request $request)
@@ -261,6 +267,11 @@ class AuthController extends Controller
         $account->update([
             'last_login_at' => now()
         ]);
+
+        $subscriptionService = app(AccountSubscriptionService::class);
+        $subscriptionService->ensureFreemiumBaseline($account);
+        $plan = $subscriptionService->serializeAccountPlan($account);
+
         $token = $account->createToken('brandbased_account_token')->plainTextToken;
         return response()->json([
             'status' => true,
@@ -269,21 +280,27 @@ class AuthController extends Controller
             'account' => [
                 'id' => $account->id,
                 'email' => $account->email,
-                'plan_type' => $account->plan_type
-            ]
+                'plan_type' => $plan['plan_type'],
+            ],
+            'subscription' => $plan,
         ]);
     }
     public function me(Request $request)
     {
+        $account = $request->user();
+        $subscriptionService = app(AccountSubscriptionService::class);
+        $plan = $subscriptionService->serializeAccountPlan($account);
+
         return response()->json([
             'status' => true,
             'account' => [
-                'id' => $request->user()->id,
-                'email' => $request->user()->email,
-                'plan_type' => $request->user()->plan_type,
-                'account_status' => $request->user()->account_status,
-                'has_pin' => !empty($request->user()->pin_code),
-            ]
+                'id' => $account->id,
+                'email' => $account->email,
+                'plan_type' => $plan['plan_type'],
+                'account_status' => $account->account_status,
+                'has_pin' => !empty($account->pin_code),
+            ],
+            'subscription' => $plan,
         ]);
     }
     public function verifyPin(Request $request)

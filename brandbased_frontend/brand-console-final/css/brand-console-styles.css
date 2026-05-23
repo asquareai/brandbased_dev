@@ -1832,9 +1832,10 @@ input:focus::placeholder {
     }
   }
 
-  /* Reveal the Get Premium CTA only when the user is on Freemium
-     (dev simulation flag → `body.bb-dev-freemium-mode`). Premium
-     users keep it hidden. */
+  /* Reveal the Get Premium CTA for Freemium accounts (`bb-freemium-mode`
+     from the API) and for the dev simulation flag (`bb-dev-freemium-mode`).
+     Premium users keep it hidden. */
+  body.bb-freemium-mode .get-premium,
   body.bb-dev-freemium-mode .get-premium {
     display: block;
   }
@@ -1843,12 +1844,14 @@ input:focus::placeholder {
      should read just "Account". The " & Subscriptions" suffix lives
      in its own span so we can hide it without touching the chip's
      accessible label structure. */
+  body.bb-freemium-mode .account-title__subs,
   body.bb-dev-freemium-mode .account-title__subs {
     display: none;
   }
 
   /* Desktop-only: Freemium-mode CTA position (wider .account chip). */
   @media (min-width: 841px) {
+    body.bb-freemium-mode .get-premium,
     body.bb-dev-freemium-mode .get-premium {
       right: 125px;
     }
@@ -3528,9 +3531,9 @@ body.bb-dash-hide-content-header .content-block::before {
   /* All of these win the cascade with !important to override the
      legacy width:150px / height:70px / display:none rules without
      having to touch the original block. */
-  width: 220px !important;
-  height: 170px !important;
-  min-height: 170px !important;
+  width: 232px !important;
+  height: auto !important;
+  min-height: 188px !important;
   padding: 10px !important;
   border-radius: 20px !important;
   overflow: hidden;
@@ -3565,7 +3568,8 @@ body.bb-dash-hide-content-header .content-block::before {
   -webkit-appearance: none;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 10px;
   box-sizing: border-box;
   width: auto;
   align-self: stretch;
@@ -3580,6 +3584,53 @@ body.bb-dash-hide-content-header .content-block::before {
   text-align: left;
   cursor: pointer;
   transition: background 150ms ease, color 150ms ease;
+}
+
+.bb-account-menu-item__icon-wrap {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.92;
+}
+
+.bb-account-menu-item__icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.bb-account-menu-item__label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Go Premium = star; Manage Subscription = card */
+.bb-account-menu-item__icon--manage {
+  display: none;
+}
+
+.bb-account-menu-item--manage .bb-account-menu-item__icon--premium {
+  display: none;
+}
+
+.bb-account-menu-item--manage .bb-account-menu-item__icon--manage {
+  display: block;
+}
+
+.bb-account-menu-row--theme .bb-account-theme-icon {
+  position: absolute;
+  inset: 0;
+}
+
+.bb-account-menu-row--theme .bb-account-menu-item__icon-wrap {
+  position: relative;
+}
+
+.bb-account-theme-icon[hidden] {
+  display: none !important;
 }
 
 .bb-account-menu-item:hover,
@@ -3606,8 +3657,19 @@ body.bb-dash-hide-content-header .content-block::before {
    to the requested indent. */
 #account-popup .theme-toggle-container {
   position: static !important;
-  margin: 6px 6px 4px 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 4px 4px 2px !important;
   top: auto !important;
+  padding: 6px 10px !important;
+  border-radius: 12px;
+}
+
+#account-popup .theme-toggle-container .theme-button {
+  margin-left: auto !important;
+  flex-shrink: 0;
+  transform: scale(0.88);
 }
 
 /* Match the Preferences / Subscription row typography exactly so the
@@ -3625,12 +3687,32 @@ body.bb-dash-hide-content-header .content-block::before {
 
 #account-popup .logout-button {
   position: static !important;
-  margin: 6px auto 2px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin: 8px 8px 4px !important;
   top: auto !important;
+  width: calc(100% - 16px) !important;
+  max-width: none !important;
+  padding: 8px 12px !important;
+  box-sizing: border-box !important;
+  font: 700 12px/1.2 Roboto, system-ui, sans-serif !important;
   /* Never inherit frosted-glass blur from the parent popup — the
      button should read as an opaque pill, not a glass layer. */
   -webkit-backdrop-filter: none !important;
           backdrop-filter: none !important;
+}
+
+#account-popup .logout-button .bb-account-menu-item__icon-wrap {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+}
+
+#account-popup .logout-button .bb-account-menu-item__icon {
+  width: 16px;
+  height: 16px;
 }
 
 /* Logout hover: solid grey fill, white label + white ring — no blur. */
@@ -4035,11 +4117,11 @@ body.light-mode .bb-account-prefs-dialog {
     inset 0 1px 0 rgba(255, 255, 255, 0.42);
 }
 
-/* Show the Premium pill by default; swap to Freemium when the dev
-   simulation flag is on. Wire your production plan-tier flag to the
-   same body class to make this real. */
+/* Premium pill by default; Freemium when API (`bb-freemium-mode`) or dev sim. */
 .bb-account-prefs-sub__tier--premium { display: inline-block; }
+body.bb-freemium-mode .bb-account-prefs-sub__tier--premium,
 body.bb-dev-freemium-mode .bb-account-prefs-sub__tier--premium  { display: none; }
+body.bb-freemium-mode .bb-account-prefs-sub__tier--freemium,
 body.bb-dev-freemium-mode .bb-account-prefs-sub__tier--freemium { display: inline-block; }
 
 /* Light-mode label colour — the dark glass card stays dark in light

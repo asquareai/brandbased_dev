@@ -10,10 +10,13 @@ RUN LOCALLY
   2. python -m http.server 5500
   3. Browser: http://127.0.0.1:5500/index.html
 
-POINT TO PRODUCTION API (already set for client handoff)
+POINT TO PRODUCTION API (default for local UI work)
   Edit: assets/js/app-config.js
-    USE_PRODUCTION_BACKEND = true   ← use live API from localhost
+    USE_PRODUCTION_BACKEND = true   ← local :5500 UI, live API + Stripe webhooks
     USE_PRODUCTION_BACKEND = false  ← full local dev (needs API on :8000)
+
+  Premium checkout return URLs are sent from the browser automatically
+  (no need to set 127.0.0.0.1 URLs in production .env for Stripe redirects).
 
   Production URLs (change here if needed):
     PRODUCTION_API = "https://api.brandbased.ai/api"

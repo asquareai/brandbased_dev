@@ -54,6 +54,38 @@
     return Math.max(0, Math.min(100, n));
   }
 
+  /** Brand B icon for the white circle (resolved from sync-popup.css location). */
+  function resolveDefaultSyncLogoSrc() {
+    if (typeof global.BB_APP !== "undefined" && global.BB_APP.syncPopupLogoSrc) {
+      try {
+        return new URL(String(global.BB_APP.syncPopupLogoSrc), location.href).href;
+      } catch (_e) {
+        return String(global.BB_APP.syncPopupLogoSrc);
+      }
+    }
+    try {
+      const link = document.querySelector('link[href*="sync-popup.css"]');
+      if (link && link.href) {
+        return new URL("../brandbased-logo.svg", link.href).href;
+      }
+    } catch (_e) { /* ignore */ }
+    try {
+      return new URL("brand-modules-bundle/brandbased-logo.svg", location.href).href;
+    } catch (_e2) {
+      return "../brand-modules-bundle/brandbased-logo.svg";
+    }
+  }
+
+  function resolveSyncLogoUrl(src) {
+    const raw = String(src || resolveDefaultSyncLogoSrc());
+    if (/^(https?:|data:|blob:)/i.test(raw)) return raw;
+    try {
+      return new URL(raw, location.href).href;
+    } catch (_e) {
+      return raw;
+    }
+  }
+
   function cleanProgressModalOpts(opts) {
     const cleaned = {};
     const o = opts || {};
@@ -303,13 +335,11 @@
 
     const logoWrap = document.createElement("span");
     logoWrap.className = "bb-sync-popup__logo";
-    if (o.logoSrc) {
-      const img = document.createElement("img");
-      img.src = String(o.logoSrc);
-      img.alt = "";
-      img.decoding = "async";
-      logoWrap.appendChild(img);
-    }
+    const img = document.createElement("img");
+    img.src = resolveSyncLogoUrl(o.logoSrc);
+    img.alt = "";
+    img.decoding = "async";
+    logoWrap.appendChild(img);
     popup.appendChild(logoWrap);
 
     const label = document.createElement("p");

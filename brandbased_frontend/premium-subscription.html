@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>BrandBased — Premium subscription</title>
+
+  <link rel="icon" href="./favicons/favicon.ico" sizes="any" />
+
+  <link rel="stylesheet" href="./signup-page.css?v=premium-sub-2" />
+
+  <style>
+
+    body {
+
+      margin: 0;
+
+      min-height: 100vh;
+
+      font-family: Inter, Roboto, system-ui, sans-serif;
+
+      background: #0b1020;
+
+      color: #fff;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding: 24px;
+
+    }
+
+    .bb-premium-sub-card {
+
+      max-width: 520px;
+
+      width: 100%;
+
+      padding: 32px 28px;
+
+      border-radius: 20px;
+
+      background: rgba(255, 255, 255, 0.06);
+
+      border: 1px solid rgba(255, 255, 255, 0.12);
+
+      backdrop-filter: blur(12px);
+
+      text-align: center;
+
+    }
+
+    .bb-premium-sub-card h1 {
+
+      margin: 0 0 12px;
+
+      font-size: 1.5rem;
+
+      font-weight: 700;
+
+    }
+
+    .bb-premium-sub-card p {
+
+      margin: 0 0 20px;
+
+      line-height: 1.5;
+
+      color: rgba(255, 255, 255, 0.78);
+
+      font-size: 0.95rem;
+
+    }
+
+    .bb-premium-sub-actions {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 10px;
+
+    }
+
+    .bb-premium-sub-actions a,
+
+    .bb-premium-sub-actions button {
+
+      display: block;
+
+      width: 100%;
+
+      padding: 14px 18px;
+
+      border-radius: 999px;
+
+      font-weight: 600;
+
+      font-size: 0.95rem;
+
+      text-decoration: none;
+
+      cursor: pointer;
+
+      border: none;
+
+    }
+
+    .bb-premium-sub-actions .primary {
+
+      background: #635bff;
+
+      color: #fff;
+
+    }
+
+    .bb-premium-sub-actions .primary:disabled {
+
+      opacity: 0.6;
+
+      cursor: not-allowed;
+
+    }
+
+    .bb-premium-sub-actions .secondary {
+
+      background: transparent;
+
+      color: #fff;
+
+      border: 1px solid rgba(255, 255, 255, 0.25);
+
+    }
+
+    .bb-premium-sub-note {
+
+      margin-top: 16px;
+
+      font-size: 0.8rem;
+
+      color: rgba(255, 255, 255, 0.5);
+
+    }
+
+    .bb-premium-sub-note.is-error {
+
+      color: #ffb4b4;
+
+    }
+
+    .bb-premium-sub-note.is-success {
+
+      color: #9dffb8;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="bb-premium-sub-card">
+
+    <h1 id="bbPremiumTitle">Upgrade to Premium</h1>
+
+    <p id="bbPremiumBody">
+
+      Premium unlocks AI-driven brand commerce, premium brand creation, and the full BrandBased console.
+
+      Subscribe securely with Stripe — billed monthly. Manage or cancel anytime in Stripe.
+
+    </p>
+
+    <div class="bb-premium-sub-actions">
+
+      <button type="button" class="primary" id="bbPremiumCheckout">Subscribe with Stripe</button>
+
+      <button type="button" class="secondary" id="bbPremiumManage" hidden>Manage subscription</button>
+
+      <a class="secondary" href="./landing.html" id="bbPremiumBack">Back to home</a>
+
+      <button type="button" class="secondary" id="bbPremiumStartFree">Continue with Freemium</button>
+
+    </div>
+
+    <p class="bb-premium-sub-note" id="bbPremiumStatus"></p>
+
+  </div>
+
+
+
+  <script src="./assets/js/app-config.js?v=brandapi-3"></script>
+
+  <script src="./brand-modules-bundle/_shared/bb-account-plan.js?v=plan-2"></script>
+
+  <script src="./brand-modules-bundle/_shared/bb-stripe-billing.js?v=stripe-5"></script>
+
+  <script>
+
+    (function () {
+
+      const token = localStorage.getItem("auth_token");
+
+      if (!token) {
+
+        window.location.href = "index.html";
+
+        return;
+
+      }
+
+
+
+      const statusEl = document.getElementById("bbPremiumStatus");
+
+      const checkoutBtn = document.getElementById("bbPremiumCheckout");
+
+      const manageBtn = document.getElementById("bbPremiumManage");
+
+      const titleEl = document.getElementById("bbPremiumTitle");
+
+      const bodyEl = document.getElementById("bbPremiumBody");
+
+
+
+      function setStatus(msg, type) {
+
+        statusEl.textContent = msg || "";
+
+        statusEl.className = "bb-premium-sub-note" + (type ? " is-" + type : "");
+
+      }
+
+
+
+      function showPremiumActive(plan) {
+
+        titleEl.textContent = "Premium active";
+
+        bodyEl.textContent =
+
+          "Your subscription is active. Create premium brands or manage billing in Stripe.";
+
+        checkoutBtn.hidden = true;
+
+        manageBtn.hidden = false;
+
+        const ap = plan && plan.active_premium;
+        if (ap && ap.status_label) {
+          const noteType =
+            ap.stripe_status === "past_due" ? "error" : "success";
+          setStatus(
+            (plan.billing_interval === "monthly" ? "Monthly · " : "") +
+              ap.status_label,
+            noteType
+          );
+        }
+      }
+
+
+
+      checkoutBtn.addEventListener("click", async function () {
+
+        checkoutBtn.disabled = true;
+
+        setStatus("Opening Stripe checkout…");
+
+        try {
+
+          await BBStripeBilling.startPremiumCheckout();
+
+        } catch (err) {
+
+          console.error(err);
+
+          setStatus(err.message || "Checkout failed.", "error");
+
+          checkoutBtn.disabled = false;
+
+        }
+
+      });
+
+
+
+      manageBtn.addEventListener("click", async function () {
+
+        manageBtn.disabled = true;
+
+        setStatus("Opening billing portal…");
+
+        try {
+
+          await BBStripeBilling.openBillingPortal();
+
+        } catch (err) {
+
+          console.error(err);
+
+          setStatus(err.message || "Unable to open portal.", "error");
+
+          manageBtn.disabled = false;
+
+        }
+
+      });
+
+
+
+      document.getElementById("bbPremiumStartFree").addEventListener("click", function () {
+
+        BBAccountPlan.navigateStartFree({ fromModules: false });
+
+      });
+
+
+
+      (async function init() {
+
+        try {
+
+          const returned = await BBStripeBilling.handleCheckoutReturn();
+
+          if (returned && returned.cancelled) {
+
+            setStatus("Checkout cancelled. You can try again anytime.");
+
+            return;
+
+          }
+
+          if (returned && returned.portal) {
+            setStatus(
+              returned.synced
+                ? "Subscription updated."
+                : "Welcome back. Refreshing subscription…",
+              returned.synced ? "success" : ""
+            );
+          } else if (returned && returned.success) {
+            setStatus(
+              returned.synced
+                ? "Payment received — Premium is now active."
+                : "Welcome back. Confirming subscription…",
+              "success"
+            );
+          }
+          if (returned && (returned.success || returned.portal)) {
+            try {
+              window.history.replaceState({}, "", "premium-subscription.html");
+            } catch (_e) { /* ignore */ }
+          }
+        } catch (err) {
+
+          console.error(err);
+
+          setStatus(err.message || "Could not confirm subscription.", "error");
+
+        }
+
+
+
+        const result = await BBAccountPlan.fetchAccountPlan();
+
+        if (!result) return;
+
+        if (BBAccountPlan.isPremium(result.subscription)) {
+
+          showPremiumActive(result.subscription);
+
+        }
+
+      })();
+
+    })();
+
+  </script>
+
+</body>
+
+</html>
+

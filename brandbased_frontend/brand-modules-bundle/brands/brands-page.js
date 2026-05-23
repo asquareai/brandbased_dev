@@ -42,18 +42,88 @@
   const LS_CURRENT_REQUEST = "bbCurrentBrandVerificationRequest";
   const LS_SELECTED_BRAND = "bbSelectedBrand";
   const BRAND_OPEN_TARGET = "../Brand-Settings-Module.html";
+  const START_NOW_URL = "../start-now/Start-Now.html";
+  const DASHBOARD_START_ROUTE = "start";
 
-  const PLAN_PILL_HTML =
-    '<span class="bb-brands-plan-pill" aria-label="Premium plan">' +
-    '<svg class="bb-brands-plan-pill__star" viewBox="0 0 122.88 116.864" aria-hidden="true" focusable="false">' +
-    '<polygon fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd" points="61.44,0 78.351,41.326 122.88,44.638 88.803,73.491 99.412,116.864 61.44,93.371 23.468,116.864 34.078,73.491 0,44.638 44.529,41.326 61.44,0" />' +
-    "</svg>" +
-    '<span class="bb-brands-plan-pill__label">Premium</span></span>';
+  let brandLoadingModal = null;
+  let brandLoadingProgressTimer = 0;
+
+  function planPillHtml(brand) {
+    const tier =
+      brand && brand.created_under_plan === "premium" ? "premium" : "freemium";
+    const label = tier === "premium" ? "Premium" : "Freemium";
+    const aria = tier === "premium" ? "Premium plan" : "Freemium plan";
+    let star =
+      '<svg class="bb-brands-plan-pill__star" viewBox="0 0 122.88 116.864" aria-hidden="true" focusable="false">' +
+      '<polygon fill="#ffffff" fill-rule="evenodd" clip-rule="evenodd" points="61.44,0 78.351,41.326 122.88,44.638 88.803,73.491 99.412,116.864 61.44,93.371 23.468,116.864 34.078,73.491 0,44.638 44.529,41.326 61.44,0" />' +
+      "</svg>";
+    if (tier !== "premium") {
+      star =
+        '<span class="bb-brands-plan-pill__dot" aria-hidden="true"></span>';
+    }
+    return (
+      '<span class="bb-brands-plan-pill bb-brands-plan-pill--' +
+      tier +
+      '" aria-label="' +
+      aria +
+      '">' +
+      star +
+      '<span class="bb-brands-plan-pill__label">' +
+      label +
+      "</span></span>"
+    );
+  }
 
   const PUBLISH_TRIGGER_SVG =
     '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true" focusable="false">' +
     '<path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
     "</svg>";
+
+  const LS_SELECTED_TIER = "bbBrandsSelectedTier";
+
+  const TIER_MENU_TICK_SVG =
+    '<svg class="bb-brands-tier-item__tick" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false">' +
+    '<path d="M3.5 8.2 6.4 11 12.5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />' +
+    "</svg>";
+
+  function readSelectedBrandTier() {
+    try {
+      const stored = sessionStorage.getItem(LS_SELECTED_TIER);
+      if (stored === "premium" || stored === "freemium") return stored;
+    } catch (_e) { /* ignore */ }
+    return "freemium";
+  }
+
+  function writeSelectedBrandTier(tier) {
+    try {
+      sessionStorage.setItem(LS_SELECTED_TIER, tier);
+    } catch (_e) { /* ignore */ }
+  }
+
+  function tierMenuItem(label, tier) {
+    return (
+      '<button type="button" class="bb-brands-tier-item" data-tier="' +
+      tier +
+      '" role="menuitemradio" aria-checked="false">' +
+      '<span class="bb-brands-tier-item__tick-slot" aria-hidden="true">' +
+      TIER_MENU_TICK_SVG +
+      "</span>" +
+      '<span class="bb-brands-tier-item__label">' +
+      escapeHtml(label) +
+      "</span>" +
+      "</button>"
+    );
+  }
+
+  function updateTierPopoverSelection(popEl, selectedTier) {
+    if (!popEl) return;
+    popEl.querySelectorAll(".bb-brands-tier-item").forEach(function (btn) {
+      const tier = btn.getAttribute("data-tier");
+      const isSelected = tier === selectedTier;
+      btn.classList.toggle("bb-brands-tier-item--selected", isSelected);
+      btn.setAttribute("aria-checked", isSelected ? "true" : "false");
+    });
+  }
 
   function loginUrl() {
     if (window.BB_APP && window.BB_APP.routes && window.BB_APP.routes.loginFromModules) {
@@ -146,7 +216,10 @@
 
   function createBrandCard(brand) {
     const li = document.createElement("li");
-    li.className = "bb-brands-card";
+    const isPublished =
+      brand.is_published === true || brand.is_published === 1;
+    li.className =
+      "bb-brands-card" + (isPublished ? "" : " bb-brands-card--unpublished");
     const logoUrl = brand.logo_light_url || brand.logo_dark_url || "";
     const brandName = escapeHtml(brand.brand_name || "Brand");
     const websiteUrl = brand.website_url || "#";
@@ -168,7 +241,7 @@
       initial +
       "</span>" +
       "</div>" +
-      PLAN_PILL_HTML +
+      planPillHtml(brand) +
       '<img class="bb-brands-badge bb-brands-badge--unverified" src="./not-verified.svg" alt="" aria-label="Brand not verified" decoding="async" />' +
       "</div>" +
       '<p class="bb-brands-name">' +
@@ -219,21 +292,125 @@
     }
   }
 
+  function stopBrandLoadingProgress() {
+    if (brandLoadingProgressTimer) {
+      window.clearInterval(brandLoadingProgressTimer);
+      brandLoadingProgressTimer = 0;
+    }
+  }
+
+  function startBrandLoadingProgress() {
+    stopBrandLoadingProgress();
+    if (!brandLoadingModal || typeof brandLoadingModal.update !== "function") return;
+    let progress = 10;
+    brandLoadingModal.update({ progress: progress });
+    brandLoadingProgressTimer = window.setInterval(function () {
+      if (!brandLoadingModal) {
+        stopBrandLoadingProgress();
+        return;
+      }
+      progress = Math.min(88, progress + 5);
+      brandLoadingModal.update({ progress: progress });
+    }, 420);
+  }
+
+  function openBrandLoadingModal() {
+    stopBrandLoadingProgress();
+    if (brandLoadingModal && typeof brandLoadingModal.dismiss === "function") {
+      brandLoadingModal.dismiss();
+      brandLoadingModal = null;
+    }
+    setBrandsMountVisible(false);
+    hideBrandsGate();
+    if (typeof window.bbOpenSyncProgressModal !== "function") return null;
+    brandLoadingModal = window.bbOpenSyncProgressModal({
+      label: "Loading brands…",
+      barColor: "#635bff",
+      logoSrc: "../brandbased-logo.svg",
+      progress: 10,
+      shineLabel: true,
+    });
+    startBrandLoadingProgress();
+    return brandLoadingModal;
+  }
+
+  async function closeBrandLoadingModal() {
+    stopBrandLoadingProgress();
+    const modal = brandLoadingModal;
+    brandLoadingModal = null;
+    if (!modal) return;
+    if (typeof modal.dismiss === "function") await modal.dismiss();
+  }
+
+  function setBrandsMountVisible(visible) {
+    const mount = document.getElementById("bbBrandsMount");
+    if (mount) mount.hidden = !visible;
+  }
+
+  function hideBrandsGate() {
+    const gate = document.getElementById("bbBrandsBrandGate");
+    if (gate) gate.hidden = true;
+  }
+
+  function startNowDashboardUrl() {
+    try {
+      const consolePath =
+        (window.BB_APP && window.BB_APP.routes && window.BB_APP.routes.console) ||
+        "../../brand-console-final/brand-console-dashboard.html";
+      const u = new URL(consolePath, window.location.href);
+      u.searchParams.set("page", DASHBOARD_START_ROUTE);
+      return u.toString();
+    } catch (_e) {
+      return "../../brand-console-final/brand-console-dashboard.html?page=start";
+    }
+  }
+
+  function navigateToStartNow() {
+    if (window.self !== window.top) {
+      try {
+        window.parent.postMessage(
+          { type: "bb-dash-goto-route", route: DASHBOARD_START_ROUTE },
+          "*"
+        );
+        return;
+      } catch (_e) { /* ignore */ }
+      try {
+        window.top.location.assign(startNowDashboardUrl());
+        return;
+      } catch (_e2) { /* ignore */ }
+    }
+    window.location.href = START_NOW_URL;
+  }
+
+  function showBrandsGate(message) {
+    setBrandsMountVisible(false);
+    const gate = document.getElementById("bbBrandsBrandGate");
+    const msg = document.getElementById("bbBrandsBrandGateMsg");
+    const btn = document.getElementById("bbBrandsBrandGateOk");
+    if (msg) msg.textContent = message;
+    if (gate) gate.hidden = false;
+    if (btn && btn.getAttribute("data-bb-gate-bound") !== "1") {
+      btn.setAttribute("data-bb-gate-bound", "1");
+      btn.addEventListener("click", navigateToStartNow);
+    }
+  }
+
   async function loadAndRenderBrands() {
     const grid = document.getElementById("bbBrandsGrid");
-    if (!grid) return;
+    if (!grid) return { hasBrands: false };
 
     const addCard = grid.querySelector(".bb-brands-card--add");
     const api = window.BBBrandVerification;
 
     if (!localStorage.getItem("auth_token")) {
       window.location.href = loginUrl();
-      return;
+      return { hasBrands: false };
     }
 
     if (!api || !api.fetchBrands) {
       setBrandsStatus("error", "Unable to load brands. Please refresh.");
-      return;
+      setBrandsMountVisible(true);
+      return { hasBrands: false, error: true };
     }
 
     setBrandsStatus("loading");
@@ -253,16 +430,16 @@
 
       if (brands.length > 0) {
         setBrandsStatus("idle");
-      } else {
-        setBrandsStatus(
-          "empty",
-          "No verified brands yet. Tap Add brand to start."
-        );
+        return { hasBrands: true };
       }
+      setBrandsStatus("idle");
+      return { hasBrands: false };
     } catch (err) {
       console.error(err);
       clearDynamicBrandCards(grid);
       setBrandsStatus("error", err.message || "Unable to load brands.");
+      setBrandsMountVisible(true);
+      return { hasBrands: false, error: true };
     }
   }
 
@@ -321,6 +498,7 @@
     }
     activeTrigger = trigger;
     trigger.setAttribute("aria-expanded", "true");
+
     popover.classList.add("bb-brands-action-popover--open");
     positionPopover(trigger);
   }
@@ -341,23 +519,34 @@
     tierPopover.setAttribute("role", "menu");
     tierPopover.setAttribute("aria-label", "Brand tier");
     tierPopover.innerHTML = [
-      '<button type="button" class="bb-brands-action-item" data-tier="freemium" role="menuitem">Freemium</button>',
-      '<button type="button" class="bb-brands-action-item" data-tier="premium" role="menuitem">Premium</button>',
+      tierMenuItem("Freemium", "freemium"),
+      tierMenuItem("Premium", "premium"),
     ].join("");
     document.body.appendChild(tierPopover);
 
     tierPopover.addEventListener("click", function (e) {
-      const item = e.target.closest(".bb-brands-action-item");
+      const item = e.target.closest(".bb-brands-tier-item");
       if (!item || !tierTrigger) return;
       const tier = item.getAttribute("data-tier");
+      writeSelectedBrandTier(tier);
       closeTierPopover();
       if (tier === "freemium") {
-        window.location.href = "../freemium/Freemium-Logo-upload-and-Crop-module.html";
+        if (window.BBAccountPlan) {
+          BBAccountPlan.navigateStartFree({ fromModules: true });
+        } else {
+          window.location.href =
+            "../freemium/Freemium-Logo-upload-and-Crop-module.html?fresh=1";
+        }
         return;
       }
       if (tier === "premium") {
         if (devFreemiumSimOn() && requestParentUpgradeGate()) return;
-        window.location.href = "../logo-upload/Logo-upload-and-Crop-module.html";
+        if (window.BBAccountPlan) {
+          BBAccountPlan.navigateGoPremium({ fromModules: true });
+        } else {
+          window.location.href =
+            "../logo-upload/Logo-upload-and-Crop-module.html?fresh=1";
+        }
       }
     });
     return tierPopover;
@@ -371,6 +560,9 @@
     }
     tierTrigger = trigger;
     trigger.setAttribute("aria-expanded", "true");
+
+    updateTierPopoverSelection(tierPopover, readSelectedBrandTier());
+
     tierPopover.classList.add("bb-brands-action-popover--open");
     positionFixedPopover(tierPopover, trigger);
   }
@@ -841,8 +1033,17 @@
         });
       }
 
-      await loadAndRenderBrands();
-      decorateBrandCardsForA11y();
+      openBrandLoadingModal();
+      const result = await loadAndRenderBrands();
+      await closeBrandLoadingModal();
+
+      if (result && result.hasBrands) {
+        hideBrandsGate();
+        setBrandsMountVisible(true);
+        decorateBrandCardsForA11y();
+      } else if (!result || !result.error) {
+        showBrandsGate("Select or create a brand to view your brands.");
+      }
     } catch (_e) {
       /* page still renders fine via CSS */
     }

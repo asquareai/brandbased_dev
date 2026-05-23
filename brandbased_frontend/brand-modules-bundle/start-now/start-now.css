@@ -12,6 +12,56 @@
   --bb-startnow-radius-pill: 999px;
 }
 
+.bb-startnow-stripe-notice {
+  max-width: 720px;
+  margin: 0 auto 20px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  text-align: center;
+  border: 1px solid rgba(16, 48, 245, 0.35);
+  background: rgba(16, 48, 245, 0.12);
+  color: #e8ecff;
+}
+
+.bb-startnow-stripe-notice--success {
+  border-color: rgba(46, 204, 113, 0.45);
+  background: rgba(46, 204, 113, 0.14);
+  color: #d4ffe4;
+}
+
+.bb-startnow-stripe-notice--error {
+  border-color: rgba(255, 90, 90, 0.45);
+  background: rgba(255, 90, 90, 0.12);
+  color: #ffd6d6;
+}
+
+.bb-startnow-stripe-notice--muted {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+@media (prefers-color-scheme: light) {
+  .bb-startnow-stripe-notice {
+    color: #0b1020;
+    background: rgba(16, 48, 245, 0.08);
+  }
+  .bb-startnow-stripe-notice--success {
+    color: #0d3d24;
+    background: rgba(46, 204, 113, 0.15);
+  }
+  .bb-startnow-stripe-notice--error {
+    color: #5c1010;
+    background: rgba(255, 90, 90, 0.12);
+  }
+  .bb-startnow-stripe-notice--muted {
+    color: rgba(11, 16, 32, 0.75);
+    background: rgba(11, 16, 32, 0.05);
+  }
+}
+
 /* ------------------------------------------------------------
    Shine + breathing keyframes — declared up here so the CTA
    and modal rules below can reference them. Shine uses the same

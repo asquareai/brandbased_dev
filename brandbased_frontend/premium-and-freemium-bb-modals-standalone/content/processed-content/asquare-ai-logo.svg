@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="315" viewBox="54 26 792 208" fill="none" overflow="hidden">
+  <defs>
+    <linearGradient id="blueGrad" x1="80" y1="35" x2="210" y2="210" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E88FF"/>
+      <stop offset="1" stop-color="#0047B3"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="125" y1="55" x2="190" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB547"/>
+      <stop offset="1" stop-color="#FF6A00"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0B1B3D" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="260" rx="34" fill="#F8FBFF"/>
+
+  <!-- Icon container -->
+  <g filter="url(#softShadow)">
+    <rect x="55" y="38" width="184" height="184" rx="42" fill="url(#blueGrad)"/>
+  </g>
+
+  <!-- A / Square mark -->
+  <path d="M117 177L147 82L177 177" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M130 140H164" stroke="white" stroke-width="14" stroke-linecap="round"/>
+  <rect x="107" y="72" width="88" height="88" rx="20" stroke="url(#orangeGrad)" stroke-width="12"/>
+
+  <!-- AI circuit dots -->
+  <circle cx="199" cy="91" r="8" fill="#FF8A00"/>
+  <circle cx="199" cy="169" r="8" fill="#FF8A00"/>
+  <path d="M195 91H214M195 169H214" stroke="#FF8A00" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Text -->
+  <text x="285" y="125" font-family="Arial, Helvetica, sans-serif" font-size="58" font-weight="800" fill="#102A43" letter-spacing="1">
+    ASQUARE
+  </text>
+  <text x="285" y="178" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="800" fill="#FF7A00" letter-spacing="4">
+    AI
+  </text>
+
+  <!-- Tagline -->
+  <text x="360" y="178" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="500" fill="#627D98" letter-spacing="1">
+    SOFTWARE • AUTOMATION • INTELLIGENCE
+  </text>
+</svg>

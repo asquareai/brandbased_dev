@@ -13,10 +13,15 @@
   const LS_REPLACE_THRESHOLD = "bbReplaceThreshold:v1";
   const LS_BRAND_AI = "bbSmartSize:brandAiSmart:v1";
   const BRANDS_URL = "./brands/Brands.html";
+  const START_NOW_URL = "./start-now/Start-Now.html";
+  const DASHBOARD_START_ROUTE = "start";
+  const DASHBOARD_BRANDS_ROUTE = "brands";
 
   let saveTimer = 0;
   let applyingSettings = false;
   let settingsListenersBound = false;
+  let brandLoadingModal = null;
+  let brandLoadingProgressTimer = 0;
 
   function loginUrl() {
     if (window.BB_APP && window.BB_APP.routes && window.BB_APP.routes.loginFromModules) {
@@ -387,66 +392,37 @@
 
   function setPageTitle(brand) {
     const title = document.getElementById("bbBsPageTitle");
+    if (title) title.textContent = "Brand Settings";
     const name = brand && brand.brand_name ? String(brand.brand_name).trim() : "";
-    if (title) {
-      title.textContent = name ? name + " — Brand Settings" : "Brand Settings";
-    }
     document.title = name ? name + " — Brand Settings — BrandBased" : "Brand Settings — BrandBased";
   }
 
   function renderBrandBar(brand) {
-    const bar = document.getElementById("bbBsBrandBar");
-    if (!bar) return;
+    const slot = document.getElementById("bbBsHeaderBrand");
+    if (!slot) return;
 
     const logoUrl = brand.logo_light_url || brand.logo_dark_url || "";
     const name = escapeHtml(brand.brand_name || "Brand");
-    const website = brand.website_url || "";
-    const websiteSafe = escapeHtml(website);
-    const published = !!brand.is_published;
     const uniqueId = escapeHtml(brand.brand_unique_id || "");
 
-    bar.innerHTML =
-      '<div class="bb-bs-brand-bar__identity">' +
+    slot.innerHTML =
       (logoUrl
-        ? '<img class="bb-bs-brand-bar__logo" src="' +
+        ? '<img class="bb-bs-header-brand__logo" src="' +
           logoUrl.replace(/"/g, "&quot;") +
           '" alt="" decoding="async" />'
-        : '<span class="bb-bs-brand-bar__logo-fallback" aria-hidden="true">' +
+        : '<span class="bb-bs-header-brand__logo-fallback" aria-hidden="true">' +
           escapeHtml((brand.brand_name || "B").charAt(0).toUpperCase()) +
           "</span>") +
-      '<div class="bb-bs-brand-bar__meta">' +
-      '<p class="bb-bs-brand-bar__name">' +
+      '<div class="bb-bs-header-brand__text">' +
+      '<span class="bb-bs-header-brand__name">' +
       name +
-      "</p>" +
-      (website
-        ? '<a class="bb-bs-brand-bar__url" href="' +
-          website.replace(/"/g, "&quot;") +
-          '" target="_blank" rel="noopener">' +
-          websiteSafe +
-          "</a>"
-        : "") +
-      (uniqueId
-        ? '<p class="bb-bs-brand-bar__id">ID: ' + uniqueId + "</p>"
-        : "") +
-      '<div class="bb-bs-brand-bar__badges">' +
-      '<span class="bb-bs-pill bb-bs-pill--verified">Verified</span>' +
-      '<span class="bb-bs-pill' +
-      (published ? " bb-bs-pill--live" : " bb-bs-pill--draft") +
-      '">' +
-      (published ? "Published" : "Unpublished") +
       "</span>" +
-      "</div></div></div>" +
-      '<div class="bb-bs-brand-bar__actions">' +
-      '<span class="bb-bs-save-status" id="bbBsSaveStatus" aria-live="polite"></span>' +
-      '<a class="bb-bs-btn bb-bs-btn--ghost" href="' +
-      BRANDS_URL +
-      '">← Brands</a>' +
-      '<button type="button" class="bb-bs-btn" data-bs-action="publish">Publish</button>' +
-      '<button type="button" class="bb-bs-btn" data-bs-action="unpublish">Unpublish</button>' +
-      '<button type="button" class="bb-bs-btn bb-bs-btn--danger" data-bs-action="delete">Delete</button>' +
+      (uniqueId
+        ? '<span class="bb-bs-header-brand__id">ID: ' + uniqueId + "</span>"
+        : "") +
       "</div>";
 
-    bar.hidden = false;
+    slot.hidden = false;
   }
 
   function formatActivityAction(action) {
@@ -522,162 +498,243 @@
     }
   }
 
-  function showNoBrandState() {
-    const bar = document.getElementById("bbBsBrandBar");
-    const empty = document.getElementById("bbBsNoBrand");
-    const layout = document.querySelector(".bb-bs-layout");
-    if (bar) bar.hidden = true;
-    if (empty) empty.hidden = false;
-    if (layout) layout.hidden = true;
-    setPageTitle(null);
+  function stopBrandLoadingProgress() {
+    if (brandLoadingProgressTimer) {
+      window.clearInterval(brandLoadingProgressTimer);
+      brandLoadingProgressTimer = 0;
+    }
   }
 
-  async function resolveBrand() {
-    const api = window.BBBrandVerification;
-    let brand = readJson(LS_SELECTED_BRAND);
+  function startBrandLoadingProgress() {
+    stopBrandLoadingProgress();
+    if (!brandLoadingModal || typeof brandLoadingModal.update !== "function") return;
+    let progress = 10;
+    brandLoadingModal.update({ progress: progress });
+    brandLoadingProgressTimer = window.setInterval(function () {
+      if (!brandLoadingModal) {
+        stopBrandLoadingProgress();
+        return;
+      }
+      progress = Math.min(88, progress + 5);
+      brandLoadingModal.update({ progress: progress });
+    }, 420);
+  }
 
+  function openBrandLoadingModal(label) {
+    stopBrandLoadingProgress();
+    if (brandLoadingModal && typeof brandLoadingModal.dismiss === "function") {
+      brandLoadingModal.dismiss();
+      brandLoadingModal = null;
+    }
+    hideBrandSettingsChrome(true);
+    setPageTitle(null);
+
+    if (typeof window.bbOpenSyncProgressModal !== "function") {
+      return null;
+    }
+    brandLoadingModal = window.bbOpenSyncProgressModal({
+      label: label || "Loading brand settings…",
+      barColor: "#635bff",
+      logoSrc: "brandbased-logo.svg",
+      progress: 10,
+      shineLabel: true,
+    });
+    startBrandLoadingProgress();
+    return brandLoadingModal;
+  }
+
+  async function closeBrandLoadingModal(finishOpts) {
+    stopBrandLoadingProgress();
+    const modal = brandLoadingModal;
+    brandLoadingModal = null;
+    if (!modal) return;
+    if (finishOpts && typeof modal.finish === "function") {
+      await modal.finish(finishOpts);
+      return;
+    }
+    if (typeof modal.dismiss === "function") {
+      await modal.dismiss();
+    }
+  }
+
+  function hideBrandSettingsChrome(hidden) {
+    const layout = document.querySelector(".bb-bs-layout");
+    const head = document.querySelector(".bb-module-head");
+    const brandSlot = document.getElementById("bbBsHeaderBrand");
+    if (layout) layout.hidden = !!hidden;
+    if (head) head.hidden = !!hidden;
+    if (brandSlot && hidden) brandSlot.hidden = true;
+  }
+
+  function startNowDashboardUrl() {
+    try {
+      const consolePath =
+        (window.BB_APP && window.BB_APP.routes && window.BB_APP.routes.console) ||
+        "../../brand-console-final/brand-console-dashboard.html";
+      const u = new URL(consolePath, window.location.href);
+      u.searchParams.set("page", DASHBOARD_START_ROUTE);
+      return u.toString();
+    } catch (_e) {
+      return "../../brand-console-final/brand-console-dashboard.html?page=start";
+    }
+  }
+
+  function brandsDashboardUrl() {
+    try {
+      const consolePath =
+        (window.BB_APP && window.BB_APP.routes && window.BB_APP.routes.console) ||
+        "../../brand-console-final/brand-console-dashboard.html";
+      const u = new URL(consolePath, window.location.href);
+      u.searchParams.set("page", DASHBOARD_BRANDS_ROUTE);
+      return u.toString();
+    } catch (_e) {
+      return "../../brand-console-final/brand-console-dashboard.html?page=brands";
+    }
+  }
+
+  function navigateDashboardRoute(routeId) {
+    if (window.self !== window.top) {
+      try {
+        window.parent.postMessage({ type: "bb-dash-goto-route", route: routeId }, "*");
+        return true;
+      } catch (_e) { /* ignore */ }
+    }
+    return false;
+  }
+
+  function navigateDashboardToStart() {
+    return navigateDashboardRoute(DASHBOARD_START_ROUTE);
+  }
+
+  function navigateDashboardToBrands() {
+    return navigateDashboardRoute(DASHBOARD_BRANDS_ROUTE);
+  }
+
+  function navigateToStartNow() {
+    if (!navigateDashboardToStart()) {
+      if (window.self !== window.top) {
+        try {
+          window.top.location.assign(startNowDashboardUrl());
+          return;
+        } catch (_e) { /* ignore */ }
+      }
+      window.location.href = START_NOW_URL;
+    }
+  }
+
+  function navigateToBrandsPage() {
+    if (!navigateDashboardToBrands()) {
+      if (window.self !== window.top) {
+        try {
+          window.top.location.assign(brandsDashboardUrl());
+          return;
+        } catch (_e) { /* ignore */ }
+      }
+      window.location.href = BRANDS_URL;
+    }
+  }
+
+  function hideBrandGate() {
+    const gate = document.getElementById("bbBsBrandGate");
+    if (gate) gate.hidden = true;
+  }
+
+  let brandGateOkHandler = null;
+
+  function showBrandGate(message, destination) {
+    hideBrandSettingsChrome(true);
+    setPageTitle(null);
+    hideBrandGate();
+
+    const gate = document.getElementById("bbBsBrandGate");
+    const msg = document.getElementById("bbBsBrandGateMsg");
+    const btn = document.getElementById("bbBsBrandGateOk");
+    if (msg) msg.textContent = message;
+    if (gate) gate.hidden = false;
+
+    brandGateOkHandler = function () {
+      if (destination === "brands") navigateToBrandsPage();
+      else navigateToStartNow();
+    };
+
+    if (btn && btn.getAttribute("data-bb-gate-bound") !== "1") {
+      btn.setAttribute("data-bb-gate-bound", "1");
+      btn.addEventListener("click", function () {
+        if (typeof brandGateOkHandler === "function") brandGateOkHandler();
+      });
+    }
+  }
+
+  async function showBrandRequiredGate(scenario) {
+    await closeBrandLoadingModal();
+    if (scenario === "none") {
+      showBrandGate("Select or create a brand to open Brand Settings.", "start");
+      return;
+    }
+    showBrandGate("Select or add a brand to open Brand Settings.", "brands");
+  }
+
+  function matchBrandInList(brands, brand) {
+    if (!brand || !brands || !brands.length) return null;
+    if (brand.id) {
+      const byId = brands.find(function (b) {
+        return b.id === brand.id;
+      });
+      if (byId) return byId;
+    }
+    if (brand.brand_unique_id) {
+      const byUid = brands.find(function (b) {
+        return b.brand_unique_id === brand.brand_unique_id;
+      });
+      if (byUid) return byUid;
+    }
+    return null;
+  }
+
+  async function resolveBrandContext() {
+    const api = window.BBBrandVerification;
+    let brands = [];
+    const stored = readJson(LS_SELECTED_BRAND);
     const request = readJson(LS_CURRENT_REQUEST);
+
     if (api && api.fetchBrands) {
       try {
-        const brands = await api.fetchBrands();
-        if (brand && brand.id) {
-          const match = brands.find(function (b) {
-            return b.id === brand.id;
-          });
-          if (match) return match;
-        }
-        if (brand && brand.brand_unique_id) {
-          const matchU = brands.find(function (b) {
-            return b.brand_unique_id === brand.brand_unique_id;
-          });
-          if (matchU) return matchU;
-        }
-        if (request && request.brand_unique_id) {
-          const matchR = brands.find(function (b) {
-            return b.brand_unique_id === request.brand_unique_id;
-          });
-          if (matchR) return matchR;
-        }
-        if (brands.length === 1) return brands[0];
+        brands = await api.fetchBrands();
       } catch (err) {
         console.error(err);
       }
     }
 
-    return brand && brand.brand_name ? brand : null;
-  }
-
-  function showActionPopup(opts) {
-    if (typeof window.bbShowSyncPopup !== "function") {
-      return Promise.resolve();
+    if (!brands.length) {
+      return { scenario: "none", brand: null, brands: brands };
     }
-    const result = window.bbShowSyncPopup(opts);
-    return result && typeof result.then === "function" ? result : Promise.resolve();
-  }
 
-  function bindActions(getBrand, reload) {
-    if (window.__bbBsActionsBound) return;
-    window.__bbBsActionsBound = true;
-    const api = window.BBBrandVerification;
+    if (brands.length === 1) {
+      return { scenario: "single", brand: brands[0], brands: brands };
+    }
 
-    document.addEventListener("click", async function (e) {
-      const btn = e.target.closest("#bbBsBrandBar [data-bs-action]");
-      if (!btn) return;
-      const brand = typeof getBrand === "function" ? getBrand() : getBrand;
-      if (!brand || !brand.id) return;
-      const logoSrc = brand.logo_light_url || brand.logo_dark_url || "brandbased-logo.svg";
-      if (!btn || !api) return;
-      const action = btn.getAttribute("data-bs-action");
-      const brandName = brand.brand_name || "Brand";
+    const fromStored = matchBrandInList(brands, stored);
+    if (fromStored) {
+      return { scenario: "selected", brand: fromStored, brands: brands };
+    }
 
-      if (action === "publish") {
-        try {
-          const popup = showActionPopup({
-            label: "Publishing",
-            barColor: "#635bff",
-            logoSrc: logoSrc,
-            shineLabel: true,
-            duration: 2800,
-            doneHoldMs: 1200,
-          });
-          const updated = await api.publishBrand(brand.id);
-          brand.is_published = updated.is_published;
-          saveSelectedBrand(brand);
-          await popup;
-          await reload();
-        } catch (err) {
-          alert(err.message || "Unable to publish brand.");
-        }
-        return;
+    if (request && request.brand_unique_id) {
+      const fromRequest = brands.find(function (b) {
+        return b.brand_unique_id === request.brand_unique_id;
+      });
+      if (fromRequest) {
+        return { scenario: "selected", brand: fromRequest, brands: brands };
       }
+    }
 
-      if (action === "unpublish") {
-        try {
-          const popup = showActionPopup({
-            label: "Unpublishing...",
-            barColor: "#635bff",
-            logoSrc: logoSrc,
-            shineLabel: true,
-            duration: 2800,
-            doneHoldMs: 1200,
-          });
-          const updated = await api.unpublishBrand(brand.id);
-          brand.is_published = updated.is_published;
-          saveSelectedBrand(brand);
-          await popup;
-          await reload();
-        } catch (err) {
-          alert(err.message || "Unable to unpublish brand.");
-        }
-        return;
-      }
-
-      if (action === "delete") {
-        const ok = window.confirm(
-          "Delete “" + brandName + "”? This removes it from your brands list. History is kept."
-        );
-        if (!ok) return;
-        try {
-          const popup = showActionPopup({
-            label: "Deleting",
-            barColor: "#e74c3c",
-            logoSrc: logoSrc,
-            shineLabel: true,
-            duration: 2800,
-            doneHoldMs: 1500,
-          });
-          await api.deleteBrand(brand.id);
-          try {
-            localStorage.removeItem(LS_SELECTED_BRAND);
-            const raw = localStorage.getItem(LS_CURRENT_REQUEST);
-            if (raw) {
-              const stored = JSON.parse(raw);
-              if (
-                stored.brand_unique_id &&
-                brand.brand_unique_id &&
-                stored.brand_unique_id === brand.brand_unique_id
-              ) {
-                localStorage.removeItem(LS_CURRENT_REQUEST);
-              }
-            }
-          } catch (_e) { /* ignore */ }
-          await popup;
-          window.location.href = BRANDS_URL;
-        } catch (err) {
-          alert(err.message || "Unable to delete brand.");
-        }
-      }
-    });
+    return { scenario: "pick", brand: null, brands: brands };
   }
 
   let activeBrand = null;
 
   async function hydrateBrand(brand) {
     activeBrand = brand;
-    const empty = document.getElementById("bbBsNoBrand");
-    const layout = document.querySelector(".bb-bs-layout");
-    if (empty) empty.hidden = true;
-    if (layout) layout.hidden = false;
+    hideBrandSettingsChrome(false);
 
     saveSelectedBrand(brand);
     setPageTitle(brand);
@@ -699,25 +756,26 @@
     }
 
     const reload = async function () {
-      const fresh = await resolveBrand();
-      if (!fresh || !fresh.id) {
-        showNoBrandState();
+      openBrandLoadingModal("Loading brand settings…");
+      const ctx = await resolveBrandContext();
+      if (ctx.scenario === "single" || ctx.scenario === "selected") {
+        await closeBrandLoadingModal();
+        hideBrandGate();
+        await hydrateBrand(ctx.brand);
         return;
       }
-      await hydrateBrand(fresh);
+      await showBrandRequiredGate(ctx.scenario);
     };
 
-    bindActions(function () {
-      return activeBrand;
-    }, reload);
-
-    const brand = await resolveBrand();
-    if (!brand || !brand.id) {
-      showNoBrandState();
+    openBrandLoadingModal("Loading brand settings…");
+    const ctx = await resolveBrandContext();
+    if (ctx.scenario === "single" || ctx.scenario === "selected") {
+      await closeBrandLoadingModal();
+      hideBrandGate();
+      await hydrateBrand(ctx.brand);
       return;
     }
-
-    await hydrateBrand(brand);
+    await showBrandRequiredGate(ctx.scenario);
   }
 
   if (document.readyState === "loading") {

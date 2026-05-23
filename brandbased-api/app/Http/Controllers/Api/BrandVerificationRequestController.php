@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\BrandActivityLog;
 use App\Models\BrandVerificationRequest;
+use App\Models\AccountSubscription;
+use App\Services\AccountSubscriptionService;
 use App\Services\BrandActivityLogger;
 use App\Services\WebsiteMetaVerificationService;
 use Illuminate\Http\Request;
@@ -30,7 +32,20 @@ class BrandVerificationRequestController extends Controller
             'website_url'    => 'required|url',
             'light_logo_svg' => 'required|string',
             'dark_logo_svg'  => 'required|string',
+            'created_under_plan' => 'nullable|in:freemium,premium',
         ]);
+
+        $createdUnderPlan = $request->input('created_under_plan', AccountSubscription::PLAN_FREEMIUM);
+
+        if ($createdUnderPlan === AccountSubscription::PLAN_PREMIUM) {
+            $subscriptionService = app(AccountSubscriptionService::class);
+            if (!$subscriptionService->accountHasActivePremium($user)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'An active Premium subscription is required to create a Premium brand.',
+                ], 403);
+            }
+        }
 
         try {
             $brandName = trim($request->brand_name);
@@ -73,6 +88,7 @@ class BrandVerificationRequestController extends Controller
                 'meta_status' => 'pending',
                 'meta_progress' => 0,
                 'final_status' => 'pending',
+                'created_under_plan' => $createdUnderPlan,
             ]);
 
             return response()->json([
@@ -191,6 +207,8 @@ class BrandVerificationRequestController extends Controller
                     'logo_dark_url' => $brandRequest->logo_dark_url,
                     'verified_at' => now(),
                     'is_published' => false,
+                    'created_under_plan' => $brandRequest->created_under_plan
+                        ?? AccountSubscription::PLAN_FREEMIUM,
                 ]
             );
 

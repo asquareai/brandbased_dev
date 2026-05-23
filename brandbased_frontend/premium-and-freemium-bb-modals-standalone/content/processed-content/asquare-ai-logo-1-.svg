@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 512 512" fill="none" overflow="hidden">
+  <rect width="512" height="512" rx="116" fill="#071A2F"/>
+
+  <!-- Outer tech square -->
+  <path d="M148 126H364C376.15 126 386 135.85 386 148V364C386 376.15 376.15 386 364 386H148C135.85 386 126 376.15 126 364V148C126 135.85 135.85 126 148 126Z" stroke="#1E8CFF" stroke-width="24"/>
+
+  <!-- Stylized A -->
+  <path d="M166 350L256 164L346 350" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M211 281H301" stroke="#FF8A00" stroke-width="30" stroke-linecap="round"/>
+
+  <!-- AI circuit nodes -->
+  <circle cx="126" cy="202" r="13" fill="#FF8A00"/>
+  <circle cx="386" cy="310" r="13" fill="#FF8A00"/>
+  <circle cx="202" cy="126" r="13" fill="#1E8CFF"/>
+  <circle cx="310" cy="386" r="13" fill="#1E8CFF"/>
+
+  <path d="M126 202H86" stroke="#FF8A00" stroke-width="12" stroke-linecap="round"/>
+  <path d="M386 310H426" stroke="#FF8A00" stroke-width="12" stroke-linecap="round"/>
+  <path d="M202 126V86" stroke="#1E8CFF" stroke-width="12" stroke-linecap="round"/>
+  <path d="M310 386V426" stroke="#1E8CFF" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Small AI spark -->
+  <path d="M362 158L371 181L394 190L371 199L362 222L353 199L330 190L353 181L362 158Z" fill="#FF8A00"/>
+</svg>

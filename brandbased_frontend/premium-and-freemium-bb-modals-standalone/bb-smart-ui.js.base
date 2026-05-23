@@ -1,0 +1,3572 @@
+    let brandbasedEnhancementEnabled = true;
+
+  /** Per-mark click controllers so stripBrandEnhancements can detach listeners cleanly. */
+  const bbBrandClickControllers = new WeakMap();
+
+  /** Maps data-brand → CSS token class .bb-{slug} (CDN URLs live in stylesheet). */
+  function bbBrandClass(brand) {
+    if (!brand) return "";
+    const slug = String(brand).trim().toLowerCase();
+    if (!/^[a-z0-9_-]+$/.test(slug)) return "";
+    return `bb-${slug}`;
+  }
+
+document.addEventListener("DOMContentLoaded", () => {
+  (() => {
+
+  // =============================
+  // BrandBased Smart Logo Sizing Engine (prototype)
+  // =============================
+  const BB_SMART_SIZE_API = "http://localhost:8001/api/bb/smart-size";
+  // Bump version to invalidate any cached defaults
+  const BB_SMART_SIZE_CACHE_PREFIX = "bbSmartSize:v32:";
+  /** Cross-page fallback when typography context differs (Brand Settings vs standalone). */
+  const BB_SMART_LAST_APPLIED_PREFIX = "bbSmartSize:lastApplied:v1:";
+  const BB_AI_SIZE_CLASS = "BB-AI-Size";
+  const BB_DEV_OPENAI_KEY = "bbSmartSize:devOpenaiKey:v1";
+  const BB_BRAND_AI_SMART_KEY = "bbSmartSize:brandAiSmart:v1";
+  /** Custom placement (upload marks); must exist before any `enhanceBrandMarks` can run from Asset Lab. */
+  const BB_PLACEMENT_PROPS = [
+    "--bb-size-mul",
+    "--bb-place-w-mul",
+    "--bb-place-h-mul",
+    "--bb-place-pad-l",
+    "--bb-place-pad-r",
+    "--bb-place-pad-t",
+    "--bb-place-pad-b",
+  ];
+  const bbSmartInFlight = new Map();
+  const bbSmartMemoryCache = new Map();
+  /** Shown in Custom placement when Brand AI is on — reflects last API / cache. */
+  let bbLastSmartSizeMeta = { source: "", brand: "", fromCache: false, at: 0 };
+  let _bbDidStaleKeyAutoRefresh = false;
+  let bbForceSmartFetch = false;
+  const BB_SMART_RULES_KEY = "bbSmartSize:rules:v1";
+  const BB_SMART_USER_OFFSET_Y_PX_KEY = "bbSmartSize:userOffsetYpx:v1";
+  const BB_SMART_USER_OFFSET_Y_EM_KEY = "bbSmartSize:userOffsetYem:v1";
+  const BB_REPLACE_THRESHOLD_KEY = "bbReplaceThreshold:v1";
+  const BB_PREVIEW_LINE_HEIGHT_KEY = "bbPreview:lineHeight:v1";
+  const BB_PREVIEW_HPAD_KEY = "bbPreview:hpad:v1";
+  const BB_SMART_DYNAMIC_STYLE_ID = "bb-smart-dynamic-styles";
+  const bbSmartDynInserted = new Set();
+  function bbNumberFromCssPx(v) {
+    const s = String(v || "").trim();
+    if (!s) return null;
+    const n = Number(s.replace("px", ""));
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function bbGetSmartRules() {
+    try {
+      return (localStorage.getItem(BB_SMART_RULES_KEY) || "").trim();
+    } catch {
+      return "";
+    }
+  }
+
+  function bbGetReplaceThreshold() {
+    try {
+      // Slider exists only on Brand Settings; other pages must not clamp from stale localStorage.
+      if (!document.getElementById("bbReplaceThreshold")) return 9999;
+      const raw = localStorage.getItem(BB_REPLACE_THRESHOLD_KEY);
+      // Default: Auto (unlimited)
+      if (raw == null || raw === "") return 9999;
+      const n = Number(raw);
+      if (!Number.isFinite(n)) return 9999;
+      // 0..7 exact counts; 8+ means “Auto (unlimited)”
+      const v = Math.max(0, Math.min(50, Math.round(n)));
+      if (v >= 8) return 9999;
+      return v;
+    } catch {
+      return 9999;
+    }
+  }
+  function bbSetReplaceThreshold(n) {
+    // Store 0..7 exact; 8 means “Auto (unlimited)”
+    const v = Math.max(1, Math.min(8, Math.round(Number(n) || 0)));
+    try {
+      localStorage.setItem(BB_REPLACE_THRESHOLD_KEY, String(v));
+    } catch {}
+    return v;
+  }
+
+  function bbApplyPreviewVars() {
+    const host = document.getElementById("bbSimulatedContent");
+    if (!host) return;
+    let lh = 1.3;
+    let hp = 1.1;
+    try {
+      const a = Number(localStorage.getItem(BB_PREVIEW_LINE_HEIGHT_KEY));
+      const b = Number(localStorage.getItem(BB_PREVIEW_HPAD_KEY));
+      if (Number.isFinite(a)) lh = Math.max(1, Math.min(2.4, a));
+      if (Number.isFinite(b)) hp = Math.max(0, Math.min(3.5, b));
+    } catch {}
+    host.style.setProperty("--bb-preview-line-height", String(lh));
+    host.style.setProperty("--bb-preview-hpad", String(hp));
+  }
+
+  function bbInitBrandSettingsUi() {
+    const lh = document.getElementById("bbLineHeight");
+    const hp = document.getElementById("bbHorizPad");
+    const thr = document.getElementById("bbReplaceThreshold");
+    const thrV = document.getElementById("bbReplaceThresholdValue");
+    const lhV = document.getElementById("bbLineHeightValue");
+    const hpV = document.getElementById("bbHorizPadValue");
+
+    // Restore persisted preview vars
+    try {
+      const a = localStorage.getItem(BB_PREVIEW_LINE_HEIGHT_KEY);
+      const b = localStorage.getItem(BB_PREVIEW_HPAD_KEY);
+      if (lh && a != null && a !== "") lh.value = String(a);
+      if (hp && b != null && b !== "") hp.value = String(b);
+    } catch {}
+    // Brand Settings page: default threshold is always “Auto” (do not persist last value)
+    // so the demo opens in the expected state every time.
+    if (thr) {
+      try {
+        thr.value = "8";
+        localStorage.setItem(BB_REPLACE_THRESHOLD_KEY, "8");
+      } catch {}
+    }
+
+    const syncPreview = () => {
+      const lhN = lh ? Number(lh.value) : null;
+      const hpN = hp ? Number(hp.value) : null;
+      if (lhV && lhN != null && Number.isFinite(lhN)) lhV.textContent = lhN.toFixed(1);
+      if (hpV && hpN != null && Number.isFinite(hpN)) hpV.textContent = hpN.toFixed(1);
+      try {
+        if (lh && Number.isFinite(lhN)) localStorage.setItem(BB_PREVIEW_LINE_HEIGHT_KEY, String(lhN));
+        if (hp && Number.isFinite(hpN)) localStorage.setItem(BB_PREVIEW_HPAD_KEY, String(hpN));
+      } catch {}
+      bbApplyPreviewVars();
+    };
+
+    const syncThreshold = () => {
+      if (!thr) return;
+      const v = bbSetReplaceThreshold(thr.value);
+      if (thrV) thrV.textContent = v >= 8 ? "Auto" : String(v);
+      // Re-run enhancement so the limit applies immediately.
+      try {
+        stripBrandEnhancements();
+      } catch {}
+      try {
+        enhanceBrandMarks();
+      } catch {}
+    };
+
+    if (lh) lh.addEventListener("input", syncPreview);
+    if (hp) hp.addEventListener("input", syncPreview);
+    if (thr) thr.addEventListener("input", syncThreshold);
+
+    syncPreview();
+    if (thr) syncThreshold();
+    else {
+      // If no UI present, still apply persisted vars (if any).
+      bbApplyPreviewVars();
+    }
+
+    // Align "Customise Your Brand Modal" bottom with the left panel bottom
+    // (matches the "new-layout" layout intent on Brand Settings page).
+    try {
+      const layout = document.querySelector(".bb-bs-layout");
+      if (layout) {
+        const cols = layout.querySelectorAll(":scope > div");
+        const leftCol = cols && cols[0];
+        const rightCol = cols && cols[1];
+        const leftCard = leftCol?.querySelector(".bb-bs-card");
+        if (leftCard && rightCol) {
+          const applyMinHeight = () => {
+            const h = leftCard.getBoundingClientRect().height;
+            if (Number.isFinite(h) && h > 0) rightCol.style.minHeight = `${Math.round(h)}px`;
+          };
+          applyMinHeight();
+          window.addEventListener("resize", applyMinHeight, { passive: true });
+          window.addEventListener("orientationchange", applyMinHeight, { passive: true });
+        }
+      }
+    } catch {}
+  }
+
+  function bbExtractUserOffsetYpx(rulesText) {
+    const t = String(rulesText || "").toLowerCase();
+    // Accept phrases like: "padding-bottom 20px", "20px padding bottom", "padding bottom: 20px"
+    const m =
+      t.match(/padding[\s-]*bottom[^0-9]*([0-9]{1,3})\s*px/) ||
+      t.match(/([0-9]{1,3})\s*px[^a-z0-9]*padding[\s-]*bottom/) ||
+      // Also allow missing "px": "padding-bottom 20"
+      t.match(/padding[\s-]*bottom[^0-9]*([0-9]{1,3})\b/);
+    if (!m) {
+      // If user asks for padding-bottom but doesn't specify a number, apply a safe default.
+      if (t.includes("padding-bottom") || t.includes("padding bottom")) return 12;
+      return 0;
+    }
+    const px = Number(m[1]);
+    if (!Number.isFinite(px)) return 0;
+    return Math.max(0, Math.min(60, px)); // safety cap
+  }
+
+  function bbGetUserOffsetYpx() {
+    try {
+      const raw = localStorage.getItem(BB_SMART_USER_OFFSET_Y_PX_KEY);
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function bbExtractUserOffsetYem(rulesText) {
+    const t = String(rulesText || "").toLowerCase();
+    // Accept: "offset-y: -0.06em" / "offsetY -0.06em" / "offset y -0.06em"
+    const m =
+      t.match(/offset[\s-]*y[^-0-9]*(-?[0-9]*\.?[0-9]+)\s*em/) ||
+      t.match(/offsety[^-0-9]*(-?[0-9]*\.?[0-9]+)\s*em/);
+    if (!m) return 0;
+    const em = Number(m[1]);
+    if (!Number.isFinite(em)) return 0;
+    return Math.max(-0.2, Math.min(0.2, em)); // safety cap
+  }
+
+  /**
+   * Layout hint parsed from the same "model guidance" string (not sent to the LLM as margin rules).
+   * Phrases: "padding left 20px", "padding-left: 20px", "add padding right 20", etc.
+   * Returns { l, r } with number px or null if that side is not specified.
+   */
+  function bbExtractGuidancePadLRpx(rulesText) {
+    const t = String(rulesText || "");
+    const out = { l: null, r: null };
+    const cap = (n) => Math.max(0, Math.min(60, n));
+    const mL = t.match(
+      /(?:^|[\n;]|\s)(?:add\s+)?padding[-\s]left\s*[:：]?\s*([0-9]{1,3})(?:\s*px)?\b/i
+    );
+    const mR = t.match(
+      /(?:^|[\n;]|\s)(?:add\s+)?padding[-\s]right\s*[:：]?\s*([0-9]{1,3})(?:\s*px)?\b/i
+    );
+    if (mL) {
+      const n = Number(mL[1]);
+      if (Number.isFinite(n)) out.l = cap(n);
+    }
+    if (mR) {
+      const n = Number(mR[1]);
+      if (Number.isFinite(n)) out.r = cap(n);
+    }
+    /* Shorthand: "padding 50px" / "padding: 50px" → same L+R (when sides not set above) */
+    if (out.l == null && out.r == null) {
+      let g =
+        t.match(/\bpadding\s+([0-9]{1,3})\s*px\b/i) ||
+        t.match(/\bpadding\s*:\s*([0-9]{1,3})\s*px\b/i);
+      if (g) {
+        const n = cap(Number(g[1]));
+        out.l = n;
+        out.r = n;
+      }
+    }
+    return out;
+  }
+
+  function bbGetUserOffsetYem() {
+    try {
+      const raw = localStorage.getItem(BB_SMART_USER_OFFSET_Y_EM_KEY);
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  function bbApplyUserRulesToEl(el) {
+    // Model-guidance offsets only apply while Brand AI is on; sliders/manual placement own the mark when off.
+    const useGuidance = bbIsBrandAiSmartOn();
+    const px = useGuidance ? bbGetUserOffsetYpx() : 0;
+    const em = useGuidance ? bbGetUserOffsetYem() : 0;
+    // Keep spans clean: no inline CSS vars; store for dynamic class rule injection.
+    el.__bbUserOffsetYpx = `${px}px`;
+    el.__bbUserOffsetYem = `${em}em`;
+  }
+
+  let _bbGuidanceDebounce = null;
+  function bbSyncGuidanceTextareas(rules) {
+    const t = String(rules ?? "");
+    const a = document.getElementById("bbPlaceGuidanceInput");
+    const b = document.querySelector(".bb-smart-rules-input");
+    if (a && document.activeElement !== a) a.value = t;
+    if (b && document.activeElement !== b) b.value = t;
+  }
+  function bbCommitGuidanceToStorageAndRefresh(rulesText) {
+    const rules = String(rulesText || "").trim();
+    try {
+      localStorage.setItem(BB_SMART_RULES_KEY, rules);
+    } catch {}
+    const parsedPx = bbExtractUserOffsetYpx(rules);
+    const parsedEm = bbExtractUserOffsetYem(rules);
+    try {
+      localStorage.setItem(BB_SMART_USER_OFFSET_Y_PX_KEY, String(parsedPx));
+    } catch {}
+    try {
+      localStorage.setItem(BB_SMART_USER_OFFSET_Y_EM_KEY, String(parsedEm));
+    } catch {}
+    document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((el) => {
+      bbApplyUserRulesToEl(el);
+    });
+    bbSmartMemoryCache.clear();
+    bbClearSmartSizeCaches();
+    bbRefreshAllSmartSizing();
+    try {
+      bbApplyGuidanceLrPadFromText();
+    } catch {}
+  }
+  function bbScheduleGuidanceCommit(rulesText, floatStatus) {
+    clearTimeout(_bbGuidanceDebounce);
+    if (floatStatus) {
+      try {
+        floatStatus.textContent = "Syncing after edit…";
+      } catch {}
+    }
+    const placeSt = document.getElementById("bbPlaceGuidanceStatus");
+    if (placeSt) placeSt.textContent = "Syncing…";
+    _bbGuidanceDebounce = setTimeout(() => {
+      try {
+        bbCommitGuidanceToStorageAndRefresh(rulesText);
+        bbSyncGuidanceTextareas(rulesText);
+        if (placeSt) {
+          const r0 = String(rulesText || "").trim();
+          placeSt.textContent = r0 ? "Live (saved)" : "";
+        }
+        if (floatStatus) {
+          floatStatus.textContent = `Parsed padding-bottom: ${bbGetUserOffsetYpx()}px, offset-y: ${bbGetUserOffsetYem()}em`;
+        }
+      } catch (e) {
+        if (placeSt) placeSt.textContent = "Save error";
+        if (floatStatus) floatStatus.textContent = String((e && e.message) || e || "Error");
+      }
+    }, 520);
+  }
+
+  function bbInitSmartRulesUi() {
+    const btn = document.querySelector(".bb-smart-rules-btn");
+    const panel = document.querySelector(".bb-smart-rules-panel");
+    const input = document.querySelector(".bb-smart-rules-input");
+    const save = document.querySelector(".bb-smart-rules-save");
+    const clear = document.querySelector(".bb-smart-rules-clear");
+    const status = document.querySelector(".bb-smart-rules-status");
+    /* Team Console page can omit the floating toggle; Premium demo includes btn+panel */
+    if (!input || !save || !clear) return;
+
+    input.value = bbGetSmartRules();
+    if (status) status.textContent = `Parsed padding-bottom: ${bbGetUserOffsetYpx()}px, offset-y: ${bbGetUserOffsetYem()}em`;
+    // Vision UI removed in simplified mode.
+
+    if (btn && panel) {
+      btn.addEventListener("click", () => {
+        panel.classList.toggle("open");
+        if (panel.classList.contains("open")) input.focus();
+      });
+    }
+
+    const syncPlacement = (rulesText) => {
+      const pInput = document.getElementById("bbPlaceGuidanceInput");
+      const pStatus = document.getElementById("bbPlaceGuidanceStatus");
+      if (pInput && typeof rulesText === "string") pInput.value = rulesText;
+      if (pStatus) pStatus.textContent = rulesText ? "Saved" : "";
+    };
+
+    input.addEventListener("input", () => {
+      bbScheduleGuidanceCommit(String(input.value || ""), status);
+    });
+
+    save.addEventListener("click", () => {
+      clearTimeout(_bbGuidanceDebounce);
+      const rules = String(input.value || "");
+      const rulesTrim = rules.trim();
+      try {
+        syncPlacement(rulesTrim);
+      } catch {}
+      bbCommitGuidanceToStorageAndRefresh(rules);
+      if (status) {
+        status.textContent = `Parsed padding-bottom: ${bbGetUserOffsetYpx()}px, offset-y: ${bbGetUserOffsetYem()}em`;
+      }
+      const placeSt = document.getElementById("bbPlaceGuidanceStatus");
+      if (placeSt) placeSt.textContent = rulesTrim ? "Saved" : "";
+      /* Floating rules UI closes on save; Team Console keeps the inline panel visible (no toggle btn). */
+      if (panel && btn) panel.classList.remove("open");
+    });
+
+    clear.addEventListener("click", () => {
+      clearTimeout(_bbGuidanceDebounce);
+      input.value = "";
+      try {
+        syncPlacement("");
+      } catch {}
+      try {
+        localStorage.removeItem(BB_SMART_RULES_KEY);
+        localStorage.removeItem(BB_SMART_USER_OFFSET_Y_PX_KEY);
+        localStorage.removeItem(BB_SMART_USER_OFFSET_Y_EM_KEY);
+      } catch {}
+      if (status) status.textContent = "Parsed padding-bottom: 0px, offset-y: 0em";
+      const placeSt = document.getElementById("bbPlaceGuidanceStatus");
+      if (placeSt) placeSt.textContent = "";
+      document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((el) => {
+        el.style.removeProperty("--bb-user-offset-y-px");
+        el.style.removeProperty("--bb-user-offset-y-em");
+      });
+      bbCommitGuidanceToStorageAndRefresh("");
+    });
+  }
+
+  // Vision removed in simplified mode.
+  function bbIsVisionEnabled() {
+    return false;
+  }
+
+  // (Vision screenshot capture removed in simplified mode)
+
+  bbInitSmartRulesUi();
+
+  // =============================
+  // Asset Lab (upload SVG → live preview)
+  // =============================
+  const BB_ASSET_LAB_STORAGE_KEY = "bbAssetLab:svg:v1";
+  const BB_ASSET_LAB_STYLE_ID = "bb-asset-lab-style";
+  const BB_ASSET_LAB_FILENAME_KEY = "bbAssetLab:filename:v1";
+  /** Set when “Save” has succeeded for the current upload (enables Apply). */
+  const BB_ASSET_LAB_CROP_SAVED_KEY = "bbAssetLab:cropSaved:v1";
+  /** Saved Custom Size & Placement slider values (upload marks only). */
+  const BB_PLACEMENT_KEY = "bbPlacement:panel:v1";
+  const BB_SAVE_CROPPED_API = "http://localhost:8001/api/bb/save-cropped";
+  let bbAssetLabBlobUrl = "";
+  let bbAssetLabSvgText = "";
+  let bbAssetLabTrimViewBox = "";
+
+  function bbParseSvgLengthAttr(v) {
+    if (v == null) return null;
+    const t = String(v).trim();
+    if (!t || t.endsWith("%")) return null;
+    const n = parseFloat(t.replace(/(px|pt|em|ex|mm|cm|in)$/i, "").trim());
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  function bbGetRootSvgElement(doc) {
+    if (!doc) return null;
+    try {
+      const de = doc.documentElement;
+      if (de && String(de.nodeName || "").toLowerCase() === "svg") return de;
+    } catch {}
+    return doc.querySelector && doc.querySelector("svg");
+  }
+
+  function bbViewBoxOrSyntheticFromElement(de) {
+    if (!de || String(de.nodeName || "").toLowerCase() !== "svg") return null;
+    const raw = (de.getAttribute("viewBox") || "").replace(/,/g, " ").trim();
+    if (raw) {
+      const parts = raw.split(/\s+/).filter(Boolean);
+      if (parts.length === 4) {
+        const x = Number(parts[0]);
+        const y = Number(parts[1]);
+        const w = Number(parts[2]);
+        const h = Number(parts[3]);
+        if (Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
+          return { x, y, w, h };
+        }
+      }
+    }
+    const w = bbParseSvgLengthAttr(de.getAttribute("width"));
+    const h = bbParseSvgLengthAttr(de.getAttribute("height"));
+    if (w && h) return { x: 0, y: 0, w, h };
+    try {
+      if (de.width && de.width.baseVal && de.height && de.height.baseVal) {
+        const wb = de.width.baseVal.value;
+        const hb = de.height.baseVal.value;
+        if (Number.isFinite(wb) && Number.isFinite(hb) && wb > 0 && hb > 0) {
+          return { x: 0, y: 0, w: wb, h: hb };
+        }
+      }
+    } catch {}
+    return null;
+  }
+
+  /**
+   * Fallback when DOM parse is inconclusive: read *only* the first <svg…> start tag
+   * (not the first viewBox= anywhere, which is often a nested <svg>).
+   */
+  function bbGetRootViewBoxObjectFromString(s0) {
+    const s = String(s0 || "");
+    const m = s.match(/<\s*svg\b[^>]*?>/i);
+    if (!m) return null;
+    const tag = m[0];
+    const mvb = tag.match(
+      /\bviewBox\s*=\s*["']\s*([-0-9.eE+-]+)(?:[,\s]+)([-0-9.eE+-]+)(?:[,\s]+)([-0-9.eE+-]+)(?:[,\s]+)([-0-9.eE+-]+)\s*["']/i
+    );
+    if (mvb) {
+      const x = Number(mvb[1]);
+      const y = Number(mvb[2]);
+      const w = Number(mvb[3]);
+      const h = Number(mvb[4]);
+      if (Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) {
+        return { x, y, w, h };
+      }
+    }
+    const mw = tag.match(/\bwidth\s*=\s*["']([^"']*)["']/i);
+    const mh = tag.match(/\bheight\s*=\s*["']([^"']*)["']/i);
+    const w2 = bbParseSvgLengthAttr(mw && mw[1]);
+    const h2 = bbParseSvgLengthAttr(mh && mh[1]);
+    if (w2 && h2) return { x: 0, y: 0, w: w2, h: h2 };
+    return null;
+  }
+
+  function bbParseToDoc(svgText) {
+    const s = String(svgText || "");
+    try {
+      const p = new DOMParser();
+      const doc1 = p.parseFromString(s, "image/svg+xml");
+      if (doc1) {
+        const pe = doc1.getElementsByTagName("parsererror");
+        if (pe && pe.length) {
+          /* parse failed, try html path below */
+        } else if (bbGetRootSvgElement(doc1)) {
+          return doc1;
+        }
+      }
+    } catch {}
+    // Some “SVG” exports are actually HTML-wrapped; HTML parsing is more tolerant.
+    try {
+      const p = new DOMParser();
+      return p.parseFromString(s, "text/html");
+    } catch {
+      return null;
+    }
+  }
+
+  function bbGetRootViewBoxObject(svgText) {
+    const s0 = String(svgText || "");
+    try {
+      const doc = bbParseToDoc(s0);
+      const de = doc && bbGetRootSvgElement(doc);
+      if (de) {
+        const fromEl = bbViewBoxOrSyntheticFromElement(de);
+        if (fromEl) return fromEl;
+      }
+    } catch {}
+    return bbGetRootViewBoxObjectFromString(s0);
+  }
+
+  function bbFmtVb4(vb) {
+    const fmt = (n) => String(Number(n).toFixed(6)).replace(/\.?0+$/, "");
+    return `${fmt(vb.x)} ${fmt(vb.y)} ${fmt(vb.w)} ${fmt(vb.h)}`;
+  }
+
+  function bbVbCloseEnough(a, b, tol) {
+    if (!a || !b) return false;
+    return (
+      Math.abs(a.x - b.x) <= tol &&
+      Math.abs(a.y - b.y) <= tol &&
+      Math.abs(a.w - b.w) <= tol &&
+      Math.abs(a.h - b.h) <= tol
+    );
+  }
+
+  // Last-resort: patch the FIRST <svg ...> start tag. Some SVGs are messy enough that DOM round-trips
+  // can fail to change what you think is the "root" viewBox.
+  function bbPatchFirstSvgStartTagViewBox(svgText, vb) {
+    const s0 = String(svgText || "");
+    const attr = `viewBox="${bbFmtVb4(vb)}"`;
+    return s0.replace(/<\s*svg\b[^>]*>/i, (tag) => {
+      let t = tag;
+      if (/\bviewBox\s*=\s*["'][^"']*["']/i.test(t)) {
+        t = t.replace(/\bviewBox\s*=\s*["'][^"']*["']/i, attr);
+      } else {
+        t = t.replace(/<\s*svg\b/i, (m) => `${m} ${attr}`);
+      }
+      if (/\boverflow\s*=\s*["'][^"']*["']/i.test(t)) {
+        t = t.replace(/\boverflow\s*=\s*["'][^"']*["']/i, 'overflow="hidden"');
+      } else {
+        t = t.replace(/>\s*$/i, ' overflow="hidden">');
+      }
+      return t;
+    });
+  }
+
+  function bbSetRootViewBoxHard(svgText, vb) {
+    // Try DOM (best), then patch first <svg> tag.
+    const domTry = (() => {
+      try {
+        const doc = bbParseToDoc(svgText);
+        const de = doc && bbGetRootSvgElement(doc);
+        if (de && String(de.nodeName || "").toLowerCase() === "svg") {
+          de.setAttribute("viewBox", bbFmtVb4(vb));
+          // Ensure the visible canvas matches the viewBox (some exports set overflow:visible and look "uncropped").
+          de.setAttribute("overflow", "hidden");
+          // Always serialize the <svg> node (not a whole HTML document).
+          return new XMLSerializer().serializeToString(de);
+        }
+      } catch {}
+      return "";
+    })();
+
+    if (domTry) {
+      const v1 = bbGetRootViewBoxObject(domTry);
+      if (bbVbCloseEnough(v1, vb, 0.75)) return domTry;
+    }
+
+    const patched = bbPatchFirstSvgStartTagViewBox(svgText, vb);
+    const v2 = bbGetRootViewBoxObject(patched);
+    if (bbVbCloseEnough(v2, vb, 0.75)) return patched;
+
+    // If both fail, return the most likely "best" attempt (patched) so the user at least has something to inspect.
+    return patched || String(svgText || "");
+  }
+
+  function bbParseViewBoxRatio(svgText) {
+    const vb = bbGetRootViewBoxObject(svgText);
+    if (vb && Number.isFinite(vb.w) && Number.isFinite(vb.h) && vb.h !== 0) {
+      return vb.w / vb.h;
+    }
+    return null;
+  }
+
+  /**
+   * Match the cropper Konva path: many brand SVGs keep width/height/% or inline styles on the root.
+   * In <img> and background-image, that often makes the renderer ignore the updated viewBox.
+   * Force explicit pixel width/height derived from the *current* root viewBox before any blob URL.
+   */
+  function bbSvgForKonvaRaster(svgText) {
+    const vb = bbGetRootViewBoxObject(svgText);
+    if (!vb) return String(svgText || "");
+    const base = 1200;
+    const wpx = base;
+    const hpx = Math.max(1, Math.round((base * vb.h) / vb.w));
+    try {
+      const doc = bbParseToDoc(svgText);
+      const de = doc && bbGetRootSvgElement(doc);
+      if (de && String(de.nodeName || "").toLowerCase() === "svg") {
+        de.setAttribute("width", String(wpx));
+        de.setAttribute("height", String(hpx));
+        const st = de.getAttribute("style");
+        if (st) {
+          const cleaned = String(st)
+            .replace(/(^|;)\s*width\s*:\s*[^;]+;?/gi, "$1")
+            .replace(/(^|;)\s*height\s*:\s*[^;]+;?/gi, "$1")
+            .replace(/;{2,}/g, ";")
+            .replace(/^\s*;\s*|\s*;\s*$/g, "")
+            .trim();
+          if (cleaned) de.setAttribute("style", cleaned);
+          else de.removeAttribute("style");
+        }
+        return new XMLSerializer().serializeToString(de);
+      }
+    } catch {}
+    return String(svgText || "");
+  }
+
+  function bbGetAssetLabStyleEl() {
+    let el = document.getElementById(BB_ASSET_LAB_STYLE_ID);
+    if (!el) {
+      el = document.createElement("style");
+      el.id = BB_ASSET_LAB_STYLE_ID;
+      document.head.appendChild(el);
+    }
+    return el;
+  }
+
+  function bbApplyUploadedSvgToCss(svgText, preparedAlready) {
+    // Default: run bbSvgForKonvaRaster() so preview + --bb-logo match what the cropper shows.
+    // Pass preparedAlready === true when svgText is already raster-ready (e.g. after Save).
+    const s0 = String(svgText || "");
+    const prepared =
+      preparedAlready === true
+        ? s0
+        : s0 && /<\s*svg\b/i.test(s0)
+          ? bbSvgForKonvaRaster(s0) || s0
+          : s0;
+    const ratio = bbParseViewBoxRatio(prepared) || 1;
+    try {
+      if (bbAssetLabBlobUrl) URL.revokeObjectURL(bbAssetLabBlobUrl);
+    } catch {}
+    const blob = new Blob([prepared], { type: "image/svg+xml;charset=utf-8" });
+    bbAssetLabBlobUrl = URL.createObjectURL(blob);
+
+    const styleEl = bbGetAssetLabStyleEl();
+    styleEl.textContent = `.bb-upload{--bb-logo:url("${bbAssetLabBlobUrl}");--bb-ratio:${ratio};}`;
+
+    // Brand Settings: keep the threshold “logo chip” in sync with the active uploaded blob URL.
+    try {
+      const chip = document.querySelector(".bb-threshold-chip");
+      if (chip && bbAssetLabBlobUrl) {
+        chip.style.setProperty("--bb-chip-logo", `url("${bbAssetLabBlobUrl}")`);
+      }
+    } catch {}
+    return { ratio };
+  }
+
+  function bbInitAssetLabUi() {
+    const uploadBtn = document.getElementById("bbUploadBtn");
+    const input = document.getElementById("bbUploadInput");
+    const status = document.getElementById("bbUploadStatus");
+    // Legacy Asset Lab elements removed (panel/preview/apply). Keep variables null-safe for old logic.
+    const panel = null;
+    const applyBtn = null;
+    const clearBtn = null;
+    const cropBtn = null;
+    const previewImg = null;
+    const previewName = null;
+    const previewRatio = null;
+    const previewViewBox = null;
+
+    // Custom crop: Konva state; "Save" must read the base viewBox from the current SVG text (not a stale value).
+    let cropVb = null;
+    let doApplyCropSliders = null; // set when cropper opens (slider + crop rect)
+
+    if (uploadBtn) {
+      uploadBtn.addEventListener("click", () => {
+        if (!input) return;
+        try {
+          input.click();
+        } catch {}
+      });
+    }
+
+    function setStatus(t) {
+      if (!status) return;
+      status.textContent = t;
+    }
+
+    function updateApplyButtonVisibility() {
+      const hasSvg = !!(
+        (bbAssetLabSvgText && String(bbAssetLabSvgText).trim()) ||
+        (typeof localStorage !== "undefined" && (localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "").trim())
+      );
+      const saved = typeof localStorage !== "undefined" && localStorage.getItem(BB_ASSET_LAB_CROP_SAVED_KEY) === "1";
+      if (!applyBtn) return;
+      if (saved && hasSvg) {
+        applyBtn.removeAttribute("hidden");
+      } else {
+        applyBtn.setAttribute("hidden", "");
+      }
+    }
+
+    function bbRatioToFraction(ratio) {
+      const x = Number(ratio);
+      if (!Number.isFinite(x) || x <= 0) return null;
+      // Continued-fraction approximation with a small denominator.
+      const maxDen = 30;
+      let h1 = 1, h0 = 0, k1 = 0, k0 = 1;
+      let b = x;
+      for (let i = 0; i < 20; i++) {
+        const a = Math.floor(b);
+        const h2 = a * h1 + h0;
+        const k2 = a * k1 + k0;
+        if (k2 > maxDen) break;
+        h0 = h1; h1 = h2;
+        k0 = k1; k1 = k2;
+        const frac = b - a;
+        if (frac < 1e-10) break;
+        b = 1 / frac;
+      }
+      if (k1 === 0) return null;
+      const n = Math.max(1, Math.round(h1));
+      const d = Math.max(1, Math.round(k1));
+      // Reduce a bit
+      const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+      const g = gcd(n, d);
+      return { n: Math.round(n / g), d: Math.round(d / g) };
+    }
+
+    function setPreview({ name, ratio, url, viewBox }) {
+      try {
+        if (previewName) previewName.textContent = name || "None";
+        if (previewRatio) {
+          if (typeof ratio === "number") {
+            const f = bbRatioToFraction(ratio);
+            const fracLabel = f ? `${f.n}:${f.d}` : "";
+            previewRatio.textContent = `${fracLabel}${fracLabel ? " " : ""}(${ratio.toFixed(3)})`;
+          } else {
+            previewRatio.textContent = "–";
+          }
+        }
+        if (previewViewBox) previewViewBox.textContent = viewBox ? String(viewBox) : "–";
+        if (previewImg) {
+          if (url) {
+            previewImg.removeAttribute("src");
+            previewImg.src = url;
+            previewImg.style.visibility = "visible";
+          } else {
+            previewImg.removeAttribute("src");
+            previewImg.style.visibility = "hidden";
+          }
+        }
+      } catch {}
+    }
+
+    function clear() {
+      try {
+        localStorage.removeItem(BB_ASSET_LAB_STORAGE_KEY);
+        localStorage.removeItem(BB_ASSET_LAB_CROP_SAVED_KEY);
+      } catch {}
+      bbGetAssetLabStyleEl().textContent = "";
+      try {
+        if (bbAssetLabBlobUrl) URL.revokeObjectURL(bbAssetLabBlobUrl);
+      } catch {}
+      bbAssetLabBlobUrl = "";
+      bbAssetLabSvgText = "";
+      bbAssetLabTrimViewBox = "";
+      if (input) input.value = "";
+      setStatus("Cleared. Upload an SVG to test.");
+      setPreview({ name: "None", ratio: null, url: "", viewBox: "" });
+      cropVb = null;
+      updateApplyButtonVisibility();
+      enhanceBrandMarks();
+    }
+
+    if (clearBtn) clearBtn.addEventListener("click", clear);
+
+    if (input) input.addEventListener("change", async () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const name = (file.name || "").toLowerCase();
+      if (name.endsWith(".eps")) {
+        setStatus("EPS isn’t supported in-browser. Convert to SVG first, then upload the SVG.");
+        return;
+      }
+      if (!name.endsWith(".svg") && file.type !== "image/svg+xml") {
+        setStatus("Please upload an SVG file.");
+        return;
+      }
+      const text = await file.text();
+      if (!/<\s*svg\b/i.test(text)) {
+        setStatus("That file doesn’t look like an SVG.");
+        return;
+      }
+      const svgForUse = text;
+      const applied = bbApplyUploadedSvgToCss(svgForUse);
+      const ratio = applied.ratio || bbParseViewBoxRatio(svgForUse) || 1;
+      const rvb = bbGetRootViewBoxObject(svgForUse);
+      const vb = rvb ? `${rvb.x} ${rvb.y} ${rvb.w} ${rvb.h}` : "(none)";
+      bbAssetLabSvgText = svgForUse;
+      bbAssetLabTrimViewBox = vb;
+      try {
+        localStorage.setItem(BB_ASSET_LAB_STORAGE_KEY, svgForUse);
+        localStorage.setItem(BB_ASSET_LAB_FILENAME_KEY, file.name || "upload.svg");
+        localStorage.removeItem(BB_ASSET_LAB_CROP_SAVED_KEY);
+      } catch {}
+      setStatus("Loaded. Opening cropper…");
+      setPreview({ name: file.name || "uploaded.svg", ratio, url: bbAssetLabBlobUrl, viewBox: vb });
+      cropVb = null;
+      updateApplyButtonVisibility();
+      try {
+        bbOpenCropper();
+      } catch {}
+    });
+
+    // ---------- Custom crop (Konva) ----------
+    const overlay = document.querySelector(".bb-crop-overlay");
+    const closeBtn = document.querySelector(".bb-crop-close");
+    const resetBtn = document.querySelector(".bb-crop-reset");
+    const saveBtn = document.querySelector(".bb-crop-save");
+    const stageHost = document.getElementById("bbCropStage");
+    const leftSlider = document.querySelector(".bb-crop-left");
+    const rightSlider = document.querySelector(".bb-crop-right");
+    const topSlider = document.querySelector(".bb-crop-top");
+    const bottomSlider = document.querySelector(".bb-crop-bottom");
+    const scaleSlider = document.querySelector(".bb-crop-scale");
+    let cropStage = null;
+    let cropLayer = null;
+    let cropImageNode = null;
+    let cropRect = null;
+    let cropTransformer = null;
+    let cropImgW = 1;
+    let cropImgH = 1;
+    let cropImgBounds = null; // {x,y,w,h}
+    /** Initial fit size (100% on Logo size) — used to reset and scale. */
+    let cropBaseFittedW = 0;
+    let cropBaseFittedH = 0;
+    /** Fixed in stage space while the image is panned; updated when sliders change. */
+    let fixedCropBox = null; // { x, y, width, height }
+    function bbGetCropSliderFracs() {
+      // Match the <input> defaults in the manual crop panel (6/6/10/10).
+      const l = Number(leftSlider && leftSlider.value !== "" ? leftSlider.value : 6) / 100;
+      const r = Number(rightSlider && rightSlider.value !== "" ? rightSlider.value : 6) / 100;
+      const t = Number(topSlider && topSlider.value !== "" ? topSlider.value : 10) / 100;
+      const b = Number(bottomSlider && bottomSlider.value !== "" ? bottomSlider.value : 10) / 100;
+      // clip-path insets are invalid if the removed portions sum to 100%+
+      const clampPair = (a, b0) => {
+        const s = a + b0;
+        if (s < 0.999) return { a, b: b0 };
+        const k = 0.999 / Math.max(s, 0.000001);
+        return { a: a * k, b: b0 * k };
+      };
+      const lr = clampPair(l, r);
+      const tb = clampPair(t, b);
+      return { l: lr.a, r: lr.b, t: tb.a, b: tb.b };
+    }
+
+    function bbVbForCropFracs(baseVb, fracs) {
+      if (!baseVb) return null;
+      const l = fracs.l;
+      const r = fracs.r;
+      const t = fracs.t;
+      const b = fracs.b;
+      return {
+        x: baseVb.x + baseVb.w * l,
+        y: baseVb.y + baseVb.h * t,
+        w: Math.max(0.000001, baseVb.w * Math.max(0, 1 - l - r)),
+        h: Math.max(0.000001, baseVb.h * Math.max(0, 1 - t - b)),
+      };
+    }
+
+    function bbFmtVbNumber(n) {
+      return String(Number(n).toFixed(6)).replace(/\.?0+$/, "");
+    }
+
+    function bbOpenCropper() {
+      if (!overlay || !stageHost) return;
+      if (!window.Konva) {
+        setStatus('Konva failed to load. If you’re on a strict network, try replacing the Konva script with a local file or another CDN.');
+        return;
+      }
+      const svgText = bbAssetLabSvgText || (localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "");
+      if (!svgText) {
+        setStatus("Upload an SVG first.");
+        return;
+      }
+      cropVb = bbGetRootViewBoxObject(svgText);
+      if (!cropVb) {
+        setStatus("This SVG has no viewBox. Add one, then try again.");
+        return;
+      }
+
+      overlay.classList.add("open");
+      const hostRect = stageHost.getBoundingClientRect();
+      const W = Math.max(320, Math.floor(hostRect.width));
+      const H = Math.max(260, Math.floor(hostRect.height));
+      stageHost.innerHTML = "";
+
+      cropStage = new Konva.Stage({ container: "bbCropStage", width: W, height: H });
+      cropLayer = new Konva.Layer();
+      cropStage.add(cropLayer);
+
+      // Render SVG as image using blob URL
+      const rasterText = bbSvgForKonvaRaster(svgText);
+      const blob = new Blob([rasterText], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        cropImgW = img.naturalWidth || img.width || 1;
+        cropImgH = img.naturalHeight || img.height || 1;
+        const scale = Math.min(W / cropImgW, H / cropImgH);
+        const drawW = cropImgW * scale;
+        const drawH = cropImgH * scale;
+        const x = (W - drawW) / 2;
+        const y = (H - drawH) / 2;
+        cropBaseFittedW = drawW;
+        cropBaseFittedH = drawH;
+        cropImgBounds = { x, y, w: drawW, h: drawH };
+        if (scaleSlider) scaleSlider.value = "100";
+
+        cropImageNode = new Konva.Image({
+          image: img,
+          x,
+          y,
+          width: drawW,
+          height: drawH,
+          draggable: true,
+        });
+        cropLayer.add(cropImageNode);
+
+        cropRect = new Konva.Rect({
+          x: x + drawW * 0.06,
+          y: y + drawH * 0.10,
+          width: drawW * 0.88,
+          height: drawH * 0.80,
+          stroke: "#0070ff",
+          strokeWidth: 2,
+          dash: [6, 6],
+          draggable: false,
+          listening: false,
+        });
+        cropLayer.add(cropRect);
+
+        // Sliders: move/resize the selection rect and lock its stage position. Dragging the image only updates sliders.
+        function applySlidersToRect() {
+          if (!cropImgBounds || !cropRect) return;
+          const l = Number(leftSlider && leftSlider.value ? leftSlider.value : 6) / 100;
+          const r = Number(rightSlider && rightSlider.value ? rightSlider.value : 6) / 100;
+          const t = Number(topSlider && topSlider.value ? topSlider.value : 10) / 100;
+          const b = Number(bottomSlider && bottomSlider.value ? bottomSlider.value : 10) / 100;
+          const x0 = cropImgBounds.x + cropImgBounds.w * l;
+          const y0 = cropImgBounds.y + cropImgBounds.h * t;
+          const x1 = cropImgBounds.x + cropImgBounds.w * (1 - r);
+          const y1 = cropImgBounds.y + cropImgBounds.h * (1 - b);
+          const w = Math.max(10, x1 - x0);
+          const h = Math.max(10, y1 - y0);
+          cropRect.position({ x: x0, y: y0 });
+          cropRect.size({ width: w, height: h });
+          fixedCropBox = { x: cropRect.x(), y: cropRect.y(), width: cropRect.width(), height: cropRect.height() };
+          cropLayer && cropLayer.draw();
+        }
+
+        function syncSlidersFromFixedBox() {
+          if (!fixedCropBox || !cropImageNode || !cropRect) return;
+          const ix = cropImageNode.x();
+          const iy = cropImageNode.y();
+          const pw = cropImageNode.width();
+          const ph = cropImageNode.height();
+          const Rx = fixedCropBox.x;
+          const Ry = fixedCropBox.y;
+          const Rw = fixedCropBox.width;
+          const Rh = fixedCropBox.height;
+          let l = (Rx - ix) / pw;
+          let r = (ix + pw - Rx - Rw) / pw;
+          let t = (Ry - iy) / ph;
+          let b = (iy + ph - Ry - Rh) / ph;
+          l = Math.max(0, Math.min(0.45, l));
+          r = Math.max(0, Math.min(0.45, r));
+          t = Math.max(0, Math.min(0.45, t));
+          b = Math.max(0, Math.min(0.45, b));
+          if (l + r > 0.999) {
+            const k = 0.999 / (l + r);
+            l *= k;
+            r *= k;
+          }
+          if (t + b > 0.999) {
+            const k = 0.999 / (t + b);
+            t *= k;
+            b *= k;
+          }
+          if (leftSlider) leftSlider.value = String(Math.round(l * 100));
+          if (rightSlider) rightSlider.value = String(Math.round(r * 100));
+          if (topSlider) topSlider.value = String(Math.round(t * 100));
+          if (bottomSlider) bottomSlider.value = String(Math.round(b * 100));
+          cropImgBounds = { x: ix, y: iy, w: pw, h: ph };
+          cropRect.position({ x: Rx, y: Ry });
+          cropRect.size({ width: Rw, height: Rh });
+          cropLayer && cropLayer.draw();
+        }
+
+        doApplyCropSliders = applySlidersToRect;
+        const syncImagePan = () => {
+          if (!cropImageNode) return;
+          syncSlidersFromFixedBox();
+        };
+
+        function applyLogoScale() {
+          if (!cropImageNode || !cropBaseFittedW || !cropBaseFittedH) return;
+          const pct = Math.max(0.5, Math.min(2, Number(scaleSlider && scaleSlider.value ? scaleSlider.value : 100) / 100));
+          const newW = Math.max(8, cropBaseFittedW * pct);
+          const newH = Math.max(8, cropBaseFittedH * pct);
+          const ix = cropImageNode.x();
+          const iy = cropImageNode.y();
+          const ow = cropImageNode.width();
+          const oh = cropImageNode.height();
+          const cx = ix + ow / 2;
+          const cy = iy + oh / 2;
+          const nix = cx - newW / 2;
+          const niy = cy - newH / 2;
+          cropImageNode.size({ width: newW, height: newH });
+          cropImageNode.position({ x: nix, y: niy });
+          cropImgBounds = { x: nix, y: niy, w: newW, h: newH };
+          if (fixedCropBox) syncSlidersFromFixedBox();
+          else if (doApplyCropSliders) doApplyCropSliders();
+        }
+
+        if (scaleSlider) scaleSlider.addEventListener("input", applyLogoScale);
+        cropImageNode.on("dragmove", syncImagePan);
+        cropImageNode.on("dragend", syncImagePan);
+        cropImageNode.on("mouseenter", () => {
+          if (cropStage) cropStage.container().style.cursor = "move";
+        });
+        cropImageNode.on("mouseleave", () => {
+          if (cropStage) cropStage.container().style.cursor = "default";
+        });
+
+        const sliderEls = [leftSlider, rightSlider, topSlider, bottomSlider].filter(Boolean);
+        sliderEls.forEach((el) => el.addEventListener("input", applySlidersToRect));
+        applySlidersToRect();
+
+        cropLayer.draw();
+        URL.revokeObjectURL(url);
+      };
+      img.onerror = () => {
+        setStatus("Could not render this SVG for cropping.");
+        URL.revokeObjectURL(url);
+      };
+      img.src = url;
+    }
+
+    function bbCloseCropper() {
+      if (overlay) overlay.classList.remove("open");
+      try { cropStage && cropStage.destroy(); } catch {}
+      cropStage = cropLayer = cropImageNode = cropRect = cropTransformer = null;
+      cropImgBounds = null;
+      cropVb = null;
+      doApplyCropSliders = null;
+      fixedCropBox = null;
+      cropBaseFittedW = 0;
+      cropBaseFittedH = 0;
+    }
+
+    function bbResetCropper() {
+      if (leftSlider) leftSlider.value = "6";
+      if (rightSlider) rightSlider.value = "6";
+      if (topSlider) topSlider.value = "10";
+      if (bottomSlider) bottomSlider.value = "10";
+      if (scaleSlider) scaleSlider.value = "100";
+      if (!cropRect || !cropImageNode || !cropStage) return;
+      if (!cropBaseFittedW || !cropBaseFittedH) {
+        if (cropImgBounds && doApplyCropSliders) doApplyCropSliders();
+        return;
+      }
+      const Wc = cropStage.width();
+      const Hc = cropStage.height();
+      const w = cropBaseFittedW;
+      const h = cropBaseFittedH;
+      const cx = (Wc - w) / 2;
+      const cy = (Hc - h) / 2;
+      cropImageNode.size({ width: w, height: h });
+      cropImageNode.position({ x: cx, y: cy });
+      cropImgBounds = { x: cx, y: cy, w, h };
+      if (doApplyCropSliders) doApplyCropSliders();
+    }
+
+    async function bbSaveCrop() {
+      // Base viewBox must always come from the *current* SVG string (not cropVb from a previous open / other file).
+      const svgText = bbAssetLabSvgText || (localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "");
+      if (!svgText) {
+        setStatus("Upload an SVG first.");
+        return;
+      }
+      const baseVb = bbGetRootViewBoxObject(svgText);
+      if (!baseVb) {
+        setStatus("This SVG has no viewBox. Add one, then try again.");
+        return;
+      }
+      // Sliders: source of truth (Konva rect is a guide).
+      const fracs = bbGetCropSliderFracs();
+      const newVb = bbVbForCropFracs(baseVb, fracs);
+      if (!newVb) return;
+      const outSvg = bbSetRootViewBoxHard(svgText, newVb);
+      // Verify the *actual* viewBox in the output string (if this fails, the file won't visually crop).
+      const vbActual = bbGetRootViewBoxObject(outSvg);
+      if (!bbVbCloseEnough(vbActual, newVb, 0.75)) {
+        setStatus(
+          `ERROR: viewBox did not apply to SVG text (parser mismatch). ` +
+            `Wanted: ${bbFmtVb4(newVb)}. Found: ${vbActual ? bbFmtVb4(vbActual) : "NONE"}. ` +
+            `If you can, paste the first ~30 lines of the SVG (or the file) so we can match its exporter format.`
+        );
+        bbCloseCropper();
+        return;
+      }
+      // Required for <img> / CSS: same normalization the cropper uses, or browsers keep the old viewport.
+      const finalSvg = bbSvgForKonvaRaster(outSvg) || outSvg;
+      const vbAfterNorm = bbGetRootViewBoxObject(finalSvg);
+      if (!bbVbCloseEnough(vbAfterNorm, newVb, 0.75)) {
+        setStatus(
+          `ERROR: viewBox changed after preparing for display. ` +
+            `Wanted: ${bbFmtVb4(newVb)}. Found: ${vbAfterNorm ? bbFmtVb4(vbAfterNorm) : "NONE"}.`
+        );
+        bbCloseCropper();
+        return;
+      }
+      const ratio = bbParseViewBoxRatio(finalSvg) || 1;
+      const vb = vbAfterNorm ? `${vbAfterNorm.x} ${vbAfterNorm.y} ${vbAfterNorm.w} ${vbAfterNorm.h}` : `${newVb.x} ${newVb.y} ${newVb.w} ${newVb.h}`;
+
+      bbApplyUploadedSvgToCss(finalSvg, true);
+      bbAssetLabSvgText = finalSvg;
+      bbAssetLabTrimViewBox = vb;
+      try {
+        localStorage.setItem(BB_ASSET_LAB_STORAGE_KEY, finalSvg);
+        localStorage.setItem(BB_ASSET_LAB_CROP_SAVED_KEY, "1");
+      } catch {}
+      updateApplyButtonVisibility();
+      setPreview({ name: (localStorage.getItem(BB_ASSET_LAB_FILENAME_KEY) || "upload.svg"), ratio, url: bbAssetLabBlobUrl, viewBox: vb });
+      const appliedToMarks = bbApplyUploadedAssetToMarks({ silent: true, closeAssetPanel: true });
+      if (!appliedToMarks && panel) panel.classList.remove("open");
+      // Save the CROPPED SVG to disk immediately (processed-content folder).
+      const marksNote = appliedToMarks ? " Logos in the text updated." : " No in-text logo marks on this page (crop is saved).";
+      try {
+        const originalName = (localStorage.getItem(BB_ASSET_LAB_FILENAME_KEY) || "upload.svg");
+        const ping = await fetch(bbPingApi()).catch(() => null);
+        if (!ping || !ping.ok) {
+          // Do not block saving — ping is only a health check. If CORS/GET is misconfigured, POST may still work.
+        }
+        const res = await fetch(BB_SAVE_CROPPED_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: originalName,
+            svg: finalSvg,
+            // Prefer numeric viewBox (server tolerates number formatting; avoids brittle substring matches)
+            viewBoxX: newVb.x,
+            viewBoxY: newVb.y,
+            viewBoxW: newVb.w,
+            viewBoxH: newVb.h,
+            // Optional debug: keep as string for humans/back-compat
+            expectedViewBox: vb,
+          }),
+        });
+        if (!res.ok) {
+          const msg = await res.text();
+          setStatus(
+            `Crop saved locally (viewBox updated), but server save failed: ${res.status}. ${msg}${marksNote}`
+          );
+        } else {
+          const j = await res.json();
+          const savedVb = j && j.viewBox ? String(j.viewBox) : "(unknown)";
+          const savedPath = j && j.path ? String(j.path) : "content/processed-content/";
+          const abs = j && j.savedAbsPath ? String(j.savedAbsPath) : "";
+          setStatus(
+            `Crop saved. Wrote ${savedPath}. Saved viewBox: ${savedVb}. ${abs ? "Abs: " + abs + ". " : ""}${marksNote.trim()}`
+          );
+        }
+      } catch (e) {
+        setStatus(
+          `Crop saved locally (viewBox updated), but server save failed (API unreachable).${marksNote} Open DevTools Console → paste any error here.`
+        );
+      }
+      bbCloseCropper();
+    }
+
+    if (cropBtn) cropBtn.addEventListener("click", bbOpenCropper);
+    if (closeBtn) closeBtn.addEventListener("click", bbCloseCropper);
+    if (resetBtn) resetBtn.addEventListener("click", bbResetCropper);
+    if (saveBtn) saveBtn.addEventListener("click", bbSaveCrop);
+    if (overlay) overlay.addEventListener("click", (e) => { if (e.target === overlay) bbCloseCropper(); });
+
+    /**
+     * Swaps in-text logo marks to the uploaded asset (data-brand=upload + enhance).
+     * @returns {boolean} true if at least one mark was updated
+     */
+    function bbSyncUploadMarksChip() {
+      try {
+        const chip = document.querySelector(".bb-threshold-chip");
+        if (chip) {
+          if (bbAssetLabBlobUrl) chip.style.setProperty("--bb-chip-logo", `url("${bbAssetLabBlobUrl}")`);
+          chip.textContent = " ";
+        }
+      } catch {}
+    }
+
+    function bbPulseUploadMarks() {
+      requestAnimationFrame(() => {
+        const marks2 = Array.from(document.querySelectorAll(".brandbased-dynamic-logo-slot")).filter(
+          (el) => !el.closest(".popup")
+        );
+        marks2.forEach((el) => el.classList.remove("bb-swap-pulse"));
+        requestAnimationFrame(() => {
+          marks2.forEach((el) => el.classList.add("bb-swap-pulse"));
+          setTimeout(() => marks2.forEach((el) => el.classList.remove("bb-swap-pulse")), 650);
+        });
+      });
+    }
+
+    function bbApplyUploadedAssetToMarks(opts) {
+      const o = opts || {};
+      const silent = !!o.silent;
+      const closeAssetPanel = o.closeAssetPanel !== false;
+      const preserveSmartSizeCache = !!o.preserveSmartSizeCache;
+      const marks = Array.from(document.querySelectorAll(".brandbased-dynamic-logo-slot")).filter(
+        (el) => !el.closest(".popup") && el.getAttribute("data-bb-fixed") !== "1"
+      );
+      if (!marks.length) {
+        if (!silent) setStatus("No marks found on page.");
+        return false;
+      }
+
+      marks.forEach((el) => {
+        el.dataset.brand = "upload";
+      });
+      bbSyncUploadMarksChip();
+
+      if (preserveSmartSizeCache) {
+        if (closeAssetPanel && panel) panel.classList.remove("open");
+        window.setTimeout(() => {
+          try {
+            bbSyncStandaloneMarksToThemeSim();
+          } catch {}
+          try {
+            enhanceBrandMarks();
+          } catch {}
+        }, 0);
+        return true;
+      }
+
+      bbSmartMemoryCache.clear();
+      bbSmartInFlight.clear();
+      bbForceSmartFetch = true;
+      try {
+        const keys = Object.keys(localStorage || {});
+        for (const k of keys) {
+          if (k.startsWith(BB_SMART_SIZE_CACHE_PREFIX)) localStorage.removeItem(k);
+        }
+      } catch {}
+      stripBrandEnhancements();
+      enhanceBrandMarks();
+
+      setTimeout(() => {
+        bbForceSmartFetch = false;
+      }, 1200);
+      bbPulseUploadMarks();
+      if (closeAssetPanel && panel) panel.classList.remove("open");
+      if (!silent) setStatus("Applied. All marks now use your uploaded SVG.");
+      return true;
+    }
+
+    if (applyBtn) {
+      applyBtn.addEventListener("click", () => {
+        bbApplyUploadedAssetToMarks({ silent: false, closeAssetPanel: true });
+      });
+    }
+
+    // Restore last uploaded SVG (if any) — runs on all pages (including Brand-Settings-Module.html).
+    try {
+      const cached = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
+      if (cached && /<\s*svg\b/i.test(cached)) {
+        const { ratio } = bbApplyUploadedSvgToCss(cached);
+        bbAssetLabSvgText = cached;
+        const rvb = bbGetRootViewBoxObject(cached);
+        const vbl = rvb ? `${rvb.x} ${rvb.y} ${rvb.w} ${rvb.h}` : "(unknown)";
+        setStatus(
+          localStorage.getItem(BB_ASSET_LAB_CROP_SAVED_KEY) === "1"
+            ? "Restored last SVG. Open Brand Fit Setup and Save to update logos."
+            : "Restored last SVG. Open Brand Fit Setup, then Save to update logos in the text."
+        );
+        setPreview({ name: "Restored upload", ratio, url: bbAssetLabBlobUrl, viewBox: vbl });
+        // If a crop was explicitly saved, treat it as the active “golden upload” on pages without the upload UI.
+        try {
+          if (localStorage.getItem(BB_ASSET_LAB_CROP_SAVED_KEY) === "1") {
+            bbApplyUploadedAssetToMarks({
+              silent: true,
+              closeAssetPanel: true,
+              preserveSmartSizeCache: true,
+            });
+          }
+        } catch {}
+      }
+    } catch {}
+    updateApplyButtonVisibility();
+  }
+
+  bbInitAssetLabUi();
+  bbInitPlacementPanelUi();
+  bbInitBrandSettingsUi();
+  /* Standalone Team Console page (no placement panel): wire OpenAI key UI */
+  if (document.getElementById("bbTeamConsoleRoot")) {
+    bbInitDevOpenaiKeyUi();
+  }
+  try {
+    bbApplyGuidanceLrPadFromText();
+  } catch {}
+
+  function bbGetTypographyContext(el) {
+    const cs = window.getComputedStyle(el);
+    const fontSize = cs.fontSize || "";
+    const lineHeight = cs.lineHeight || "";
+    const textLength = (el.textContent || "").trim().length;
+    return {
+      fontSize,
+      lineHeight,
+      textLength,
+      fontSizePx: bbNumberFromCssPx(fontSize),
+      lineHeightPx: bbNumberFromCssPx(lineHeight),
+      capHeightRatio: 0.7,
+    };
+  }
+
+  function bbIsBrandAiSmartOn() {
+    try {
+      const v = localStorage.getItem(BB_BRAND_AI_SMART_KEY);
+      if (v === null) return true;
+      return v === "1" || v === "true";
+    } catch {
+      return true;
+    }
+  }
+  function bbSetBrandAiSmartOn(on) {
+    try {
+      localStorage.setItem(BB_BRAND_AI_SMART_KEY, on ? "1" : "0");
+    } catch {}
+  }
+  function bbRatioToFractionLabel(ratio) {
+    const x = Number(ratio);
+    if (!Number.isFinite(x) || x <= 0) return null;
+    const maxDen = 30;
+    let h1 = 1,
+      h0 = 0,
+      k1 = 0,
+      k0 = 1;
+    let b = x;
+    for (let i = 0; i < 20; i++) {
+      const a = Math.floor(b);
+      const h2 = a * h1 + h0;
+      const k2 = a * k1 + k0;
+      if (k2 > maxDen) break;
+      h0 = h1;
+      h1 = h2;
+      k0 = k1;
+      k1 = k2;
+      const frac = b - a;
+      if (frac < 1e-10) break;
+      b = 1 / frac;
+    }
+    if (k1 === 0) return null;
+    const n0 = Math.max(1, Math.round(h1));
+    const d0 = Math.max(1, Math.round(k1));
+    const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+    const g = gcd(n0, d0);
+    return { n: Math.round(n0 / g), d: Math.round(d0 / g) };
+  }
+  function bbGetGoldenReferenceForApi() {
+    const svg = (bbAssetLabSvgText && String(bbAssetLabSvgText).trim()) || "";
+    if (!svg || !/<\s*svg\b/i.test(svg)) return null;
+    const vb = bbGetRootViewBoxObject(svg);
+    if (!vb || !Number.isFinite(vb.w) || !Number.isFinite(vb.h) || vb.h === 0) return null;
+    const ratio = vb.w / vb.h;
+    const f = bbRatioToFractionLabel(ratio);
+    const logoRatioText = f ? `${f.n}:${f.d} (${ratio.toFixed(3)})` : ratio.toFixed(3);
+    let currentUpload = "Restored upload";
+    try {
+      currentUpload = localStorage.getItem(BB_ASSET_LAB_FILENAME_KEY) || "Restored upload";
+    } catch {}
+    return {
+      currentUpload,
+      logoRatio: ratio,
+      logoRatioText,
+      trimViewBox: bbFmtVb4(vb),
+    };
+  }
+  function bbClearSmartSizeCaches() {
+    bbSmartMemoryCache.clear();
+    try {
+      const toRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(BB_SMART_SIZE_CACHE_PREFIX)) toRemove.push(k);
+      }
+      toRemove.forEach((tk) => {
+        try {
+          localStorage.removeItem(tk);
+        } catch {}
+      });
+    } catch {}
+  }
+  function bbRefreshAllSmartSizing() {
+    bbClearSmartSizeCaches();
+    bbForceSmartFetch = true;
+    document.querySelectorAll(".brandbased-dynamic-logo-slot.bb-enhanced").forEach((el) => {
+      if (el.closest(".popup")) return;
+      if (el.__bbSmartClass) {
+        el.classList.remove(el.__bbSmartClass);
+        el.__bbSmartClass = "";
+      }
+      el.classList.remove(BB_AI_SIZE_CLASS);
+      el.__bbSmartKey = "";
+      bbApplySmartSizing(el);
+    });
+    setTimeout(() => {
+      bbForceSmartFetch = false;
+    }, 2000);
+  }
+
+  function bbSmartCacheKey(brand, ctx) {
+    // brand + context combination (string key so we only call AI once per combo)
+    const dk = bbHashStr(bbGetDevOpenaiKey());
+    return `${BB_SMART_SIZE_CACHE_PREFIX}${brand}|${ctx.fontSize}|${ctx.lineHeight}|${ctx.textLength}|${dk}`;
+  }
+
+  function bbHashStr(s) {
+    let h = 5381;
+    const str = String(s || "");
+    for (let i = 0; i < str.length; i++) {
+      h = ((h << 5) + h) ^ str.charCodeAt(i);
+    }
+    return (h >>> 0).toString(36);
+  }
+
+  function bbGetDynStyleEl() {
+    let el = document.getElementById(BB_SMART_DYNAMIC_STYLE_ID);
+    if (!el) {
+      el = document.createElement("style");
+      el.id = BB_SMART_DYNAMIC_STYLE_ID;
+      document.head.appendChild(el);
+    }
+    return el;
+  }
+
+  function bbDynClassForKey(key) {
+    return `bb-smart-${bbHashStr(key)}`;
+  }
+
+  function bbEnsureDynRule(key, vars) {
+    const className = bbDynClassForKey(key);
+    if (bbSmartDynInserted.has(className)) return className;
+    const styleEl = bbGetDynStyleEl();
+    const decls = [
+      `--bb-scale:${vars.scale}`,
+      `--bb-offset-x:${vars.offsetXem}`,
+      `--bb-offset-y:${vars.offsetYem}`,
+      `--bb-size-mul:${vars.sizeMul}`,
+      `--bb-max-w-mul:${vars.maxWMul}`,
+      `--bb-user-offset-y-px:${vars.userOffsetYpx}`,
+      `--bb-user-offset-y-em:${vars.userOffsetYem}`,
+    ];
+    styleEl.appendChild(document.createTextNode(`.${className}{${decls.join(";")}}`));
+    bbSmartDynInserted.add(className);
+    return className;
+  }
+
+  async function bbFetchBrandSvgText(brand) {
+    const safe = String(brand || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "");
+    if (!safe) return "";
+
+    // Special: uploaded asset isn't a file; it's cached as SVG text in localStorage.
+    if (safe === "upload") {
+      try {
+        const cached = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
+        if (cached && /<\s*svg\b/i.test(cached)) return cached;
+      } catch {}
+      return "";
+    }
+
+    try {
+      // Prefer trimmed assets when present so slot sizing matches what we render.
+      const candidates = [`content/${safe}.trim.svg`, `content/${safe}.svg`];
+      for (const url of candidates) {
+        const r = await fetch(url, { cache: "force-cache" });
+        if (!r.ok) continue;
+        const t = (await r.text()) || "";
+        if (t && /<\s*svg\b/i.test(t)) return t;
+      }
+      return "";
+    } catch {
+      return "";
+    }
+  }
+
+  function bbSetSmartVars(el, result) {
+    if (!result) return;
+    const scale = typeof result.scale === "number" ? result.scale : 1;
+    const offsetX = typeof result.offsetX === "number" ? result.offsetX : 0;
+    const offsetY = typeof result.offsetY === "number" ? result.offsetY : 0;
+    const sizeMul = typeof result.sizeMul === "number" ? result.sizeMul : 1;
+    const maxWMul = typeof result.maxWMul === "number" ? result.maxWMul : 2;
+
+    const key = el.__bbSmartKey;
+    if (!key) return;
+
+    const src = (result && result.__bbSource != null && String(result.__bbSource)) || "";
+    if (src.startsWith("openai")) {
+      el.classList.add(BB_AI_SIZE_CLASS);
+    } else {
+      el.classList.remove(BB_AI_SIZE_CLASS);
+    }
+
+    // If backend provides smart padding suggestion and user hasn't overridden it, store it (Brand AI on only).
+    const hasUserPxRule = bbGetUserOffsetYpx() > 0;
+    if (
+      bbIsBrandAiSmartOn() &&
+      !hasUserPxRule &&
+      typeof result.paddingBottomPx === "number"
+    ) {
+      el.__bbUserOffsetYpx = `${result.paddingBottomPx}px`;
+    }
+
+    const className = bbEnsureDynRule(key, {
+      scale: String(scale),
+      offsetXem: `${offsetX}em`,
+      offsetYem: `${offsetY}em`,
+      sizeMul: String(sizeMul),
+      maxWMul: String(maxWMul),
+      userOffsetYpx: el.__bbUserOffsetYpx || "0px",
+      userOffsetYem: el.__bbUserOffsetYem || "0em",
+    });
+
+    if (el.__bbSmartClass && el.__bbSmartClass !== className) el.classList.remove(el.__bbSmartClass);
+    el.__bbSmartClass = className;
+    el.classList.add(className);
+
+    if (String(el.dataset.brand || "").toLowerCase() === "upload" && bbIsBrandAiSmartOn()) {
+      for (const prop of BB_PLACEMENT_PROPS) {
+        try {
+          el.style.removeProperty(prop);
+        } catch {}
+      }
+      try {
+        bbReapplyGuidanceLrAfterBrandAiStrip(el);
+      } catch {}
+    }
+
+    try {
+      bbPersistLastSmartSize(el.dataset.brand, result);
+    } catch {}
+  }
+
+  function bbPersistLastSmartSize(brand, result) {
+    const b = String(brand || "")
+      .trim()
+      .toLowerCase();
+    if (!b || !result) return;
+    try {
+      localStorage.setItem(
+        `${BB_SMART_LAST_APPLIED_PREFIX}${b}`,
+        JSON.stringify({
+          scale: result.scale,
+          offsetX: result.offsetX,
+          offsetY: result.offsetY,
+          sizeMul: result.sizeMul,
+          maxWMul: result.maxWMul,
+          paddingBottomPx: result.paddingBottomPx,
+          __bbSource: result.__bbSource,
+        })
+      );
+    } catch {}
+  }
+
+  function bbLoadLastSmartSize(brand) {
+    const b = String(brand || "")
+      .trim()
+      .toLowerCase();
+    if (!b) return null;
+    try {
+      const raw = localStorage.getItem(`${BB_SMART_LAST_APPLIED_PREFIX}${b}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function bbFindLooseSmartSizeCache(brand, svgKey, baiForRules, goldenKey) {
+    const brandKey = String(brand || "")
+      .trim()
+      .toLowerCase();
+    if (!brandKey) return null;
+    const head = `${BB_SMART_SIZE_CACHE_PREFIX}${brandKey}|`;
+    const svgPart = `|svg:${svgKey}|`;
+    const baiPart = `|bai:${baiForRules ? 1 : 0}|`;
+    const gPart = goldenKey && goldenKey !== "none" ? `|g:${goldenKey}|` : "";
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith(head)) continue;
+        if (!k.includes(svgPart) || !k.includes(baiPart)) continue;
+        if (gPart && !k.includes(gPart)) continue;
+        const raw = localStorage.getItem(k);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.scale === "number") return parsed;
+      }
+    } catch {}
+    return null;
+  }
+
+  function bbRecordSmartSizeMeta(result, brand, fromCache) {
+    const r = result || {};
+    let src = (r.__bbSource && String(r.__bbSource)) || "";
+    if (fromCache && !src) src = "local_cache";
+    bbLastSmartSizeMeta = {
+      source: src,
+      brand: String(brand || ""),
+      fromCache: !!fromCache,
+      at: Date.now(),
+    };
+    try {
+      void bbUpdatePlacementAiStatus();
+    } catch {}
+  }
+
+  function bbPingApi() {
+    return BB_SMART_SIZE_API.replace(/\/api\/bb\/smart-size\/?$/, "/api/bb/ping");
+  }
+
+  function bbGetDevOpenaiKey() {
+    const el = document.getElementById("bbDevOpenaiKey");
+    if (el) {
+      const v = String(el.value || "").trim();
+      if (v) return v;
+    }
+    try {
+      return String(localStorage.getItem(BB_DEV_OPENAI_KEY) || "").trim();
+    } catch {
+      return "";
+    }
+  }
+
+  function bbPingKeySourceNote(ping) {
+    if (!ping) return "";
+    const s = String(ping.openaiKeySource || "");
+    if (s === "dev_header") return " · key: page (dev)";
+    if (s === "both") return " · page key overrides .env on smart-size";
+    if (s === "env") return " · key: .env";
+    return "";
+  }
+
+  function bbDevOpenaiPingHeaders() {
+    const k = bbGetDevOpenaiKey();
+    if (!k) return {};
+    return { "X-BB-Dev-OpenAI-Key": k };
+  }
+
+  let _bbDevKeyPingTimer = null;
+
+  function bbInitDevOpenaiKeyUi() {
+    const input = document.getElementById("bbDevOpenaiKey");
+    const clearB = document.getElementById("bbDevOpenaiKeyClear");
+    if (!input) return;
+    try {
+      const stored = String(localStorage.getItem(BB_DEV_OPENAI_KEY) || "");
+      if (stored && !input.value) input.value = stored;
+    } catch {}
+    const save = () => {
+      try {
+        localStorage.setItem(BB_DEV_OPENAI_KEY, String(input.value || ""));
+      } catch {}
+    };
+    const debouncedStatus = () => {
+      clearTimeout(_bbDevKeyPingTimer);
+      _bbDevKeyPingTimer = setTimeout(() => {
+        void bbUpdatePlacementAiStatus();
+      }, 400);
+    };
+    input.addEventListener("input", () => {
+      save();
+      debouncedStatus();
+    });
+    input.addEventListener("change", () => {
+      save();
+      void bbUpdatePlacementAiStatus();
+    });
+    if (clearB) {
+      clearB.addEventListener("click", () => {
+        input.value = "";
+        try {
+          localStorage.removeItem(BB_DEV_OPENAI_KEY);
+        } catch {}
+        bbClearSmartSizeCaches();
+        void bbUpdatePlacementAiStatus();
+        try {
+          input.focus();
+        } catch {}
+      });
+    }
+  }
+
+  async function bbUpdatePlacementAiStatus() {
+    const p = document.getElementById("bbPlaceAiStatus");
+    if (!p) return;
+    if (!bbIsBrandAiSmartOn()) {
+      p.hidden = true;
+      p.textContent = "";
+      return;
+    }
+    p.hidden = false;
+
+    let ping = null;
+    try {
+      const r = await fetch(bbPingApi(), { cache: "no-store", headers: bbDevOpenaiPingHeaders() });
+      if (r.ok) ping = await r.json();
+    } catch (e) {
+      p.textContent = "Status — could not reach " + bbPingApi() + " (start API on 8001).";
+      return;
+    }
+    if (!ping || String(ping.ok) !== "true") {
+      p.textContent = "Status — unexpected ping response from API.";
+      return;
+    }
+    if (String(ping.openaiKeyLoaded) !== "yes") {
+      const inf = String(ping.openaiKeyInEnvFile || "");
+      if (String(ping.dotenvFileExists) === "no") {
+        p.textContent =
+          "Status — no .env at " +
+          (ping.dotenvFilePath || "ui-demo/.env") +
+          ". Create it, add OPENAI_API_KEY=... (one line), restart 8001.";
+      } else if (inf === "no_line" || inf === "missing") {
+        p.textContent =
+          "Status — .env exists but has no OPENAI_API_KEY= line. Add exactly: OPENAI_API_KEY=sk-... (one line, no spaces around =), save, restart 8001.";
+      } else if (inf === "empty") {
+        p.textContent =
+          "Status — .env has OPENAI_API_KEY= but the value is empty. Paste a key in “OpenAI API key (local testing)” above, or add the key to .env on one line, save, and restart 8001.";
+      } else if (inf === "set") {
+        p.textContent =
+          "Status — .env contains a key, but the running API process does not. Fully stop and start uvicorn on 8001 (not only reload a tab). If that fails, in Terminal: cd ui-demo && export OPENAI_API_KEY=… && .venv/bin/uvicorn bb_smart_sizing_server:app --port 8001";
+      } else {
+        p.textContent =
+          "Status — .env issue: " +
+          (String(ping.pythonDotenvInstalled) === "no"
+            ? "install: pip install python-dotenv. "
+            : "") +
+          "Set OPENAI_API_KEY= (one line), save, restart 8001.";
+      }
+      return;
+    }
+
+    const m = bbLastSmartSizeMeta;
+    if (
+      !_bbDidStaleKeyAutoRefresh &&
+      m &&
+      m.source &&
+      m.source.indexOf("fallback:no_api_key") >= 0
+    ) {
+      _bbDidStaleKeyAutoRefresh = true;
+      p.textContent =
+        "Status — API key is OK (ping). Clearing old “no key” cache and re-running smart size…";
+      bbRefreshAllSmartSizing();
+      setTimeout(() => {
+        void bbUpdatePlacementAiStatus();
+      }, 3200);
+      return;
+    }
+
+    if (!m || !m.source) {
+      p.textContent =
+        "Status — API key OK (ping)." +
+        bbPingKeySourceNote(ping) +
+        " Smart-size will show here after a mark loads.";
+      return;
+    }
+    const src = m.source;
+    const cache = m.fromCache ? " [cached] " : " ";
+    let expl = "";
+    if (src === "openai" || (src && src.indexOf("openai") === 0)) {
+      if (src.indexOf("golden") >= 0) {
+        expl = "Model ran (Brand AI + golden). Non-upload marks used your Asset Lab ratio.";
+      } else {
+        const lastBrand = String(m.brand || "")
+          .trim()
+          .toLowerCase();
+        if (lastBrand === "upload") {
+          expl =
+            "Model ran (OpenAI). For the upload / Asset Lab mark we only use alignment (golden is for other in-text brands vs your golden upload). This is expected.";
+        } else {
+          expl =
+            "Model ran (OpenAI) without the golden add-on. Load an SVG in Asset Lab and check a non-upload mark to see ratio-aware sizing.";
+        }
+      }
+    } else if (src.indexOf("fallback:") === 0) {
+      expl =
+        src.indexOf("no_api_key") >= 0
+          ? "Last smart-size still said no key (try hard refresh / restart API). If /api/bb/ping still shows openaiKeyLoaded yes, contact dev."
+          : "Fallback heuristics only (not the model). " + (m.source || "");
+    } else if (src === "fetch_error" || (src && src.indexOf("http_error") === 0)) {
+      expl = "Request failed — is the smart-size server up? (" + String(src) + ")";
+    } else if (src === "local_cache") {
+      expl =
+        "Served from browser cache (older entries may not include API source). Turn Brand AI off and on to force a fresh call.";
+    } else if (src === "no_result") {
+      expl = "No result object — unexpected.";
+    } else {
+      expl = String(src);
+    }
+    p.textContent =
+      "Status" +
+      cache +
+      "— " +
+      expl +
+      (m.brand ? " · last mark: " + m.brand : "") +
+      bbPingKeySourceNote(ping);
+  }
+
+  async function bbFetchSmartSize(brand, ctx, svgText) {
+    try {
+      const baiOn = bbIsBrandAiSmartOn();
+      const rules = baiOn ? bbGetSmartRules() : "";
+      const st = (svgText && String(svgText).trim()) || "";
+      const brandKey = String(brand || "")
+        .trim()
+        .toLowerCase();
+      const golden = baiOn && brandKey && brandKey !== "upload" ? bbGetGoldenReferenceForApi() : null;
+      const useBrandAiGolden = !!(baiOn && golden);
+      const devK = bbGetDevOpenaiKey();
+      const body = JSON.stringify({
+        brand,
+        context: ctx,
+        rules,
+        brandAiSmartSize: useBrandAiGolden,
+        ...(useBrandAiGolden && golden ? { goldenReference: golden } : {}),
+        ...(st ? { svg: st } : {}),
+        ...(devK ? { devOpenaiKey: devK } : {}),
+      });
+
+      const fetchPromise = fetch(BB_SMART_SIZE_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+      });
+      const timeoutMs = 60000;
+      const res = await Promise.race([
+        fetchPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), timeoutMs)),
+      ]);
+      if (!res.ok) {
+        let errBody = "";
+        try {
+          errBody = (await res.text()) || "";
+        } catch {}
+        const err = {
+          scale: 1,
+          offsetY: 0,
+          offsetX: 0,
+          slotW: 35,
+          slotH: 35,
+          __bbSource: `http_error:${res.status}`,
+          __bbError: errBody.slice(0, 200),
+          __bbVisionSent: false,
+          __bbVisionBytes: 0,
+          __bbGeometry: null,
+        };
+        bbRecordSmartSizeMeta(err, brand, false);
+        return err;
+      }
+      const data = await res.json();
+      try {
+        data.__bbSource = res.headers.get("X-BB-SmartSize-Source") || "";
+        data.__bbKeySource = res.headers.get("X-BB-SmartSize-KeySource") || "";
+        data.__bbVisionSent = false;
+        data.__bbVisionBytes = 0;
+        data.__bbError = res.headers.get("X-BB-SmartSize-Error") || "";
+        data.__bbOpenAI = res.headers.get("X-BB-SmartSize-OpenAI") || "";
+      } catch {}
+      bbRecordSmartSizeMeta(data, brand, false);
+      return data;
+    } catch (e) {
+      const msg = String(e && e.message ? e.message : e);
+      const err = {
+        scale: 1,
+        offsetY: 0,
+        offsetX: 0,
+        slotW: 35,
+        slotH: 35,
+        __bbSource: "fetch_error",
+        __bbError: msg.slice(0, 200),
+        __bbVisionSent: false,
+        __bbVisionBytes: 0,
+        __bbGeometry: null,
+      };
+      bbRecordSmartSizeMeta(err, brand, false);
+      return err;
+    }
+  }
+
+  async function bbApplySmartSizing(el) {
+    const brand = el?.dataset?.brand;
+    if (!brand) return;
+    const ctx = bbGetTypographyContext(el);
+    const baiForRules = bbIsBrandAiSmartOn();
+    const rules = baiForRules ? bbGetSmartRules() : "";
+    const userOffsetYpx = baiForRules ? bbGetUserOffsetYpx() : 0;
+    const userOffsetYem = baiForRules ? bbGetUserOffsetYem() : 0;
+    const brandKey0 = String(brand || "")
+      .trim()
+      .toLowerCase();
+    const g0 =
+      baiForRules && brandKey0 && brandKey0 !== "upload" ? bbGetGoldenReferenceForApi() : null;
+    const goldenKey = g0
+      ? bbHashStr(`${g0.currentUpload}|${g0.trimViewBox}|${String(g0.logoRatio)}`) || "g"
+      : "none";
+    const svgText = await bbFetchBrandSvgText(brand);
+    const svgKey = bbHashStr(svgText) || "none";
+    const key = `${bbSmartCacheKey(brand, ctx)}|rules:${rules}|uoy:${userOffsetYpx}|uoyem:${userOffsetYem}|svg:${svgKey}|bai:${baiForRules ? 1 : 0}|g:${goldenKey}`;
+    el.__bbSmartKey = key;
+
+    // Fast path: in-memory cache (avoids localStorage + duplicate elements)
+    if (!bbForceSmartFetch && bbSmartMemoryCache.has(key)) {
+      bbApplyUserRulesToEl(el);
+      const cached = bbSmartMemoryCache.get(key);
+      bbRecordSmartSizeMeta(cached, brand, true);
+      bbSetSmartVars(el, cached);
+      return cached;
+    }
+
+    if (!bbForceSmartFetch) {
+      try {
+        const cached = localStorage.getItem(key);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          bbSmartMemoryCache.set(key, parsed);
+          bbApplyUserRulesToEl(el);
+          bbRecordSmartSizeMeta(parsed, brand, true);
+          bbSetSmartVars(el, parsed);
+          return parsed;
+        }
+      } catch {
+        // localStorage blocked/unavailable: proceed without caching
+      }
+
+      const lastApplied = bbLoadLastSmartSize(brandKey0);
+      if (lastApplied && typeof lastApplied.scale === "number") {
+        bbSmartMemoryCache.set(key, lastApplied);
+        bbApplyUserRulesToEl(el);
+        bbRecordSmartSizeMeta(lastApplied, brand, true);
+        bbSetSmartVars(el, lastApplied);
+        try {
+          localStorage.setItem(key, JSON.stringify(lastApplied));
+        } catch {}
+        return lastApplied;
+      }
+
+      const loose = bbFindLooseSmartSizeCache(brandKey0, svgKey, baiForRules, goldenKey);
+      if (loose) {
+        bbSmartMemoryCache.set(key, loose);
+        bbApplyUserRulesToEl(el);
+        bbRecordSmartSizeMeta(loose, brand, true);
+        bbSetSmartVars(el, loose);
+        try {
+          localStorage.setItem(key, JSON.stringify(loose));
+        } catch {}
+        return loose;
+      }
+    }
+
+    // Dedup concurrent calls for the same brand+context
+    if (!bbSmartInFlight.has(key)) {
+      bbSmartInFlight.set(
+        key,
+        bbFetchSmartSize(brand, ctx, svgText).finally(() => {
+          bbSmartInFlight.delete(key);
+        })
+      );
+    }
+
+    const result = await bbSmartInFlight.get(key);
+    if (!result) {
+      // Graceful: still set defaults so it's obvious system ran.
+      bbApplyUserRulesToEl(el);
+      const nr = { scale: 1, offsetY: 0, offsetX: 0, __bbSource: "no_result" };
+      bbRecordSmartSizeMeta(nr, brand, false);
+      bbSetSmartVars(el, nr);
+      return null;
+    }
+
+    bbSmartMemoryCache.set(key, result);
+    bbApplyUserRulesToEl(el);
+    bbSetSmartVars(el, result);
+    try {
+      localStorage.setItem(key, JSON.stringify(result));
+    } catch {
+      // ignore cache write failures
+    }
+    return result;
+  }
+
+  function openModalForBrandMark(el) {
+    if (!el || el.closest(".popup")) return;
+    if (document.querySelector(".popup.popup-visible")) return;
+    const popup =
+      el.parentElement?.querySelector?.(".popup") ||
+      document.querySelector(".popup") ||
+      createPopup(el);
+    if (!popup) return;
+    popup.classList.add("popup-visible");
+    popup.style.opacity = "1";
+    popup.style.pointerEvents = "auto";
+
+    // Restore original behavior: close “X” appears after ~2s.
+    try {
+      const closeIconDesktop = popup.querySelector(".close-icon-desktop");
+      const closeXIcon = popup.querySelector(".close-x-icon");
+      const lockIcon = popup.querySelector(".lock-icon-bb-logo");
+      if (closeIconDesktop) closeIconDesktop.style.display = "none";
+      if (closeXIcon) {
+        closeXIcon.classList.remove("show");
+        closeXIcon.style.opacity = "0";
+        closeXIcon.style.pointerEvents = "none";
+      }
+      if (lockIcon) lockIcon.style.marginRight = "0px";
+      popup.classList.remove("close-visible");
+
+      const mobileSheetClose = popup.querySelector(".popup-mobile-sheet-close");
+      if (mobileSheetClose) {
+        mobileSheetClose.classList.remove("bb-mobile-sheet-close-visible");
+        window.clearTimeout(popup.__bbMobileSheetCloseTimer);
+        popup.__bbMobileSheetCloseTimer = window.setTimeout(() => {
+          try {
+            if (!popup.classList.contains("popup-visible")) return;
+            mobileSheetClose.classList.add("bb-mobile-sheet-close-visible");
+          } catch {}
+        }, 2000);
+      }
+
+      window.clearTimeout(popup.__bbCloseTimer);
+      popup.__bbCloseTimer = window.setTimeout(() => {
+        try {
+          if (!popup.classList.contains("popup-visible")) return;
+          if (closeIconDesktop) closeIconDesktop.style.display = "block";
+          if (closeXIcon) {
+            closeXIcon.classList.add("show");
+            closeXIcon.style.opacity = "1";
+            closeXIcon.style.pointerEvents = "auto";
+          }
+          if (lockIcon) lockIcon.style.marginRight = "30px";
+          popup.classList.add("close-visible");
+        } catch {}
+      }, 2000);
+    } catch {}
+  }
+
+  function attachBrandClick(el) {
+    if (bbBrandClickControllers.has(el)) return;
+    const ac = new AbortController();
+    el.addEventListener(
+      "click",
+      () => {
+        openModalForBrandMark(el);
+      },
+      { signal: ac.signal }
+    );
+    bbBrandClickControllers.set(el, ac);
+  }
+
+  function detachBrandClick(el) {
+    bbBrandClickControllers.get(el)?.abort();
+    bbBrandClickControllers.delete(el);
+  }
+
+  function bbSetPlacementSlidersInteractivity() {
+    const on = bbIsBrandAiSmartOn();
+    for (const sel of [
+      ".bb-place-size",
+      ".bb-place-w",
+      ".bb-place-h",
+      ".bb-place-padl",
+      ".bb-place-padr",
+      ".bb-place-padt",
+      ".bb-place-padb",
+    ]) {
+      const inp = document.querySelector(sel);
+      if (inp) inp.disabled = on;
+    }
+    const wrap = document.getElementById("bbPlaceSliders");
+    if (wrap) wrap.classList.toggle("bb-place-sliders--locked", on);
+  }
+
+  function bbUpdatePlacementPanelHints() {
+    const manual = document.getElementById("bbPlaceManualHint");
+    const golden = document.getElementById("bbPlaceGoldenHint");
+    const ai = bbIsBrandAiSmartOn();
+    if (manual) manual.hidden = !ai;
+    if (golden) {
+      const g = bbGetGoldenReferenceForApi();
+      golden.hidden = !ai || !!g;
+    }
+  }
+
+  function bbGetUploadTextMarks() {
+    return Array.from(document.querySelectorAll(".brandbased-dynamic-logo-slot.bb-enhanced")).filter(
+      (el) => el.dataset.brand === "upload" && !el.closest(".popup")
+    );
+  }
+
+  /** Marks that receive guidance L/R padding from Admin / model-guidance text (upload + Brand Settings preview). */
+  function bbGetStandaloneInTextMarks() {
+    return Array.from(
+      document.querySelectorAll(
+        ".bb-premium-wrap .brandbased-dynamic-logo-slot, .bb-freemium-wrap .brandbased-dynamic-logo-slot"
+      )
+    ).filter((el) => !el.closest(".popup"));
+  }
+
+  /** Match Theme Styles simulated in-text mark (upload + short label "brand"). */
+  function bbSyncStandaloneMarksToThemeSim() {
+    let hasUpload = false;
+    try {
+      const cached = localStorage.getItem(BB_ASSET_LAB_STORAGE_KEY) || "";
+      hasUpload = /<\s*svg\b/i.test(cached);
+    } catch {}
+    if (!hasUpload) return;
+    bbGetStandaloneInTextMarks().forEach((el) => {
+      if (el.getAttribute("data-bb-fixed") === "1") return;
+      const saved = (el.getAttribute("data-bb-standalone-label") || "").trim();
+      if (!saved) {
+        const t = (el.textContent || "").trim();
+        if (t) el.setAttribute("data-bb-standalone-label", t);
+      }
+      el.dataset.brand = "upload";
+      if ((el.textContent || "").trim() !== "brand") el.textContent = "brand";
+    });
+  }
+
+  function bbRefreshInTextMarksSmartSizing(selector) {
+    const marks = Array.from(document.querySelectorAll(selector)).filter(
+      (el) => el.classList.contains("bb-enhanced") && !el.closest(".popup")
+    );
+    if (!marks.length) return;
+    marks.forEach((el) => {
+      if (el.__bbSmartClass) {
+        el.classList.remove(el.__bbSmartClass);
+        el.__bbSmartClass = "";
+      }
+      el.classList.remove(BB_AI_SIZE_CLASS);
+      el.__bbSmartKey = "";
+    });
+    bbForceSmartFetch = true;
+    marks.forEach((el) => {
+      try {
+        bbApplySmartSizing(el);
+      } catch {}
+    });
+    setTimeout(() => {
+      bbForceSmartFetch = false;
+    }, 2000);
+  }
+
+  function bbRefreshStandaloneInTextSmartSizing() {
+    bbRefreshInTextMarksSmartSizing(
+      ".bb-premium-wrap .brandbased-dynamic-logo-slot, .bb-freemium-wrap .brandbased-dynamic-logo-slot"
+    );
+  }
+
+  /** Theme Settings / Products preview: #bbThemeSimulatedHost in-text mark. */
+  function bbRefreshThemeSimSmartSizing() {
+    bbRefreshInTextMarksSmartSizing("#bbThemeSimulatedHost .brandbased-dynamic-logo-slot");
+  }
+
+  try {
+    globalThis.bbSyncStandaloneMarksToThemeSim = bbSyncStandaloneMarksToThemeSim;
+    globalThis.bbRefreshStandaloneInTextSmartSizing = bbRefreshStandaloneInTextSmartSizing;
+    globalThis.bbRefreshThemeSimSmartSizing = bbRefreshThemeSimSmartSizing;
+  } catch {}
+
+  function bbGetGuidancePadTargetMarks() {
+    const seen = new Set();
+    const out = [];
+    const add = (el) => {
+      if (!el || seen.has(el)) return;
+      if (el.closest?.(".popup")) return;
+      seen.add(el);
+      out.push(el);
+    };
+    for (const el of bbGetUploadTextMarks()) add(el);
+    document.querySelectorAll("#bbPreviewHost .brandbased-dynamic-logo-slot").forEach((el) => add(el));
+    bbGetStandaloneInTextMarks().forEach((el) => add(el));
+    return out;
+  }
+
+  /** After Brand AI clears placement vars, re-apply L/R from guidance (inline beats .BB-AI-Size 0em). */
+  function bbReapplyGuidanceLrAfterBrandAiStrip(el) {
+    if (!el) return;
+    const pr = bbExtractGuidancePadLRpx(bbGetSmartRules());
+    if (pr.l != null) el.style.setProperty("--bb-place-pad-l", `${pr.l}px`);
+    else el.style.removeProperty("--bb-place-pad-l");
+    if (pr.r != null) el.style.setProperty("--bb-place-pad-r", `${pr.r}px`);
+    else el.style.removeProperty("--bb-place-pad-r");
+  }
+
+  /**
+   * Sets --bb-place-pad-l/r from Admin model-guidance text. Only while Brand AI is on;
+   * when off, placement sliders / refresh paths clear these vars separately.
+   */
+  function bbApplyGuidanceLrPadFromText() {
+    if (!bbIsBrandAiSmartOn()) return;
+    const pr = bbExtractGuidancePadLRpx(bbGetSmartRules());
+    for (const el of bbGetGuidancePadTargetMarks()) {
+      if (pr.l != null) el.style.setProperty("--bb-place-pad-l", `${pr.l}px`);
+      else el.style.removeProperty("--bb-place-pad-l");
+      if (pr.r != null) el.style.setProperty("--bb-place-pad-r", `${pr.r}px`);
+      else el.style.removeProperty("--bb-place-pad-r");
+    }
+  }
+
+  function bbUpdatePlaceButtonVisibility() {
+    const b = document.getElementById("bbPlaceBtn");
+    const p = document.getElementById("bbPlacePanel");
+    if (!b) return;
+    if (bbGetUploadTextMarks().length > 0) {
+      b.classList.add("bb-place-btn--visible");
+    } else {
+      b.classList.remove("bb-place-btn--visible");
+      if (p) {
+        p.classList.remove("open");
+        p.setAttribute("aria-hidden", "true");
+      }
+    }
+  }
+
+  function bbPlaceSlidersAtDefaults() {
+    const s = document.querySelector(".bb-place-size");
+    const w = document.querySelector(".bb-place-w");
+    const h = document.querySelector(".bb-place-h");
+    const l = document.querySelector(".bb-place-padl");
+    const r = document.querySelector(".bb-place-padr");
+    const t = document.querySelector(".bb-place-padt");
+    const b = document.querySelector(".bb-place-padb");
+    if (!s || !w || !h || !l || !r || !t || !b) return true;
+    return (
+      Number(s.value) === 100 &&
+      Number(w.value) === 100 &&
+      Number(h.value) === 100 &&
+      Number(l.value) === 0 &&
+      Number(r.value) === 0 &&
+      Number(t.value) === 0 &&
+      Number(b.value) === 0
+    );
+  }
+
+  function bbReadPlacementFromSliders() {
+    const s = document.querySelector(".bb-place-size");
+    const w = document.querySelector(".bb-place-w");
+    const h = document.querySelector(".bb-place-h");
+    const pl = document.querySelector(".bb-place-padl");
+    const pr = document.querySelector(".bb-place-padr");
+    const pt = document.querySelector(".bb-place-padt");
+    const pb = document.querySelector(".bb-place-padb");
+    const padEm = (el) => `${Math.max(0, Math.min(40, Number(el && el.value !== "" ? el.value : 0))) / 100}em`;
+    return {
+      sizeMul: Math.max(0.5, Math.min(1.5, Number(s && s.value !== "" ? s.value : 100) / 100)),
+      wMul: Math.max(0.5, Math.min(1.5, Number(w && w.value !== "" ? w.value : 100) / 100)),
+      hMul: Math.max(0.5, Math.min(1.5, Number(h && h.value !== "" ? h.value : 100) / 100)),
+      padL: padEm(pl),
+      padR: padEm(pr),
+      padT: padEm(pt),
+      padB: padEm(pb),
+    };
+  }
+
+  function bbPlacementSlidersPresent() {
+    return !!(document.querySelector(".bb-place-size") && document.querySelector(".bb-place-w"));
+  }
+
+  /** Slider values from localStorage when placement panel is not on the page (standalone modals). */
+  function bbReadPlacementFromStoredRecord() {
+    let o = null;
+    try {
+      o = JSON.parse(localStorage.getItem(BB_PLACEMENT_KEY) || "null");
+    } catch {
+      o = null;
+    }
+    const padChunk = (k) =>
+      `${Math.max(0, Math.min(40, Number(o && o[k] != null && o[k] !== "" ? o[k] : 0))) / 100}em`;
+    const mul = (sk, dv) =>
+      Math.max(0.5, Math.min(1.5, Number(o && o[sk] != null && o[sk] !== "" ? o[sk] : dv) / 100));
+    if (!o || typeof o !== "object") {
+      return {
+        sizeMul: 1,
+        wMul: 1,
+        hMul: 1,
+        padL: "0em",
+        padR: "0em",
+        padT: "0em",
+        padB: "0em",
+      };
+    }
+    return {
+      sizeMul: mul("s", 100),
+      wMul: mul("w", 100),
+      hMul: mul("h", 100),
+      padL: padChunk("l"),
+      padR: padChunk("r"),
+      padT: padChunk("t"),
+      padB: padChunk("b"),
+    };
+  }
+
+  function bbGetPreviewPlacementMarks() {
+    const out = [];
+    const seen = new Set();
+    const add = (el) => {
+      if (!el || seen.has(el) || el.closest?.(".popup")) return;
+      if (!el.classList.contains("bb-enhanced")) return;
+      seen.add(el);
+      out.push(el);
+    };
+    document
+      .querySelectorAll(
+        "#bbPreviewHost .brandbased-dynamic-logo-slot, #bbThemeSimulatedHost .brandbased-dynamic-logo-slot"
+      )
+      .forEach((el) => add(el));
+    bbGetStandaloneInTextMarks().forEach((el) => add(el));
+    return out;
+  }
+
+  function bbApplyPlacementSlidersToUploadMarks() {
+    if (!bbIsBrandAiSmartOn()) {
+      for (const el of bbGetGuidancePadTargetMarks()) {
+        try {
+          el.style.removeProperty("--bb-place-pad-l");
+          el.style.removeProperty("--bb-place-pad-r");
+        } catch {}
+      }
+    }
+    const marksMap = new Map();
+    const addMarks = (list) => {
+      for (const el of list) marksMap.set(el, true);
+    };
+    addMarks(bbGetUploadTextMarks());
+    addMarks(bbGetPreviewPlacementMarks());
+    const marks = Array.from(marksMap.keys());
+    if (!marks.length) {
+      try {
+        bbApplyGuidanceLrPadFromText();
+      } catch {}
+      return;
+    }
+    if (bbIsBrandAiSmartOn()) {
+      for (const el of marks) {
+        for (const prop of BB_PLACEMENT_PROPS) {
+          try {
+            el.style.removeProperty(prop);
+          } catch {}
+        }
+      }
+      try {
+        bbApplyGuidanceLrPadFromText();
+      } catch {}
+      return;
+    }
+    const slidersHere = bbPlacementSlidersPresent();
+    if (slidersHere && bbPlaceSlidersAtDefaults()) {
+      for (const el of marks) {
+        for (const prop of BB_PLACEMENT_PROPS) {
+          try {
+            el.style.removeProperty(prop);
+          } catch {}
+        }
+      }
+      try {
+        localStorage.removeItem(BB_PLACEMENT_KEY);
+      } catch {}
+      try {
+        bbApplyGuidanceLrPadFromText();
+      } catch {}
+      return;
+    }
+
+    const v = slidersHere ? bbReadPlacementFromSliders() : bbReadPlacementFromStoredRecord();
+
+    for (const el of marks) {
+      el.style.setProperty("--bb-size-mul", String(v.sizeMul));
+      el.style.setProperty("--bb-place-w-mul", String(v.wMul));
+      el.style.setProperty("--bb-place-h-mul", String(v.hMul));
+      el.style.setProperty("--bb-place-pad-l", v.padL);
+      el.style.setProperty("--bb-place-pad-r", v.padR);
+      el.style.setProperty("--bb-place-pad-t", v.padT);
+      el.style.setProperty("--bb-place-pad-b", v.padB);
+    }
+    if (slidersHere) {
+      try {
+        const size = document.querySelector(".bb-place-size");
+        const w = document.querySelector(".bb-place-w");
+        const h = document.querySelector(".bb-place-h");
+        const l = document.querySelector(".bb-place-padl");
+        const r = document.querySelector(".bb-place-padr");
+        const t = document.querySelector(".bb-place-padt");
+        const b = document.querySelector(".bb-place-padb");
+        localStorage.setItem(
+          BB_PLACEMENT_KEY,
+          JSON.stringify({
+            s: size ? size.value : "100",
+            w: w ? w.value : "100",
+            h: h ? h.value : "100",
+            l: l ? l.value : "0",
+            r: r ? r.value : "0",
+            t: t ? t.value : "0",
+            b: b ? b.value : "0",
+          })
+        );
+      } catch {}
+    }
+    try {
+      bbApplyGuidanceLrPadFromText();
+    } catch {}
+  }
+
+  function bbSetPlacementSlidersFromStorage() {
+    const size = document.querySelector(".bb-place-size");
+    const w = document.querySelector(".bb-place-w");
+    const h = document.querySelector(".bb-place-h");
+    const l = document.querySelector(".bb-place-padl");
+    const r = document.querySelector(".bb-place-padr");
+    const t = document.querySelector(".bb-place-padt");
+    const b = document.querySelector(".bb-place-padb");
+    if (!size || !w || !h || !l || !r || !t || !b) return;
+    let o = null;
+    try {
+      o = JSON.parse(localStorage.getItem(BB_PLACEMENT_KEY) || "null");
+    } catch {
+      o = null;
+    }
+    if (o && typeof o === "object") {
+      size.value = o.s != null ? String(o.s) : "100";
+      w.value = o.w != null ? String(o.w) : "100";
+      h.value = o.h != null ? String(o.h) : "100";
+      l.value = o.l != null ? String(o.l) : "0";
+      r.value = o.r != null ? String(o.r) : "0";
+      t.value = o.t != null ? String(o.t) : "0";
+      b.value = o.b != null ? String(o.b) : "0";
+    } else {
+      size.value = "100";
+      w.value = "100";
+      h.value = "100";
+      l.value = "0";
+      r.value = "0";
+      t.value = "0";
+      b.value = "0";
+    }
+  }
+
+  function bbResetPlacementSliders() {
+    const size = document.querySelector(".bb-place-size");
+    const w = document.querySelector(".bb-place-w");
+    const h = document.querySelector(".bb-place-h");
+    const l = document.querySelector(".bb-place-padl");
+    const r = document.querySelector(".bb-place-padr");
+    const t = document.querySelector(".bb-place-padt");
+    const b = document.querySelector(".bb-place-padb");
+    if (size) size.value = "100";
+    if (w) w.value = "100";
+    if (h) h.value = "100";
+    if (l) l.value = "0";
+    if (r) r.value = "0";
+    if (t) t.value = "0";
+    if (b) b.value = "0";
+  }
+
+  function bbInitPlacementPanelUi() {
+    const placeBtn = document.getElementById("bbPlaceBtn");
+    const placePanel = document.getElementById("bbPlacePanel");
+    if (!placePanel) return;
+    /* API key UI lives on Admin Team Console only — not inside Custom placement */
+    if (document.getElementById("bbDevOpenaiWrap")) bbInitDevOpenaiKeyUi();
+    // Optional: edit the same model guidance text here (mirrors the floating panel).
+    try {
+      const gInput = document.getElementById("bbPlaceGuidanceInput");
+      const gSave = document.getElementById("bbPlaceGuidanceSave");
+      const gClear = document.getElementById("bbPlaceGuidanceClear");
+      const gStatus = document.getElementById("bbPlaceGuidanceStatus");
+      if (gInput) gInput.value = bbGetSmartRules();
+      const setStatus = (t) => {
+        if (!gStatus) return;
+        gStatus.textContent = t || "";
+      };
+      const syncFloating = (rulesText) => {
+        const f = document.querySelector(".bb-smart-rules-input");
+        if (f) f.value = rulesText;
+      };
+      const applyRules = (rulesText) => {
+        clearTimeout(_bbGuidanceDebounce);
+        syncFloating(String(rulesText ?? ""));
+        bbCommitGuidanceToStorageAndRefresh(rulesText);
+        setStatus(String(rulesText || "").trim() ? "Saved" : "");
+      };
+      if (gSave && gInput) {
+        gSave.addEventListener("click", () => {
+          applyRules(String(gInput.value || ""));
+        });
+      }
+      if (gClear && gInput) {
+        gClear.addEventListener("click", () => {
+          gInput.value = "";
+          applyRules("");
+        });
+      }
+      if (gInput) {
+        const floatSt = document.querySelector(".bb-smart-rules-status");
+        gInput.addEventListener("input", () => {
+          bbScheduleGuidanceCommit(String(gInput.value || ""), floatSt);
+        });
+        gInput.addEventListener("keydown", (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            try {
+              applyRules(String(gInput.value || ""));
+            } catch {}
+          }
+        });
+      }
+    } catch {}
+    const brandAiBtn = document.getElementById("bbPlaceBrandAiToggle");
+    if (brandAiBtn) {
+      const syncBrandAiBtn = () => {
+        const on = bbIsBrandAiSmartOn();
+        brandAiBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        brandAiBtn.textContent = on ? "On" : "Off";
+        // Brand Settings: drive the iridescent shimmer state on the Adaptive card.
+        try {
+          const adaptive = brandAiBtn.closest?.(".bb-adaptive-card");
+          if (adaptive) adaptive.classList.toggle("bb-adaptive-on", on);
+        } catch {}
+      };
+      syncBrandAiBtn();
+      brandAiBtn.addEventListener("click", () => {
+        bbSetBrandAiSmartOn(!bbIsBrandAiSmartOn());
+        syncBrandAiBtn();
+        if (!bbIsBrandAiSmartOn()) {
+          bbSetPlacementSlidersFromStorage();
+          bbApplyPlacementSlidersToUploadMarks();
+        } else {
+          bbApplyPlacementSlidersToUploadMarks();
+        }
+        bbSetPlacementSlidersInteractivity();
+        bbUpdatePlacementPanelHints();
+        bbUpdatePlacementAiStatus();
+        bbRefreshAllSmartSizing();
+      });
+    }
+    const inputs = [
+      ".bb-place-size",
+      ".bb-place-w",
+      ".bb-place-h",
+      ".bb-place-padl",
+      ".bb-place-padr",
+      ".bb-place-padt",
+      ".bb-place-padb",
+    ]
+      .map((sel) => document.querySelector(sel))
+      .filter(Boolean);
+    const closeB = placePanel.querySelector(".bb-place-close");
+    const resetB = placePanel.querySelector(".bb-place-reset");
+    const doneB = placePanel.querySelector(".bb-place-apply");
+    const close = () => {
+      placePanel.classList.remove("open");
+      placePanel.setAttribute("aria-hidden", "true");
+    };
+    const open = () => {
+      if (brandAiBtn) {
+        const on = bbIsBrandAiSmartOn();
+        brandAiBtn.setAttribute("aria-pressed", on ? "true" : "false");
+        brandAiBtn.textContent = on ? "On" : "Off";
+      }
+      bbSetPlacementSlidersInteractivity();
+      bbUpdatePlacementPanelHints();
+      bbUpdatePlacementAiStatus();
+      bbSetPlacementSlidersFromStorage();
+      bbApplyPlacementSlidersToUploadMarks();
+      placePanel.classList.add("open");
+      placePanel.setAttribute("aria-hidden", "false");
+    };
+    const staticPanelMode = !placeBtn;
+    if (!staticPanelMode && placeBtn) {
+      placeBtn.addEventListener("click", () => {
+        if (!bbGetUploadTextMarks().length) return;
+        if (placePanel.classList.contains("open")) {
+          close();
+        } else {
+          open();
+        }
+      });
+    } else {
+      // Brand Settings page: panel is always visible, no popup behavior.
+      try {
+        placePanel.classList.add("open");
+        placePanel.setAttribute("aria-hidden", "false");
+      } catch {}
+      try {
+        if (closeB) closeB.style.display = "none";
+        if (doneB) doneB.style.display = "none";
+      } catch {}
+      open();
+    }
+    if (closeB) closeB.addEventListener("click", close);
+    if (doneB) doneB.addEventListener("click", close);
+    if (resetB) {
+      resetB.addEventListener("click", () => {
+        bbResetPlacementSliders();
+        bbApplyPlacementSlidersToUploadMarks();
+      });
+    }
+    for (const inp of inputs) {
+      inp.addEventListener("input", () => {
+        bbApplyPlacementSlidersToUploadMarks();
+      });
+    }
+    bbSetPlacementSlidersInteractivity();
+    bbUpdatePlacementPanelHints();
+    bbUpdatePlacementAiStatus();
+    bbUpdatePlaceButtonVisibility();
+  }
+
+  /** Resolver: brand class + bb-enhanced (paths from CSS .bb-* tokens); click → modal. */
+  function enhanceBrandMarks() {
+    try {
+      bbSyncStandaloneMarksToThemeSim();
+    } catch {}
+    const threshold = bbGetReplaceThreshold();
+    let replaced = 0;
+    document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((el) => {
+      if (el.closest(".popup")) return;
+      if (el.classList.contains("bb-enhanced")) return;
+      let brand = el.dataset.brand;
+      if (!brand && el.classList.contains("brandbased")) {
+        brand = "brandbased";
+        el.dataset.brand = "brandbased";
+      }
+      if (!brand) return;
+      const token = bbBrandClass(brand);
+      if (!token) return;
+      if (threshold === 0) return;
+      if (replaced >= threshold) return;
+
+      el.classList.add(token, "bb-enhanced");
+      bbApplySmartSizing(el);
+      attachBrandClick(el);
+      replaced += 1;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.classList.add("slide-up");
+        });
+      });
+    });
+    bbUpdatePlaceButtonVisibility();
+    if (!bbIsBrandAiSmartOn()) {
+      const hasPlacementMarks =
+        bbGetUploadTextMarks().length > 0 || bbGetPreviewPlacementMarks().length > 0;
+      if (hasPlacementMarks) {
+        if (bbPlacementSlidersPresent()) bbSetPlacementSlidersFromStorage();
+        bbApplyPlacementSlidersToUploadMarks();
+      }
+    }
+  }
+
+  function stripBrandEnhancements() {
+    document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((el) => {
+      if (el.closest(".popup")) return;
+      detachBrandClick(el);
+      const token = bbBrandClass(el.dataset.brand);
+      if (token) el.classList.remove(token);
+      // Safety: always remove any lingering bb-* brand token classes.
+      // This prevents `bb-nike` + `bb-upload` from stacking and fighting over `--bb-logo`.
+      try {
+        for (const c of Array.from(el.classList)) {
+          if (typeof c === "string" && c.startsWith("bb-") && c !== "bb-enhanced" && c !== "bb-swap-pulse") {
+            el.classList.remove(c);
+          }
+        }
+      } catch {}
+      el.classList.remove("bb-enhanced", "slide-up", BB_AI_SIZE_CLASS);
+      if (el.__bbSmartClass) el.classList.remove(el.__bbSmartClass);
+      el.__bbSmartClass = "";
+      el.__bbSmartKey = "";
+      el.__bbUserOffsetYpx = "";
+      el.__bbUserOffsetYem = "";
+      for (const prop of BB_PLACEMENT_PROPS) {
+        try {
+          el.style.removeProperty(prop);
+        } catch {}
+      }
+    });
+    // Popups are overlays; remove them globally.
+    try {
+      document.querySelectorAll(".popup").forEach((popup) => popup.remove());
+    } catch {}
+    bbUpdatePlaceButtonVisibility();
+  }
+
+  function createPopup(brandHost) {
+  const existing = document.querySelector(".popup");
+  if (existing) return existing;
+
+  const popup = document.createElement("div");
+  popup.className = "popup";
+  popup.style.opacity = "0";
+  popup.style.pointerEvents = "none";
+  popup.style.transition = "all 0.3s ease";
+  popup.innerHTML = `
+    <div class="bb-popup-glass-base" aria-hidden="true"></div>
+    <div class="bb-popup-theme-tint" aria-hidden="true"></div>
+    <div class="bb-popup-theme-stack" aria-hidden="true">
+      <div class="blur-bg"></div>
+      <video class="bb-theme-video-bg" muted loop playsinline preload="metadata" aria-hidden="true"></video>
+      <div class="bb-theme-logo-blend" aria-hidden="true"></div>
+    </div>
+    <div class="lock-icon-bb-logo" aria-hidden="true"></div>
+    <button type="button" class="popup-mobile-sheet-close" aria-label="Close popup">
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+        <line x1="5" y1="5" x2="19" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <line x1="19" y1="5" x2="5" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="close-icon-desktop">
+      <div class="close-x-icon" aria-label="Close popup" role="button" tabindex="0">
+        <svg viewBox="0 0 24 24" fill="none">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </div>
+    </div>
+    <div class="bb-popup-chrome">
+    <div class="popup-handle"></div>
+    <div class="title-row">
+      <div class="brand-icon" aria-hidden="true"></div>
+      <div class="product-title">Product Display Name</div>
+    </div>
+
+        <div class="product-top-section">
+      <div class="product-element">
+       
+        <div class="swiper swiper-thumb">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide"><img src="bb-placeholder-image1.png" alt=""></div>
+            <div class="swiper-slide"><img src="bb-placeholder-image2.png" alt=""></div>
+            <div class="swiper-slide"><img src="bb-placeholder-image3.png" alt=""></div>
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+
+        <div class="slider-close-up">
+          <span class="close">
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <line x1="5" y1="5" x2="19" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+              <line x1="19" y1="5" x2="5" y2="19" stroke="white" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="swiper slider-close-up-swiper">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide"><img src="bb-placeholder-image1.png" alt=""></div>
+              <div class="swiper-slide"><img src="bb-placeholder-image2.png" alt=""></div>
+              <div class="swiper-slide"><img src="bb-placeholder-image3.png" alt=""></div>
+            </div>
+            <a class="bb-icon-close-up" href="https://brandbased.ai/" target="_blank" rel="noopener noreferrer" aria-label="BrandBased — visit brandbased.ai">
+              <img src="brandbased-logo.svg" alt="" width="40" height="40" decoding="async" />
+            </a>
+            <div class="zoom-toggle-btn" role="button" tabindex="0" aria-label="Zoom">+</div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-section">
+        <span class="product-description-holder">
+          <span class="product-description">
+              <p>Every product has a story, and yours is no exception. Share what inspired its creation, the craftsmanship or technology behind it, and the unique qualities that make it stand out. Highlight the details that customers will notice and appreciate, from the design and materials to the thoughtful features that make their life easier or more enjoyable. Tell them why this product is more than just an item—it’s an experience, a solution, or a statement they can connect with. The more your customers understand the value and passion behind your product, the more they’ll be drawn to it and excited to make it their own.</p>
+            </span>
+        </span>
+      </div>
+    </div>
+    <div class="selectors-row">
+      <select class="product-qty"><option>Qty</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+      <select class="product-size"><option>Size</option><option>S</option><option>M</option><option>L</option><option>XL</option></select>
+      <select class="product-color"><option>Colour</option><option>OG Grinch</option><option>Reverse Grinch</option><option>Ice Grinch</option></select>
+    </div>
+    <div class="buy-now-row">
+      <a href="#" target="_blank" class="explore-link" aria-label="Explore">
+        <div class="explore-icon-when-buy-now-is-used"><img src="explore icon.svg" style="width: 100%; height: 100%;" /></div>
+      </a>
+      <a href="https://buy.stripe.com/28EcN42WJgtX1XR7OB6J202" target="_blank" class="buy-now-link">
+        <span class="buy-now-button">Buy Now</span>
+      </a>
+    </div>
+    <div class="add-element">
+      <video src="add-sample.mp4" width="100%" height="100%" autoplay muted loop playsinline style="object-fit: cover; border-radius: 8px; display: block;"></video>
+      <div class="ad-label">Ad</div>
+    </div>
+    </div>
+  `;
+
+  // Always mount to body so it never affects layout (matches original “correct” behavior).
+  document.body.appendChild(popup);
+
+  const brandSlug = brandHost.dataset.brand;
+  const brandIconEl = popup.querySelector(".brand-icon");
+  const lockIconHost = popup.querySelector(".lock-icon-bb-logo");
+  const token = bbBrandClass(brandSlug);
+  if (token && brandIconEl) {
+    brandIconEl.classList.add(token);
+  }
+  if (token && lockIconHost) {
+    lockIconHost.classList.add(token);
+  }
+
+  // Premium standalone: always show the BrandBased "B" mark in the lock corner (inline SVG, recolorable).
+  try {
+    if (lockIconHost) {
+      lockIconHost.querySelectorAll("svg.bb-lock-logo-inline").forEach((n) => n.remove());
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.classList.add("bb-lock-logo-inline");
+      svg.setAttribute("viewBox", "0 0 30 43");
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", "100%");
+      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      svg.setAttribute("aria-hidden", "true");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute(
+        "d",
+        "M 14.082157,43.029444 C 11.486276,42.89346 8.7470742,41.989394 6.5481027,40.545644 3.009681,38.221044 0.76669177,34.647238 0.29724018,30.586288 0.22651188,29.980305 0.21739218,28.185467 0.21739218,14.997931 V 0.09673646 H 0.45824335 C 1.0837329,0.09774976 2.2762244,0.20834124 2.7583827,0.30402712 5.5982762,0.87464651 7.7319406,2.6517915 8.2862154,4.9106389 c 0.0762,0.3120656 0.087043,1.2618712 0.1116048,10.3299471 l 0.026751,9.985692 0.3011729,1.467339 c 0.1982217,0.97068 0.2853047,1.49185 0.253558,1.539475 -0.024927,0.03901 -0.8522863,0.602366 -1.8374769,1.25099 -0.9851906,0.648623 -2.5904293,1.704572 -3.5669968,2.347754 -0.9938036,0.653619 -1.7485699,1.183412 -1.7149993,1.201094 0.03354,0.01631 0.1859708,0.04631 0.3401849,0.06404 1.8479138,0.212722 8.518789,1.06138 8.54554,1.087696 0.01956,0.01956 0.629137,1.591164 1.355319,3.4926 1.647888,4.312228 1.541745,4.03965 1.577119,4.037826 0.01773,0 0.910805,-1.601621 1.984426,-3.559751 1.073651,-1.957665 1.972195,-3.570169 1.994872,-3.584233 0.0231,-0.01398 2.058833,-0.04762 4.523613,-0.07448 2.462976,-0.02675 4.488228,-0.05674 4.500479,-0.0689 0.01034,-0.01034 -0.524353,-0.485796 -1.190668,-1.054592 -0.666315,-0.568805 -2.127767,-1.817514 -3.247676,-2.774576 l -2.037492,-1.739957 1.335803,-3.798779 c 0.73526,-2.088755 1.332185,-3.811019 1.327199,-3.828712 -0.01034,-0.02675 -2.002138,0.901726 -7.71278,3.591479 l -0.281667,0.132914 -2.870292,-1.800289 0.01398,-3.800582 c 0.0091,-2.090579 0.02635,-3.812844 0.04266,-3.826908 0.03719,-0.03901 0.944355,-0.173721 1.566227,-0.235856 0.768831,-0.07448 2.237537,-0.06212 3.084382,0.02675 1.942242,0.203663 3.660889,0.713941 5.432593,1.615676 2.257489,1.14666 4.062764,2.735574 5.437578,4.785773 1.188854,1.771704 1.858797,3.508033 2.191726,5.691146 0.117006,0.766997 0.1188,2.680674 0.001,3.446333 -0.361505,2.400375 -1.261426,4.544466 -2.710627,6.450898 -0.462652,0.611425 -1.786224,1.956307 -2.404469,2.445305 -1.973988,1.562609 -4.348058,2.622115 -6.885411,3.073945 -1.077269,0.191413 -2.457525,0.265789 -3.694003,0.20185 z"
+      );
+      path.setAttribute("fill", "currentColor");
+      svg.appendChild(path);
+      lockIconHost.appendChild(svg);
+    }
+  } catch {}
+
+  /*** INIT SWIPERS FOR THIS POPUP ***/
+  const thumbSwiper = new Swiper(popup.querySelector('.swiper-thumb'), {
+    slidesPerView: 1,
+    spaceBetween: 10,
+    preventClicks: false,
+    preventClicksPropagation: false,
+    pagination: {
+      el: popup.querySelector('.swiper-thumb .swiper-pagination'),
+      clickable: true,
+      dynamicBullets: true,
+    },
+  });
+
+  const sliderCloseUpSwiper = new Swiper(popup.querySelector('.slider-close-up-swiper'), {
+    slidesPerView: 1,
+    spaceBetween: 10,
+    preventClicks: false,
+    preventClicksPropagation: false,
+    navigation: {
+      nextEl: popup.querySelector('.slider-close-up-swiper .swiper-button-next'),
+      prevEl: popup.querySelector('.slider-close-up-swiper .swiper-button-prev')
+    },
+    pagination: {
+      el: popup.querySelector('.slider-close-up-swiper .swiper-pagination'),
+      clickable: true,
+      dynamicBullets: true
+    }
+  });
+
+  // Keep gallery dots tied to the real media count:
+  // - 0/1 slide: no dots
+  // - 2+ slides: Swiper renders exactly one dot per slide
+  // This mirrors the product/theme page behavior where the gallery can
+  // be rebuilt after media changes.
+  const bbSyncGalleryDots = () => {
+    const syncOne = (swiper, root) => {
+      if (!root) return;
+      const paginationEl = root.querySelector(".swiper-pagination");
+      const slideCount = Array.from(root.querySelectorAll(".swiper-wrapper > .swiper-slide"))
+        .filter((slide) => !slide.classList.contains("swiper-slide-duplicate"))
+        .length;
+      const shouldShow = slideCount > 1;
+      if (paginationEl) {
+        paginationEl.style.display = shouldShow ? "" : "none";
+        if (shouldShow) {
+          // .swiper-pagination has `width: auto !important` so without
+          // dynamicBullets the default `left: 0` would park it on the
+          // left edge. Re-centre it horizontally.
+          paginationEl.style.left = "50%";
+          paginationEl.style.transform = "translateX(-50%)";
+        } else {
+          paginationEl.innerHTML = "";
+          paginationEl.style.removeProperty("left");
+          paginationEl.style.removeProperty("transform");
+        }
+      }
+      if (!swiper) return;
+      try { swiper.updateSlides?.(); } catch {}
+      try { swiper.update?.(); } catch {}
+      if (shouldShow) {
+        try { swiper.pagination?.render?.(); } catch {}
+        try { swiper.pagination?.update?.(); } catch {}
+      }
+    };
+    syncOne(thumbSwiper, popup.querySelector(".swiper-thumb"));
+    syncOne(sliderCloseUpSwiper, popup.querySelector(".slider-close-up-swiper"));
+  };
+  bbSyncGalleryDots();
+  try {
+    const observeGallery = (root) => {
+      const wrap = root?.querySelector?.(".swiper-wrapper");
+      if (!wrap) return;
+      const mo = new MutationObserver(bbSyncGalleryDots);
+      mo.observe(wrap, { childList: true });
+    };
+    observeGallery(popup.querySelector(".swiper-thumb"));
+    observeGallery(popup.querySelector(".slider-close-up-swiper"));
+  } catch {}
+
+
+
+
+
+  const sliderCloseUp = popup.querySelector('.slider-close-up');
+  const closeBtn = popup.querySelector('.slider-close-up .close');
+
+  const bbSetZoomOpen = (open) => {
+    popup.classList.toggle("bb-zoom-open", !!open);
+  };
+
+  let bbCloseUpHome = null;
+
+  const bbShouldPinCloseUpToPopup = () => {
+    const w = window.innerWidth;
+    return w >= 841 && w <= 980;
+  };
+
+  const bbMountCloseUpToPopup = () => {
+    if (!bbShouldPinCloseUpToPopup() || !sliderCloseUp || !popup) return;
+    if (sliderCloseUp.parentElement === popup) {
+      sliderCloseUp.classList.add("bb-closeup-pinned-popup");
+      return;
+    }
+    const productEl = popup.querySelector(".product-element");
+    if (!productEl) return;
+    bbCloseUpHome = { parent: productEl, next: sliderCloseUp.nextSibling };
+    popup.appendChild(sliderCloseUp);
+    sliderCloseUp.classList.add("bb-closeup-pinned-popup");
+  };
+
+  const bbRestoreCloseUpHome = () => {
+    if (!sliderCloseUp) return;
+    sliderCloseUp.classList.remove("bb-closeup-pinned-popup");
+    if (!bbCloseUpHome?.parent) return;
+    const { parent, next } = bbCloseUpHome;
+    try {
+      if (next && next.parentElement === parent) parent.insertBefore(sliderCloseUp, next);
+      else parent.appendChild(sliderCloseUp);
+    } catch {}
+    bbCloseUpHome = null;
+  };
+
+  const bbDismissCloseUp = () => {
+    if (!sliderCloseUp) return;
+    sliderCloseUp.style.display = "none";
+    bbSetZoomOpen(false);
+    bbRestoreCloseUpHome();
+  };
+
+  // Close-up X: desktop = fixed inset; mobile = same screen position as .popup-mobile-sheet-close (rect sync).
+  const bbPositionCloseUpX = () => {
+    if (!sliderCloseUp || !closeBtn) return;
+
+    const mobileSheetClose = popup.querySelector(".popup-mobile-sheet-close");
+    const msStyles = mobileSheetClose ? window.getComputedStyle(mobileSheetClose) : null;
+    const mobileSheetCloseActive =
+      mobileSheetClose &&
+      msStyles &&
+      msStyles.display !== "none" &&
+      msStyles.visibility !== "hidden" &&
+      Number.parseFloat(msStyles.opacity || "1") > 0;
+
+    const closeUpOpen = window.getComputedStyle(sliderCloseUp).display === "flex";
+
+    if (
+      closeUpOpen &&
+      mobileSheetCloseActive &&
+      popup.classList.contains("popup-visible")
+    ) {
+      const mr = mobileSheetClose.getBoundingClientRect();
+      const sr = sliderCloseUp.getBoundingClientRect();
+      closeBtn.style.left = "auto";
+      closeBtn.style.top = `${mr.top - sr.top}px`;
+      closeBtn.style.right = `${sr.right - mr.right}px`;
+      closeBtn.style.marginTop = "0";
+      closeBtn.style.marginRight = "0";
+      return;
+    }
+
+    closeBtn.style.removeProperty("top");
+    closeBtn.style.removeProperty("right");
+    closeBtn.style.removeProperty("margin-top");
+    closeBtn.style.removeProperty("margin-right");
+    closeBtn.style.removeProperty("left");
+
+    if (window.innerWidth < 780) {
+      return;
+    }
+    // Desktop / tablet: anchor the close-up X to the swiper's TOP-RIGHT
+    // corner so it always tracks the gallery's right edge regardless of
+    // viewport width (the overlay is full-screen but the swiper is
+    // 79–80vw, centred — fixed insets from the overlay placed the X out
+    // in the gutter on mid-range widths).
+    const swiperEl =
+      sliderCloseUp.querySelector(".swiper.slider-close-up-swiper") ||
+      sliderCloseUp.querySelector(".swiper");
+    const inset = 8;
+    if (swiperEl) {
+      const sr = sliderCloseUp.getBoundingClientRect();
+      const wr = swiperEl.getBoundingClientRect();
+      closeBtn.style.top   = `${wr.top - sr.top + inset}px`;
+      closeBtn.style.right = `${sr.right - wr.right + inset}px`;
+    } else {
+      closeBtn.style.top   = `${inset}px`;
+      closeBtn.style.right = `${inset}px`;
+    }
+    closeBtn.style.left = "auto";
+    closeBtn.style.marginTop = "0";
+    closeBtn.style.marginRight = "0";
+  };
+  const bbSyncCloseUpPin = () => {
+    if (bbShouldPinCloseUpToPopup()) bbMountCloseUpToPopup();
+    else bbRestoreCloseUpHome();
+  };
+
+  const bbOnCloseUpLayoutChange = () => {
+    if (!sliderCloseUp || window.getComputedStyle(sliderCloseUp).display !== "flex") return;
+    bbSyncCloseUpPin();
+    try {
+      sliderCloseUpSwiper.update();
+    } catch {}
+    bbPositionCloseUpX();
+  };
+
+  const bbCloseUpSwiperEl = () =>
+    sliderCloseUp?.querySelector(".swiper.slider-close-up-swiper") ||
+    sliderCloseUp?.querySelector(".swiper") ||
+    null;
+
+  const bbCloseUpSwiperHasLayout = () => {
+    const el = bbCloseUpSwiperEl();
+    if (!el) return true;
+    const wr = el.getBoundingClientRect();
+    return wr.width > 1 && wr.height > 1;
+  };
+
+  /* First open: Swiper often has 0×0 (or stale) size for a few frames on wide
+     viewports — retry until layout matches what resize already sees. */
+  const bbPositionCloseUpXWhenReady = (triesLeft = 16) => {
+    if (!sliderCloseUp || window.getComputedStyle(sliderCloseUp).display !== "flex") return;
+    if (!bbCloseUpSwiperHasLayout()) {
+      if (triesLeft > 0) {
+        try {
+          requestAnimationFrame(() => bbPositionCloseUpXWhenReady(triesLeft - 1));
+        } catch {}
+      }
+      return;
+    }
+    bbOnCloseUpLayoutChange();
+  };
+
+  const bbPositionCloseUpXAfterLayout = () => {
+    bbPositionCloseUpXWhenReady();
+    try {
+      sliderCloseUpSwiper.once("resize", () => bbOnCloseUpLayoutChange());
+    } catch {}
+    try {
+      window.setTimeout(() => bbPositionCloseUpXWhenReady(4), 0);
+    } catch {}
+  };
+  try {
+    window.addEventListener("resize", bbOnCloseUpLayoutChange, { passive: true });
+    window.addEventListener("orientationchange", bbOnCloseUpLayoutChange, { passive: true });
+  } catch {}
+
+  // Pause other videos when changing slides
+  sliderCloseUpSwiper.on('slideChange', () => {
+    sliderCloseUpSwiper.slides.forEach(s => {
+      const v = s.querySelector('video');
+      if (v) v.pause();
+    });
+    const currentVideo = sliderCloseUpSwiper.slides[sliderCloseUpSwiper.activeIndex].querySelector('video');
+    if (currentVideo) currentVideo.play();
+  });
+
+  // Close close-up view
+  closeBtn.onclick = () => { bbDismissCloseUp(); };
+  sliderCloseUp.addEventListener('click', e => {
+    if (e.target === sliderCloseUp) bbDismissCloseUp();
+  });
+
+  // If close-up is ever shown/hidden via style changes, keep X positioned correctly.
+  try {
+    const mo = new MutationObserver(() => {
+      if (sliderCloseUp && sliderCloseUp.style.display === "flex") bbPositionCloseUpX();
+    });
+    mo.observe(sliderCloseUp, { attributes: true, attributeFilter: ["style"] });
+  } catch {}
+
+
+
+
+
+
+
+
+
+  // Multi-level zoom (cycle): 1x → 1.7x → 2.6x → 1x
+  const ZOOM_LEVELS = [1, 1.7, 2.6];
+  const zoomBtns = Array.from(popup.querySelectorAll(".slider-close-up .zoom-toggle-btn")).filter(Boolean);
+  const closeUpEl = popup.querySelector(".slider-close-up");
+  const getActiveMedia = () => {
+    const slide = sliderCloseUpSwiper.slides[sliderCloseUpSwiper.activeIndex];
+    if (!slide) return { slide: null, media: null };
+    const media = slide.querySelector("img,video");
+    return { slide, media };
+  };
+  const setPan = (slide, tx, ty) => {
+    if (!slide) return;
+    slide.dataset.panX = String(Number(tx) || 0);
+    slide.dataset.panY = String(Number(ty) || 0);
+  };
+  const getPan = (slide) => {
+    return {
+      x: Number(slide?.dataset?.panX || "0") || 0,
+      y: Number(slide?.dataset?.panY || "0") || 0,
+    };
+  };
+  const getZoomIdx = (slide) => Number(slide?.dataset?.zoomLevel || "0") || 0;
+  const applyTransform = (slide) => {
+    if (!slide) return;
+    const m = slide.querySelector("img,video");
+    if (!m) return;
+    const idx = getZoomIdx(slide);
+    const z = ZOOM_LEVELS[idx] || 1;
+    const p = getPan(slide);
+    m.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) scale(${z})`;
+    m.style.cursor = idx === 0 ? "zoom-in" : "grab";
+  };
+  const applyZoomLevel = (levelIdx) => {
+    sliderCloseUpSwiper.slides.forEach((s) => {
+      s.dataset.zoomLevel = "0";
+      setPan(s, 0, 0);
+      const m = s.querySelector("img,video");
+      if (m) {
+        m.style.transform = "translate3d(0px, 0px, 0) scale(1)";
+        m.style.cursor = "zoom-in";
+      }
+    });
+    const { slide, media } = getActiveMedia();
+    if (!slide || !media) return;
+    const idx = Math.max(0, Math.min(ZOOM_LEVELS.length - 1, Number(levelIdx) || 0));
+    slide.dataset.zoomLevel = String(idx);
+    setPan(slide, 0, 0);
+    applyTransform(slide);
+    for (const b of zoomBtns) {
+      try {
+        b.textContent = idx === ZOOM_LEVELS.length - 1 ? "–" : "+";
+      } catch {}
+    }
+  };
+  const bumpZoom = () => {
+    const { slide } = getActiveMedia();
+    if (!slide) return;
+    const cur = Number(slide.dataset.zoomLevel || "0") || 0;
+    const next = (cur + 1) % ZOOM_LEVELS.length;
+    applyZoomLevel(next);
+  };
+  for (const zoomBtn of zoomBtns) {
+    zoomBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      bumpZoom();
+    });
+    zoomBtn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        bumpZoom();
+      }
+    });
+  }
+  // Double-activate on close-up media = same as "+" (Swiper default preventClicks blocks native dblclick).
+  const closeUpSwiperEl = popup.querySelector(".slider-close-up-swiper");
+  const bbCloseUpDoubleZoom = (e) => {
+    const m = e.target?.closest?.("img,video");
+    if (!m) return;
+    const activeSlide = sliderCloseUpSwiper.slides?.[sliderCloseUpSwiper.activeIndex];
+    if (!activeSlide || !activeSlide.contains(m)) return;
+    try {
+      e.preventDefault();
+    } catch {}
+    try {
+      e.stopPropagation();
+    } catch {}
+    bumpZoom();
+  };
+  closeUpSwiperEl?.addEventListener("dblclick", bbCloseUpDoubleZoom);
+  let _bbCloseUpLastTouchEnd = 0;
+  closeUpSwiperEl?.addEventListener(
+    "touchend",
+    (e) => {
+      if (e.changedTouches?.length !== 1) {
+        _bbCloseUpLastTouchEnd = 0;
+        return;
+      }
+      const m = e.target?.closest?.("IMG,VIDEO");
+      if (!m) return;
+      const activeSlide = sliderCloseUpSwiper.slides?.[sliderCloseUpSwiper.activeIndex];
+      if (!activeSlide || !activeSlide.contains(m)) return;
+      const now = Date.now();
+      const dt = _bbCloseUpLastTouchEnd ? now - _bbCloseUpLastTouchEnd : 99999;
+      if (_bbCloseUpLastTouchEnd && dt > 40 && dt < 500) {
+        try {
+          e.preventDefault();
+        } catch {}
+        bumpZoom();
+        _bbCloseUpLastTouchEnd = 0;
+      } else {
+        _bbCloseUpLastTouchEnd = now;
+      }
+    },
+    { capture: true, passive: false }
+  );
+  sliderCloseUpSwiper.on("slideChange", () => applyZoomLevel(0));
+
+  // Drag/pan when zoomed in (pointer events)
+  let _bbPan = null; // { id, slide, startX, startY, baseX, baseY }
+  const onDown = (e) => {
+    const t = e.target;
+    if (!t || (t.tagName !== "IMG" && t.tagName !== "VIDEO")) return;
+    const { slide } = getActiveMedia();
+    if (!slide) return;
+    const idx = getZoomIdx(slide);
+    const z = ZOOM_LEVELS[idx] || 1;
+    if (z <= 1.001) return;
+    try { e.preventDefault(); } catch {}
+    const p = getPan(slide);
+    _bbPan = { id: e.pointerId, slide, startX: e.clientX, startY: e.clientY, baseX: p.x, baseY: p.y, z };
+    try { t.setPointerCapture(e.pointerId); } catch {}
+    t.style.cursor = "grabbing";
+  };
+  const onMove = (e) => {
+    if (!_bbPan || e.pointerId !== _bbPan.id) return;
+    const dx = (e.clientX - _bbPan.startX) / (_bbPan.z || 1);
+    const dy = (e.clientY - _bbPan.startY) / (_bbPan.z || 1);
+    setPan(_bbPan.slide, _bbPan.baseX + dx, _bbPan.baseY + dy);
+    applyTransform(_bbPan.slide);
+  };
+  const onUp = (e) => {
+    if (!_bbPan || e.pointerId !== _bbPan.id) return;
+    const { slide } = _bbPan;
+    _bbPan = null;
+    try {
+      const m = slide?.querySelector("img,video");
+      if (m) m.style.cursor = "grab";
+    } catch {}
+  };
+  if (closeUpEl) {
+    closeUpEl.addEventListener("pointerdown", onDown);
+    closeUpEl.addEventListener("pointermove", onMove);
+    closeUpEl.addEventListener("pointerup", onUp);
+    closeUpEl.addEventListener("pointercancel", onUp);
+    closeUpEl.addEventListener("pointerleave", onUp);
+  }
+
+  const openCloseUpFromThumb = (index) => {
+    bbSetZoomOpen(true);
+    bbSyncCloseUpPin();
+    sliderCloseUp.style.display = "flex";
+    try {
+      sliderCloseUpSwiper.update();
+    } catch {}
+    sliderCloseUpSwiper.slideTo(index, 0);
+    sliderCloseUpSwiper.slides.forEach((s) => {
+      const v = s.querySelector("video");
+      if (v) {
+        v.setAttribute("controls", "faulse");
+        v.pause();
+      }
+    });
+    const activeVideo = sliderCloseUpSwiper.slides[index]?.querySelector("video");
+    if (activeVideo) activeVideo.play();
+    bbPositionCloseUpXAfterLayout();
+  };
+
+  let _bbThumbSuppressClickUntil = 0;
+  let _bbLastThumbTapAt = 0;
+  popup.querySelectorAll(".swiper-thumb .swiper-slide").forEach((slide, index) => {
+    slide.addEventListener("click", () => {
+      if (Date.now() < _bbThumbSuppressClickUntil) return;
+      openCloseUpFromThumb(index);
+    });
+    const thumbMedia = slide.querySelector("img,video");
+    if (thumbMedia) {
+      thumbMedia.addEventListener(
+        "click",
+        (e) => {
+          if (e.detail !== 2) return;
+          e.preventDefault();
+          e.stopPropagation();
+          _bbThumbSuppressClickUntil = Date.now() + 500;
+          openCloseUpFromThumb(index);
+          try {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => bumpZoom());
+            });
+          } catch {}
+        },
+        true
+      );
+    }
+    slide.addEventListener(
+      "touchend",
+      (e) => {
+        const t = e.target;
+        if (!t || (t.tagName !== "IMG" && t.tagName !== "VIDEO")) return;
+        const now = Date.now();
+        if (now - _bbLastThumbTapAt < 320) {
+          try {
+            e.preventDefault();
+          } catch {}
+          _bbThumbSuppressClickUntil = Date.now() + 500;
+          openCloseUpFromThumb(index);
+          try {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => bumpZoom());
+            });
+          } catch {}
+          _bbLastThumbTapAt = 0;
+        } else {
+          _bbLastThumbTapAt = now;
+        }
+      },
+      { passive: false }
+    );
+  });
+
+
+
+
+
+/* Close-up X fade — do not resize .popup (theme layers must not change modal shape). */
+document.querySelectorAll(".slider-close-up").forEach((slider) => {
+  const closeBtn = slider.querySelector(".close");
+  if (!closeBtn) return;
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type !== "attributes" || mutation.attributeName !== "style") return;
+      const open =
+        slider.style.display === "flex" ||
+        (typeof window.getComputedStyle === "function" &&
+          window.getComputedStyle(slider).display === "flex");
+      if (!open) return;
+      closeBtn.style.transition = "none";
+      closeBtn.style.opacity = "0";
+      void closeBtn.offsetWidth;
+      closeBtn.style.transition = "opacity 1s ease";
+      closeBtn.style.opacity = "1";
+    });
+  });
+  observer.observe(slider, { attributes: true, attributeFilter: ["style"] });
+});
+
+
+
+
+
+
+  
+
+
+
+
+  
+
+const positionPopup = () => {
+  if (window.innerWidth < 840) {
+    popup.style.position = '';
+    popup.style.top = '';
+    popup.style.left = '';
+    popup.style.transform = '';
+    popup.style.zIndex = '';
+  } else {
+    popup.style.position = 'fixed';
+    popup.style.top = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+    popup.style.zIndex = '9999';
+  }
+};
+
+    positionPopup();
+    window.addEventListener('resize', positionPopup);
+
+    const closeIconDesktop = popup.querySelector('.close-icon-desktop');
+    const mobileSheetClose = popup.querySelector('.popup-mobile-sheet-close');
+    const closePopupUi = () => {
+      bbDismissCloseUp();
+      popup.classList.remove('popup-visible');
+      popup.style.opacity = '0';
+      popup.style.pointerEvents = 'none';
+      try {
+        window.clearTimeout(popup.__bbCloseTimer);
+      } catch {}
+      try {
+        window.clearTimeout(popup.__bbMobileSheetCloseTimer);
+      } catch {}
+      try {
+        mobileSheetClose?.classList.remove("bb-mobile-sheet-close-visible");
+      } catch {}
+    };
+    closeIconDesktop?.addEventListener('click', closePopupUi);
+    mobileSheetClose?.addEventListener('click', closePopupUi);
+
+    let bbSheetTouch = null;
+    const clearSheetTouch = () => {
+      bbSheetTouch = null;
+    };
+    popup.addEventListener(
+      "touchstart",
+      (e) => {
+        if (window.innerWidth > 840) return;
+        if (!popup.classList.contains("popup-visible")) return;
+        if (sliderCloseUp && window.getComputedStyle(sliderCloseUp).display === "flex") return;
+        const t = e.target;
+        if (!(t instanceof Element)) return;
+        if (t.closest(".product-description") || t.closest(".product-description-holder")) return;
+        if (t.closest(".selectors-row") || t.closest(".buy-now-row")) return;
+        if (t.closest("a[href], button, input, select, textarea")) return;
+        bbSheetTouch = { y0: e.touches[0].clientY, x0: e.touches[0].clientX };
+      },
+      { passive: true }
+    );
+    popup.addEventListener(
+      "touchend",
+      (e) => {
+        if (!bbSheetTouch) return;
+        const y1 = e.changedTouches[0].clientY;
+        const x1 = e.changedTouches[0].clientX;
+        const dy = y1 - bbSheetTouch.y0;
+        const dx = x1 - bbSheetTouch.x0;
+        clearSheetTouch();
+        if (dy > 72 && Math.abs(dx) < 100) closePopupUi();
+      },
+      { passive: true }
+    );
+    popup.addEventListener("touchcancel", clearSheetTouch, { passive: true });
+
+    // Mobile-only: delayed handle close and swipe down
+    const popupHandle = popup.querySelector('.popup-handle');
+    let canCloseMobile = false;
+    let touchStartY = 0;
+
+    setTimeout(() => {
+      canCloseMobile = true;
+    }, 2000);
+
+    popupHandle?.addEventListener("click", () => {
+      if (canCloseMobile) closePopupUi();
+    });
+
+    popupHandle?.addEventListener("touchstart", (e) => {
+      touchStartY = e.touches[0].clientY;
+    });
+
+    popupHandle?.addEventListener("touchend", (e) => {
+      const touchEndY = e.changedTouches[0].clientY;
+      if (canCloseMobile && touchEndY - touchStartY > 40) closePopupUi();
+    });
+
+    return popup;
+  }
+
+ // Delay before brand layers + popups
+setTimeout(() => {
+  if (!brandbasedEnhancementEnabled) return;
+  enhanceBrandMarks();
+
+  document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((host) => {
+    if (host.closest(".popup")) return;
+    createPopup(host);
+  });
+
+}, 2000); // delay before additive BB layers + popups
+
+// Safety net: ensure Brand Settings marks always open a popup even if enhancements haven’t run yet.
+document.addEventListener(
+  "click",
+  (e) => {
+    const t = e.target;
+    if (!(t instanceof Element)) return;
+    const el = t.closest(".brandbased-dynamic-logo-slot");
+    if (!el || el.closest(".popup")) return;
+    openModalForBrandMark(el);
+  },
+  true
+);
+
+  document.querySelector(".header-icon.logo")?.addEventListener("click", () => {
+    brandbasedEnhancementEnabled = !brandbasedEnhancementEnabled;
+    if (!brandbasedEnhancementEnabled) {
+      stripBrandEnhancements();
+    } else {
+      enhanceBrandMarks();
+      document.querySelectorAll(".brandbased-dynamic-logo-slot").forEach((host) => {
+        if (host.closest(".popup")) return;
+        createPopup(host);
+      });
+    }
+  });
+
+  })();
+
+});

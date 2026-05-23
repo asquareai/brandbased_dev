@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="../brand-pages-isolated/vendor-bb-shared-ui.css?v=isolated-1" />
   <link rel="stylesheet" href="../platforms/platforms.css?v=platforms-46" />
   <link rel="stylesheet" href="../hotspots/hotspots.css?v=hotspots-8" />
-  <link rel="stylesheet" href="./start-now.css?v=startnow-31" />
+  <link rel="stylesheet" href="./start-now.css?v=startnow-32" />
   <!-- bb-embed-mode-init: when this page is rendered inside an
        iframe (e.g. the Brand Console dashboard), drop its own page
        background + animated shards so it sits flush on the host
@@ -143,6 +143,8 @@
       <h1>Start Now</h1>
     </header>
 
+    <div id="bbStartNowStripeNotice" class="bb-startnow-stripe-notice" hidden role="status" aria-live="polite"></div>
+
     <main class="bb-startnow-main" role="main" aria-label="Start Now">
 
       <!-- =====================================================
@@ -153,7 +155,8 @@
           <h2 id="bbStartFreeHeading" class="bb-startnow-pitch__heading">Discover &amp; Promote Free</h2>
           <p class="bb-startnow-pitch__sub">Reach new audiences and build your brand at no cost.</p>
           <a class="bb-startnow-cta bb-startnow-cta--free"
-             href="../freemium/Freemium-Logo-upload-and-Crop-module.html?fresh=1">
+             href="../freemium/Freemium-Logo-upload-and-Crop-module.html?fresh=1"
+             data-bb-tier-cta="freemium">
             <span class="bb-startnow-cta__plus" aria-hidden="true">+</span>
             <span class="bb-startnow-cta__label">Start FREE</span>
             <span class="bb-startnow-cta__arrow" aria-hidden="true">→</span>
@@ -163,6 +166,7 @@
         <div class="bb-startnow-mock">
           <a class="bb-startnow-modal-link bb-startnow-modal-link--free"
              href="../freemium/Freemium-Logo-upload-and-Crop-module.html?fresh=1"
+             data-bb-tier-cta="freemium"
              aria-label="Start FREE — open the Logo Upload &amp; Crop module">
             <div class="bb-startnow-modal bb-startnow-modal--free" aria-hidden="true">
               <span class="bb-startnow-modal__close">×</span>
@@ -213,7 +217,9 @@
                and `data-bb-stripe-checkout="premium"` here AND on the
                matching .bb-startnow-modal-link--premium below. -->
           <a class="bb-startnow-cta bb-startnow-cta--premium"
-             href="../logo-upload/Logo-upload-and-Crop-module.html?fresh=1">
+             href="#"
+             data-bb-tier-cta="premium"
+             role="button">
             <span class="bb-startnow-cta__plus" aria-hidden="true">+</span>
             <span class="bb-startnow-cta__label">Go Premium</span>
             <span class="bb-startnow-cta__arrow" aria-hidden="true">→</span>
@@ -222,8 +228,10 @@
 
         <div class="bb-startnow-mock bb-startnow-mock--premium">
           <a class="bb-startnow-modal-link bb-startnow-modal-link--premium"
-             href="../logo-upload/Logo-upload-and-Crop-module.html?fresh=1"
-             aria-label="Go Premium — open the Logo Upload &amp; Crop module">
+             href="#"
+             data-bb-tier-cta="premium"
+             role="button"
+             aria-label="Go Premium — upgrade via Stripe">
             <div class="bb-startnow-modal bb-startnow-modal--premium" aria-hidden="true">
             <div class="bb-startnow-modal__head">
               <span class="bb-startnow-modal__bicon">
@@ -299,11 +307,23 @@
     </main>
   </div>
 
+  <script src="../../assets/js/app-config.js?v=brandapi-3"></script>
+  <script src="../_shared/bb-account-plan.js?v=plan-5"></script>
+  <script src="../_shared/bb-stripe-billing.js?v=stripe-8"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (typeof BBAccountPlan !== "undefined") {
+        BBAccountPlan.fetchAccountPlan({ fromModules: true, silent: true }).catch(function () {});
+        BBAccountPlan.bindTierCtaLinks(document, { fromModules: true });
+      }
+    });
+  </script>
   <script>
     (function () {
       function markFreshStart(ev) {
         var a = ev.currentTarget;
         if (!a || !a.getAttribute) return;
+        if (a.getAttribute("data-bb-tier-cta") === "premium") return;
         var href = a.getAttribute("href") || "";
         if (href.indexOf("Logo-upload") < 0 && href.indexOf("logo-upload") < 0) return;
         try { sessionStorage.setItem("bbLuStartFresh", "1"); } catch (_e) { /* ignore */ }

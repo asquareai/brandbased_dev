@@ -525,8 +525,19 @@
       } catch (_e) { /* ignore */ }
     }
 
+    function clampRouteForPlan(routeId) {
+      if (
+        window.BBConsoleNavPlan &&
+        typeof window.BBConsoleNavPlan.resolveRoute === "function"
+      ) {
+        return window.BBConsoleNavPlan.resolveRoute(routeId);
+      }
+      return routeId;
+    }
+
     function navigate(routeId, opts) {
       opts = opts || {};
+      routeId = clampRouteForPlan(routeId);
       const route = ROUTES[routeId];
       if (!route) return;
 
@@ -651,6 +662,13 @@
       }
       if (data.type === "bb-dash-route") {
         syncToIframeRoute(data.path || data.href || "", data.href || "");
+        return;
+      }
+      if (data.type === "bb-dash-goto-route") {
+        const routeId = String(data.route || data.routeId || "").trim();
+        if (routeId && ROUTES[routeId]) {
+          navigate(routeId);
+        }
         return;
       }
       /* Sync / Publish / Verify popups — module pages inside the
@@ -833,6 +851,7 @@
     document.querySelectorAll("[data-route]").forEach(function (el) {
       el.style.cursor = "pointer";
       el.addEventListener("click", function (e) {
+        if (el.hasAttribute("hidden")) return;
         const id = el.getAttribute("data-route");
         if (!id || !ROUTES[id]) return;
         if (e && typeof e.preventDefault === "function") e.preventDefault();
@@ -848,7 +867,17 @@
       if (requested && ROUTES[requested]) firstId = requested;
     } catch (_e) { /* ignore */ }
 
+    firstId = clampRouteForPlan(firstId);
     navigate(firstId, { suppressHistory: true, force: true });
+
+    window.addEventListener("bb-console-nav-plan-applied", function (ev) {
+      const detail = ev && ev.detail;
+      if (!detail || detail.isPremium) return;
+      const active = currentRoute;
+      if (!active) return;
+      const allowed = clampRouteForPlan(active);
+      if (allowed !== active) navigate(allowed, { force: true });
+    });
   }
 
   if (document.readyState === "loading") {

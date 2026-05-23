@@ -7,9 +7,13 @@ use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\BrandVerificationRequestController;
 use App\Http\Controllers\Api\InternalBrandVerificationController;
 use App\Http\Controllers\Api\InternalBrandAiPromptController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\BrandAiPromptController;
+use App\Http\Controllers\Api\StripeWebhookController;
 
 Route::get('/internal/brand-ai-prompts/{promptKey}', [InternalBrandAiPromptController::class, 'show']);
+
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle']);
 
 Route::post('/auth/signup/send-otp', [AuthController::class, 'sendSignupOtp']);
 Route::post('/auth/signup/verify-otp', [AuthController::class, 'verifySignupOtp']);
@@ -42,6 +46,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/brand-ai-prompts/{promptKey}', [BrandAiPromptController::class, 'show']);
     Route::put('/brand-ai-prompts/{promptKey}', [BrandAiPromptController::class, 'upsert']);
+
+    Route::get('/billing/config', [BillingController::class, 'config']);
+    Route::post('/billing/checkout-session', [BillingController::class, 'checkoutSession']);
+    Route::post('/billing/portal-session', [BillingController::class, 'portalSession']);
+    Route::post('/billing/sync-checkout-session', [BillingController::class, 'syncCheckoutSession']);
+    Route::post('/billing/refresh-subscription', [BillingController::class, 'refreshSubscription']);
 });
 
 

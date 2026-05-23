@@ -663,11 +663,28 @@ async function loginAccount(currentStepId) {
         localStorage.setItem("auth_token", data.token);
         localStorage.setItem("account", JSON.stringify(data.account));
         localStorage.setItem("is_logged_in", "true");
-        localStorage.setItem("plan_type", data.account?.plan_type || "freemium");
+        const planType = data.account?.plan_type || "freemium";
+        if (window.BBAccountPlan && BBAccountPlan.clearSubscriptionCache) {
+            BBAccountPlan.clearSubscriptionCache();
+        } else {
+            try {
+                localStorage.removeItem("bbAccountSubscription");
+            } catch (_e) { /* ignore */ }
+        }
+        localStorage.setItem("plan_type", planType);
+        if (data.subscription && window.BBAccountPlan) {
+            BBAccountPlan.persistSubscription(data.subscription);
+        } else if (window.BBAccountPlan) {
+            BBAccountPlan.persistSubscription({
+                plan_type: planType,
+                is_premium: false,
+                active_premium: null,
+            });
+        }
 
         authState.token = data.token;
         authState.account = data.account;
-        authState.plan_type = data.account?.plan_type || "freemium";
+        authState.plan_type = planType;
 
         await popup;
         popup = null;
